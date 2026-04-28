@@ -192,18 +192,26 @@ def render_recipes_xml(rows: list[str]) -> str:
 
 def render_recipe_entry(block_name: str, kind: str) -> str:
     if kind == "portrait":
-        return (
-            f'        <recipe name="{escape_xml(block_name)}" count="1" craft_area="workbench" tags="workbenchCrafting">\n'
+        ingredients = (
             '            <ingredient name="resourcePaper" count="2"/>\n'
             '            <ingredient name="resourceWood" count="6"/>\n'
-            '            <ingredient name="resourceForgedIron" count="1"/>\n'
-            "        </recipe>"
+            '            <ingredient name="resourceForgedIron" count="1"/>'
+        )
+    elif kind == "abstract2x2":
+        ingredients = (
+            '            <ingredient name="resourcePaper" count="8"/>\n'
+            '            <ingredient name="resourceWood" count="4"/>\n'
+            '            <ingredient name="resourceForgedIron" count="1"/>'
+        )
+    else:  # abstract3x2
+        ingredients = (
+            '            <ingredient name="resourcePaper" count="12"/>\n'
+            '            <ingredient name="resourceWood" count="6"/>\n'
+            '            <ingredient name="resourceForgedIron" count="2"/>'
         )
     return (
         f'        <recipe name="{escape_xml(block_name)}" count="1" craft_area="workbench" tags="workbenchCrafting">\n'
-        '            <ingredient name="resourcePaper" count="8"/>\n'
-        '            <ingredient name="resourceWood" count="4"/>\n'
-        '            <ingredient name="resourceForgedIron" count="1"/>\n'
+        f"{ingredients}\n"
         "        </recipe>"
     )
 
@@ -285,19 +293,32 @@ def build_pack(pack_dir: Path) -> Path:
         tex.save(tex_dir / tex_filename, "PNG")
         pic_map[material_name] = tex_filename
 
-        # Block + recipe + loc + icon
-        block_name = f"kp_{sanitized}_{material_name}"
+        # Block + recipe + loc + icon ~ portraits get one block extending the
+        # vanilla portrait; abstracts get TWO blocks (one per frame size,
+        # 2x2 + 3x2) because there is no plain paintingAbstractNN block in
+        # vanilla, only the sized variants. Extending a non-existent block
+        # cascade-breaks every other vanilla XML loader.
         title = (slot.get("title") or slot_label).strip() or slot_label
         display_name = f"Print: {title}"
 
         icon = compose_icon(image_path)
         icon_dir = out_dir / "UIAtlases" / "ItemIconAtlas"
         icon_dir.mkdir(parents=True, exist_ok=True)
-        icon.save(icon_dir / f"{block_name}.png", "PNG")
 
-        block_rows.append(render_block_entry(block_name, vanilla_block))
-        recipe_rows.append(render_recipe_entry(block_name, kind))
-        loc_rows.append(render_loc_row(block_name, display_name))
+        if kind == "portrait":
+            block_name = f"kp_{sanitized}_{material_name}"
+            icon.save(icon_dir / f"{block_name}.png", "PNG")
+            block_rows.append(render_block_entry(block_name, vanilla_block))
+            recipe_rows.append(render_recipe_entry(block_name, "portrait"))
+            loc_rows.append(render_loc_row(block_name, display_name))
+        else:
+            for size in ("2x2", "3x2"):
+                block_name = f"kp_{sanitized}_{material_name}_{size}"
+                icon.save(icon_dir / f"{block_name}.png", "PNG")
+                block_rows.append(render_block_entry(block_name, f"{vanilla_block}_{size}"))
+                recipe_kind = "abstract2x2" if size == "2x2" else "abstract3x2"
+                recipe_rows.append(render_recipe_entry(block_name, recipe_kind))
+                loc_rows.append(render_loc_row(block_name, f"{display_name} {size}"))
 
     # Config files
     config_out = out_dir / "Config"

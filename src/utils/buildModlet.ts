@@ -60,17 +60,32 @@ export async function buildModlet(
     root.file(`Resources/Textures/${filename}`, composed)
     pictureMap[slot.materialName] = filename
 
-    const blockName = `kp_${packId}_${slot.materialName}`
     const title = (state.title?.trim() || slot.label)
     const displayName = `Print: ${title}`
-
-    // Icon: cropped from canvas zone for portraits, full-frame for abstracts.
     const iconBlob = await composeIcon(state.file, slot.kind)
-    root.file(`UIAtlases/ItemIconAtlas/${blockName}.png`, iconBlob)
 
-    blocksRows.push(renderBlockEntry(blockName, slot.vanillaBlock))
-    recipesRows.push(renderRecipeEntry(blockName, slot.kind))
-    locRows.push(renderLocalizationRow(blockName, displayName))
+    if (slot.kind === 'portrait') {
+      // 1×1 backer portraits: vanilla ships a single block (e.g. paintingBen)
+      // ~ one new block extending it.
+      const blockName = `kp_${packId}_${slot.materialName}`
+      root.file(`UIAtlases/ItemIconAtlas/${blockName}.png`, iconBlob)
+      blocksRows.push(renderBlockEntry(blockName, slot.vanillaBlock))
+      recipesRows.push(renderRecipeEntry(blockName, 'portrait'))
+      locRows.push(renderLocalizationRow(blockName, displayName))
+    } else {
+      // Abstract paintings: vanilla ships TWO sizes per design
+      // (paintingAbstract01_2x2 + paintingAbstract01_3x2). There is NO plain
+      // paintingAbstract01 block ~ extending it would fail and cascade-break
+      // every other vanilla XML loader. Generate one extending block per size.
+      for (const size of ['2x2', '3x2'] as const) {
+        const vanillaSized = `${slot.vanillaBlock}_${size}`
+        const blockName = `kp_${packId}_${slot.materialName}_${size}`
+        root.file(`UIAtlases/ItemIconAtlas/${blockName}.png`, iconBlob)
+        blocksRows.push(renderBlockEntry(blockName, vanillaSized))
+        recipesRows.push(renderRecipeEntry(blockName, size === '2x2' ? 'abstract2x2' : 'abstract3x2'))
+        locRows.push(renderLocalizationRow(blockName, `${displayName} ${size}`))
+      }
+    }
   }
 
   // Config files
@@ -139,21 +154,20 @@ ${rows.join('\n\n')}
 `
 }
 
-function renderRecipeEntry(blockName: string, kind: 'portrait' | 'abstract'): string {
-  // Costs follow vanilla destroy-drops:
-  //  - portraits drop resourceWood (1,2)  -> wood-heavy
-  //  - abstracts drop resourcePaper (3,5) -> paper-heavy
-  if (kind === 'portrait') {
-    return `        <recipe name="${escapeXml(blockName)}" count="1" craft_area="workbench" tags="workbenchCrafting">
-            <ingredient name="resourcePaper" count="2"/>
-            <ingredient name="resourceWood" count="6"/>
-            <ingredient name="resourceForgedIron" count="1"/>
-        </recipe>`
-  }
+type RecipeKind = 'portrait' | 'abstract2x2' | 'abstract3x2'
+
+function renderRecipeEntry(blockName: string, kind: RecipeKind): string {
+  // Costs follow vanilla destroy-drops + multi-block area:
+  //  - portrait (1×1): paper 2 + wood 6 + iron 1
+  //  - abstract 2×2:   paper 8 + wood 4 + iron 1
+  //  - abstract 3×2:   paper 12 + wood 6 + iron 2 (1.5× the 2×2 cost)
+  const ingredients = kind === 'portrait'
+    ? '<ingredient name="resourcePaper" count="2"/>\n            <ingredient name="resourceWood" count="6"/>\n            <ingredient name="resourceForgedIron" count="1"/>'
+    : kind === 'abstract2x2'
+      ? '<ingredient name="resourcePaper" count="8"/>\n            <ingredient name="resourceWood" count="4"/>\n            <ingredient name="resourceForgedIron" count="1"/>'
+      : '<ingredient name="resourcePaper" count="12"/>\n            <ingredient name="resourceWood" count="6"/>\n            <ingredient name="resourceForgedIron" count="2"/>'
   return `        <recipe name="${escapeXml(blockName)}" count="1" craft_area="workbench" tags="workbenchCrafting">
-            <ingredient name="resourcePaper" count="8"/>
-            <ingredient name="resourceWood" count="4"/>
-            <ingredient name="resourceForgedIron" count="1"/>
+            ${ingredients}
         </recipe>`
 }
 
