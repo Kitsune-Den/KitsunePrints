@@ -27,6 +27,14 @@ export function DownloadButton({ slots, meta }: Props) {
       a.click()
       a.remove()
       URL.revokeObjectURL(url)
+
+      // Fire-and-forget anonymous build counter ping. No image data,
+      // filenames, or PII ~ just the slot count for the public stats line.
+      fetch('/api/built', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ slots: filledCount }),
+      }).catch(() => {})
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to build modlet')
     } finally {

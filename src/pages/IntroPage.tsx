@@ -77,6 +77,7 @@ function PixelCat({ size = 64 }: { size?: number }) {
 export default function IntroPage() {
   const [mounted, setMounted] = useState(false)
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
+  const [buildCount, setBuildCount] = useState<number | null>(null)
 
   useEffect(() => {
     setMounted(true)
@@ -84,6 +85,10 @@ export default function IntroPage() {
       setMousePos({ x: e.clientX / window.innerWidth, y: e.clientY / window.innerHeight })
     }
     window.addEventListener('mousemove', handle)
+    fetch('/api/stats')
+      .then(r => r.json())
+      .then(d => setBuildCount(typeof d.totalBuilds === 'number' ? d.totalBuilds : null))
+      .catch(() => {})
     return () => window.removeEventListener('mousemove', handle)
   }, [])
 
@@ -314,6 +319,14 @@ export default function IntroPage() {
           </div>
         </div>
       </section>
+
+      {buildCount !== null && buildCount > 0 && (
+        <div className="relative z-10 border-t border-zinc-800/40 px-8 py-3 text-center">
+          <span className="text-[11px] text-zinc-600">
+            {buildCount.toLocaleString()} pack{buildCount !== 1 ? 's' : ''} created since April 28, 2026
+          </span>
+        </div>
+      )}
 
       <footer className="relative z-10 border-t border-zinc-800/40 px-8 py-6 flex items-center justify-between flex-wrap gap-4">
         <span className="text-xs text-zinc-600">
