@@ -1,0 +1,25 @@
+# Systemd user-mode unit for KitsunePrints
+# Install on the DreamHost VPS:
+#   mkdir -p ~/.config/systemd/user
+#   cp scripts/kitsuneprints.service ~/.config/systemd/user/
+#   systemctl --user daemon-reload
+#   systemctl --user enable kitsuneprints
+#   systemctl --user start kitsuneprints
+#   loginctl enable-linger kitsuneden   # one-time, so the service stays up after logout
+
+[Unit]
+Description=KitsunePrints web tool (prints.kitsuneden.net)
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/kitsuneden/prints.kitsuneden.net
+ExecStart=/bin/bash -c 'export NVM_DIR=$HOME/.nvm && . $NVM_DIR/nvm.sh && exec node server.cjs'
+Environment=PORT=3003
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,94 @@
+name: Deploy to DreamHost VPS
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Required GitHub repo secrets (Settings → Secrets → Actions):
+#   VPS_HOST    ~ vps32678.dreamhostps.com
+#   VPS_USER    ~ kitsuneden
+#   VPS_SSH_KEY ~ private key with access to that user
+#
+# First-time VPS setup before this workflow can deploy:
+#   ssh kitsuneden@vps32678.dreamhostps.com
+#   mkdir -p ~/prints.kitsuneden.net
+#   cp <path-to-this-repo>/scripts/kitsuneprints.service ~/.config/systemd/user/
+#   systemctl --user daemon-reload
+#   systemctl --user enable kitsuneprints
+#   loginctl enable-linger kitsuneden   # so the user service stays up after logout
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            # Load nvm for non-interactive SSH
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+
+            BUILD_DIR=/home/kitsuneden/prints.kitsuneden.net
+
+            # Clone or pull
+            if [ -d "$BUILD_DIR/.git" ]; then
+              cd "$BUILD_DIR"
+              git checkout -- .
+              git pull origin main
+            else
+              rm -rf "$BUILD_DIR"
+              git clone https://github.com/Kitsune-Den/KitsunePrints.git "$BUILD_DIR"
+              cd "$BUILD_DIR"
+            fi
+
+            # Install deps + build frontend (no Python step ~ KitsunePrints
+            # has zero server-side image processing; everything is client-side
+            # canvas + JSZip in the user's browser).
+            npm install
+            npx vite build
+
+            # Restart server and verify
+            bash -c '
+              systemctl --user restart kitsuneprints
+              sleep 3
+              for i in 1 2 3; do
+                if curl -sf http://localhost:3003 > /dev/null; then
+                  MAIN_PID=$(systemctl --user show kitsuneprints --property=MainPID --value)
+                  if [ "$MAIN_PID" -gt 0 ] 2>/dev/null; then
+                    echo "✅ Deployed ~ health check passed (systemd PID: $MAIN_PID)"
+                  else
+                    echo "⚠️  Deployed but systemd has no active PID"
+                  fi
+                  exit 0
+                fi
+                echo "⚠️  Health check attempt $i failed, retrying..."
+                systemctl --user restart kitsuneprints
+                sleep 3
+              done
+              echo "❌ Health check failed after 3 attempts"
+              exit 1
+            '
