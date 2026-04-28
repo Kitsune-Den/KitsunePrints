@@ -65,11 +65,17 @@ jobs:
               cd "$BUILD_DIR"
             fi
 
-            # Install deps + build frontend (no Python step ~ KitsunePrints
-            # has zero server-side image processing; everything is client-side
-            # canvas + JSZip in the user's browser).
+            # Install deps + build frontend (no server-side image processing;
+            # everything is client-side canvas + JSZip in the user's browser).
             npm install
             npx vite build
+
+            # Rebuild the DIY-kit zip so /KitsunePrints-DIY-Kit.zip on the
+            # served site stays in sync with the current DLL + frame textures.
+            # vite build already moved public/* into dist/, so the kit is
+            # rebuilt directly into dist/ and overwrites whatever was copied.
+            python3 scripts/build_diy_kit.py 2>/dev/null || true
+            cp public/KitsunePrints-DIY-Kit.zip dist/ 2>/dev/null || true
 
             # Restart server and verify
             bash -c '

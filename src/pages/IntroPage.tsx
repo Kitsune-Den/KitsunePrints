@@ -159,6 +159,13 @@ export default function IntroPage() {
             <span className="ml-2 group-hover:translate-x-1 inline-block transition-transform">→</span>
           </a>
           <a
+            href="/KitsunePrints-DIY-Kit.zip"
+            className="px-8 py-4 border border-zinc-700 hover:border-orange-500 hover:text-orange-300 text-zinc-400 text-sm font-medium tracking-widest uppercase rounded-lg transition-all duration-200"
+            title="Offline kit ~ Python script + DLL + frame textures, build packs locally"
+          >
+            DIY Kit (offline)
+          </a>
+          <a
             href="https://github.com/Kitsune-Den/KitsunePrints"
             target="_blank"
             rel="noopener noreferrer"

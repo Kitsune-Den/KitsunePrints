@@ -5,6 +5,9 @@ node_modules
 dist
 dist-ssr
 
+# Generated DIY-kit zip ~ rebuilt by scripts/build_diy_kit.py and during CI deploy
+public/KitsunePrints-DIY-Kit.zip
+
 # Environment
 .env
 .env.local
