@@ -15,7 +15,7 @@ After=network.target
 Type=simple
 WorkingDirectory=/home/kitsuneden/prints.kitsuneden.net
 ExecStart=/bin/bash -c 'export NVM_DIR=$HOME/.nvm && . $NVM_DIR/nvm.sh && exec node server.cjs'
-Environment=PORT=3003
+Environment=PORT=9003
 Restart=on-failure
 RestartSec=5
 StandardOutput=journal

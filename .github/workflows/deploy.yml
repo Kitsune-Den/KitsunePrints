@@ -76,7 +76,7 @@ jobs:
               systemctl --user restart kitsuneprints
               sleep 3
               for i in 1 2 3; do
-                if curl -sf http://localhost:3003 > /dev/null; then
+                if curl -sf http://localhost:9003 > /dev/null; then
                   MAIN_PID=$(systemctl --user show kitsuneprints --property=MainPID --value)
                   if [ "$MAIN_PID" -gt 0 ] 2>/dev/null; then
                     echo "✅ Deployed ~ health check passed (systemd PID: $MAIN_PID)"

@@ -48,11 +48,11 @@ else
 fi
 
 echo ""
-echo "✅ KitsunePrints deployed on port 3003"
+echo "✅ KitsunePrints deployed on port 9003"
 echo ""
-echo "Apache vhost should reverse-proxy prints.kitsuneden.net to localhost:3003:"
-echo "  ProxyPass / http://localhost:3003/"
-echo "  ProxyPassReverse / http://localhost:3003/"
+echo "Apache vhost should reverse-proxy prints.kitsuneden.net to localhost:9003:"
+echo "  ProxyPass / http://localhost:9003/"
+echo "  ProxyPassReverse / http://localhost:9003/"
 echo ""
 echo "Or serve dist/ as fully static under DocumentRoot — there's no server-side"
 echo "logic, all composition + zip generation runs in the browser."
