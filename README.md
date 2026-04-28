@@ -46,6 +46,7 @@ The same Harmony Material-swap pattern works on **any** vanilla material the eng
 - 🖼️ **Hidden-safe variants** ~ the wall-safe disguises that look like paintings already inherit our swap; explicit slots would let users theme them too
 - 🪪 **Trader and POI signage** ~ shop signs, gas station signs, billboards
 - 🪟 **Wallpaper / floor tiles** ~ much further out, but the same Material-swap pattern works in principle
+- 🔧 **Pick up + place all vanilla paintings in survival** ~ make every vanilla painting (and the future expansions above) wrench-pickup-able and re-placeable from the player's inventory, not just creative-only. Optional toggle in the pack config so a pack creator can opt into it.
 
 The slot list is data-driven (`src/types/slots.ts`), so adding a new slot to the web tool is mostly: identify the vanilla Material name + describe its UV layout. The DLL doesn't need to change.
 
