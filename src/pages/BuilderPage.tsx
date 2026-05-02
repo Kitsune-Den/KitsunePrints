@@ -1,8 +1,9 @@
 import { useMemo, useState } from 'react'
-import { SLOTS, type SlotDef, type SlotState, type PackMeta } from '../types/slots'
+import { SLOTS, DEFAULT_FRAME_PRESET_ID, DEFAULT_PACK_META, type SlotDef, type SlotState, type PackMeta } from '../types/slots'
 import { SlotCard } from '../components/SlotCard'
 import { PackMetaForm } from '../components/PackMetaForm'
 import { DownloadButton } from '../components/DownloadButton'
+import { clearStoredPack } from '../utils/persistence'
 
 interface Props {
   slots: Record<string, SlotState>
@@ -90,16 +91,47 @@ export function BuilderPage({ slots, setSlots, meta, setMeta, appVersion }: Prop
   const hiddenByFilter =
     isSlotTab && filterMode === 'unfilled' && counts[activeTab as SlotTabId].filled
 
+  function resetPack() {
+    if (!confirm('Reset every slot title, frame choice, and pack info field back to defaults?\n\nUploaded images stay where they are (they\'re only in this browser session anyway).')) return
+    clearStoredPack()
+    const fresh: Record<string, SlotState> = {}
+    for (const s of SLOTS) {
+      fresh[s.slotId] = s.kind === 'portrait' ? { framePresetId: DEFAULT_FRAME_PRESET_ID } : {}
+    }
+    setSlots(fresh)
+    setMeta(DEFAULT_PACK_META)
+  }
+
   return (
     <>
       <div className="max-w-6xl mx-auto px-6 py-10 pb-32">
-        <header className="mb-10">
-          <h1 className="text-4xl font-bold tracking-tight">🐱 KitsunePrints</h1>
-          <p className="mt-2 text-zinc-400 max-w-2xl">
-            Upload images, drop them into vanilla painting slots, download a complete modlet
-            for 7 Days to Die V2.6. Every painting in every POI gets re-skinned with your art.
-          </p>
-          <p className="mt-1 text-xs text-zinc-600">v{appVersion}</p>
+        <header className="mb-10 flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <h1 className="text-4xl font-bold tracking-tight">🐱 KitsunePrints</h1>
+            <p className="mt-2 text-zinc-400 max-w-2xl">
+              Upload images, drop them into vanilla painting slots, download a complete modlet
+              for 7 Days to Die V2.6. Every painting in every POI gets re-skinned with your art.
+            </p>
+            <p className="mt-1 text-xs text-zinc-600">
+              v{appVersion}
+              <span className="ml-3 inline-flex items-center gap-1 text-zinc-700">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                  <polyline points="17 21 17 13 7 13 7 21" />
+                  <polyline points="7 3 7 8 15 8" />
+                </svg>
+                titles, frames &amp; pack info auto-saved in this browser
+              </span>
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={resetPack}
+            className="text-xs text-zinc-500 hover:text-rose-300 border border-zinc-800 hover:border-rose-900 rounded px-3 py-1.5 transition-colors"
+            title="Clear saved titles, frame choices, and pack info ~ images are session-only and stay until you reload."
+          >
+            Reset pack
+          </button>
         </header>
 
         {/* Tab bar */}

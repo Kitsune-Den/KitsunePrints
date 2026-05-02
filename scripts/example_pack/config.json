@@ -4,24 +4,32 @@
   "version": "0.1.0",
   "description": "A custom picture pack for 7 Days to Die V2.6",
 
+  "enablePickup": true,
+  "_comment_pickup": "When true (default) ships a pickup.xml that adds CanPickup, wrench harvest, and workbench recipes to ~115 vanilla decor blocks. Set false to skip.",
+
   "_comment_slots": [
-    "Each slot key is a vanilla painting Material name.",
+    "Each slot key is a stable slot identifier (see SLOTS list in make_pack.py).",
     "Drop the matching image in ./images/ and reference its filename.",
     "Skip any slot you don't want to override ~ vanilla stays vanilla.",
     "Frame options for portraits: wood_dark | wood_light | gold_gilt | silver | matte_black | ornate_gold"
   ],
 
   "slots": {
-    "painting_ben":        { "image": "boss-cat.png", "title": "The Boss", "frame": "ornate_gold" },
-    "painting_lorien":     { "image": "orange.png",   "title": "Orange Sunbeam", "frame": "wood_dark" },
-    "painting_derek":      { "image": "tabby.png",    "title": "Tabby at Rest",  "frame": "wood_light" },
-    "painting_noah":       { "image": "pounce.png",   "title": "The Pounce",     "frame": "wood_dark" },
-    "painting_duke":       { "image": "nose.png",     "title": "Nose",           "frame": "gold_gilt" },
-    "painting_ken":        { "image": "shark.png",    "title": "Shark Kitten",   "frame": "wood_light" },
+    "painting_ben":                  { "image": "boss-cat.png",        "title": "The Boss",           "frame": "ornate_gold" },
+    "painting_lorien":               { "image": "orange.png",          "title": "Orange Sunbeam",     "frame": "wood_dark" },
+    "painting_derek":                { "image": "tabby.png",           "title": "Tabby at Rest",      "frame": "wood_light" },
+    "painting_noah":                 { "image": "pounce.png",          "title": "The Pounce",         "frame": "wood_dark" },
+    "painting_duke":                 { "image": "nose.png",            "title": "Nose",               "frame": "gold_gilt" },
+    "painting_ken":                  { "image": "shark.png",           "title": "Shark Kitten",       "frame": "wood_light" },
 
-    "paintingsAbstract01": { "image": "hearth.png",       "title": "Hearth" },
-    "paintingsAbstract02": { "image": "blood-moon.png",   "title": "Blood Moon Watcher" },
-    "paintingsAbstract03": { "image": "loads-of-loafs.png","title": "Loads of Loafs" },
-    "paintingsAbstract04": { "image": "butterfly.png",    "title": "Butterfly Watcher" }
+    "paintingsAbstract01":           { "image": "hearth.png",          "title": "Hearth" },
+    "paintingsAbstract02":           { "image": "blood-moon.png",      "title": "Blood Moon Watcher" },
+    "paintingsAbstract03":           { "image": "loads-of-loafs.png",  "title": "Loads of Loafs" },
+    "paintingsAbstract04":           { "image": "butterfly.png",       "title": "Butterfly Watcher" },
+
+    "signPosterMovieMammasJustice":  { "image": "movie-mama.png",      "title": "Mama's Justice (Cat Edition)" },
+    "signPosterMovieSexualTension":  { "image": "movie-tension.png",   "title": "Whisker Tension" },
+    "signPosterMovieLoneWolf":       { "image": "movie-lonewolf.png",  "title": "Lone Cat" },
+    "signPosterMovie2159":           { "image": "movie-2159.png",      "title": "Year 2159: Cats Rule" }
   }
 }

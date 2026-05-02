@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { SLOTS, DEFAULT_FRAME_PRESET_ID, DEFAULT_PACK_META, type SlotState, type PackMeta } from './types/slots'
 import { BuilderPage } from './pages/BuilderPage'
 import IntroPage from './pages/IntroPage'
 import TermsPage from './pages/TermsPage'
+import { loadStoredMeta, loadStoredSlots, saveMeta, saveSlots } from './utils/persistence'
 
 declare const __APP_VERSION__: string
 
@@ -12,9 +13,15 @@ function Builder() {
     for (const s of SLOTS) {
       init[s.slotId] = s.kind === 'portrait' ? { framePresetId: DEFAULT_FRAME_PRESET_ID } : {}
     }
-    return init
+    return loadStoredSlots(init)
   })
-  const [meta, setMeta] = useState<PackMeta>(DEFAULT_PACK_META)
+  const [meta, setMeta] = useState<PackMeta>(() => loadStoredMeta(DEFAULT_PACK_META))
+
+  // Auto-persist slot titles + frame choices, and pack metadata, on every change.
+  // Files aren't serializable so users still re-upload images on reload, but their
+  // slot titles, frame preset picks, and pack info survive.
+  useEffect(() => { saveSlots(slots) }, [slots])
+  useEffect(() => { saveMeta(meta) }, [meta])
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100">

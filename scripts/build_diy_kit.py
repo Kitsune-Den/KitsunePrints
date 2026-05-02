@@ -32,6 +32,9 @@ INCLUDES = [
     ("public/frames/silver.png",              "frames/silver.png"),
     ("public/frames/matte_black.png",         "frames/matte_black.png"),
     ("public/frames/ornate_gold.png",         "frames/ornate_gold.png"),
+    # Vanilla posterMovie atlas ~ used as the base layer when compositing
+    # any movie poster slot (preserves theater-strip + edge UV regions).
+    ("public/vanilla/_posterMovie_atlas.png", "atlases/posterMovie.png"),
     # Example pack
     ("scripts/example_pack/config.json",      "example_pack/config.json"),
 ]
