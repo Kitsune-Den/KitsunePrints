@@ -32,9 +32,20 @@ INCLUDES = [
     ("public/frames/silver.png",              "frames/silver.png"),
     ("public/frames/matte_black.png",         "frames/matte_black.png"),
     ("public/frames/ornate_gold.png",         "frames/ornate_gold.png"),
-    # Vanilla posterMovie atlas ~ used as the base layer when compositing
-    # any movie poster slot (preserves theater-strip + edge UV regions).
-    ("public/vanilla/_posterMovie_atlas.png", "atlases/posterMovie.png"),
+    # Vanilla atlases ~ base layers for movie-poster, canvas, and picture-
+    # frame slot compositing. Each atlas is shipped under atlases/<material>.png
+    # so make_pack.py can find them at composite time.
+    ("public/vanilla/_posterMovie_atlas.png",    "atlases/posterMovie.png"),
+    ("public/vanilla/_pictureCanvas1_atlas.png", "atlases/pictureCanvas1.png"),
+    ("public/vanilla/_pictureCanvas2_atlas.png", "atlases/pictureCanvas2.png"),
+    ("public/vanilla/_pictureFramed_atlas.png",  "atlases/pictureFramed.png"),
+    ("public/vanilla/_pictureFramed2_atlas.png", "atlases/pictureFramed2.png"),
+    ("public/vanilla/_pictureFramed3_atlas.png", "atlases/pictureFramed3.png"),
+    ("public/vanilla/_pictureFramed4_atlas.png", "atlases/pictureFramed4.png"),
+    ("public/vanilla/_pictureFramed5_atlas.png", "atlases/pictureFramed5.png"),
+    ("public/vanilla/_pictureFramed6_atlas.png", "atlases/pictureFramed6.png"),
+    ("public/vanilla/_pictureFramed7_atlas.png", "atlases/pictureFramed7.png"),
+    ("public/vanilla/_pictureFramed8_atlas.png", "atlases/pictureFramed8.png"),
     # Example pack
     ("scripts/example_pack/config.json",      "example_pack/config.json"),
 ]

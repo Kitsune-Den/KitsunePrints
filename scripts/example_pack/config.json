@@ -5,31 +5,48 @@
   "description": "A custom picture pack for 7 Days to Die V2.6",
 
   "enablePickup": true,
-  "_comment_pickup": "When true (default) ships a pickup.xml that adds CanPickup, wrench harvest, and workbench recipes to ~115 vanilla decor blocks. Set false to skip.",
+  "_comment_pickup": "true (default) ships pickup.xml that adds CanPickup=true to ~115 vanilla decor blocks. Press E in-game to pick up. Set false to skip.",
 
   "_comment_slots": [
-    "Each slot key is a stable slot identifier (see SLOTS list in make_pack.py).",
-    "Drop the matching image in ./images/ and reference its filename.",
+    "Each slot key is a stable identifier (see SLOTS list in make_pack.py).",
+    "Drop the matching image in ./images/ and reference its filename here.",
     "Skip any slot you don't want to override ~ vanilla stays vanilla.",
-    "Frame options for portraits: wood_dark | wood_light | gold_gilt | silver | matte_black | ornate_gold"
+    "",
+    "Frame options (portrait paintings + picture frames):",
+    "  wood_dark | wood_light | gold_gilt | silver | matte_black | ornate_gold",
+    "",
+    "Slot kinds (just FYI, the script picks automatically):",
+    "  portrait     1x1 backer painting, frame style applies",
+    "  abstract     2x2 + 3x2 abstract, no frame",
+    "  decor        Calendar / blueprint / target / snack poster, no frame",
+    "  moviePoster  Tile of shared posterMovie atlas (theater variants ride along)",
+    "  canvasTile   Tile of a shared canvas/picture-frame atlas. Picture frames",
+    "               use the `frame` field as a wood-tint that's shared across",
+    "               sibling letters in the same atlas (first filled wins)."
   ],
 
   "slots": {
-    "painting_ben":                  { "image": "boss-cat.png",        "title": "The Boss",           "frame": "ornate_gold" },
-    "painting_lorien":               { "image": "orange.png",          "title": "Orange Sunbeam",     "frame": "wood_dark" },
-    "painting_derek":                { "image": "tabby.png",           "title": "Tabby at Rest",      "frame": "wood_light" },
-    "painting_noah":                 { "image": "pounce.png",          "title": "The Pounce",         "frame": "wood_dark" },
-    "painting_duke":                 { "image": "nose.png",            "title": "Nose",               "frame": "gold_gilt" },
-    "painting_ken":                  { "image": "shark.png",           "title": "Shark Kitten",       "frame": "wood_light" },
+    "painting_ben":          { "image": "boss-cat.png",       "title": "The Boss",          "frame": "ornate_gold" },
+    "painting_lorien":       { "image": "orange.png",         "title": "Orange Sunbeam",    "frame": "wood_dark" },
+    "painting_derek":        { "image": "tabby.png",          "title": "Tabby at Rest",     "frame": "wood_light" },
 
-    "paintingsAbstract01":           { "image": "hearth.png",          "title": "Hearth" },
-    "paintingsAbstract02":           { "image": "blood-moon.png",      "title": "Blood Moon Watcher" },
-    "paintingsAbstract03":           { "image": "loads-of-loafs.png",  "title": "Loads of Loafs" },
-    "paintingsAbstract04":           { "image": "butterfly.png",       "title": "Butterfly Watcher" },
+    "paintingsAbstract01":   { "image": "hearth.png",         "title": "Hearth" },
+    "paintingsAbstract02":   { "image": "blood-moon.png",     "title": "Blood Moon Watcher" },
 
-    "signPosterMovieMammasJustice":  { "image": "movie-mama.png",      "title": "Mama's Justice (Cat Edition)" },
-    "signPosterMovieSexualTension":  { "image": "movie-tension.png",   "title": "Whisker Tension" },
-    "signPosterMovieLoneWolf":       { "image": "movie-lonewolf.png",  "title": "Lone Cat" },
-    "signPosterMovie2159":           { "image": "movie-2159.png",      "title": "Year 2159: Cats Rule" }
+    "signPosterMovieMammasJustice":  { "image": "movie-mama.png",     "title": "Mama's Justice (Cat Edition)" },
+    "signPosterMovieLoneWolf":       { "image": "movie-lonewolf.png", "title": "Lone Cat" },
+
+    "posterCalendarPinupWorkingStiff": { "image": "calendar.png", "title": "Cat Calendar 2034" },
+    "gunBlueprintPistol":              { "image": "blueprint.png", "title": "Cat Pistol Blueprint" },
+
+    "signSnackPosterJerky":  { "image": "thick-cat.png", "title": "Thick Nick's Cat Jerky" },
+    "signSnackPosterAtom":   { "image": "atom-cat.png",  "title": "Atom Cat Junkies" },
+
+    "pictureCanvas_01a": { "image": "canvas-sunset.png", "title": "Cat Sunset" },
+    "pictureCanvas_01b": { "image": "canvas-forest.png", "title": "Forest Kit" },
+
+    "pictureFrame_01a":  { "image": "frame-kit.png", "title": "Kitsune", "frame": "gold_gilt" },
+    "pictureFrame_01b":  { "image": "frame-fox.png", "title": "Fox" },
+    "pictureFrame_01c":  { "image": "frame-cub.png", "title": "Cub" }
   }
 }
