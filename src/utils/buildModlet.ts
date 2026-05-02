@@ -154,9 +154,9 @@ async function composeForSlot(slot: SlotDef, state: SlotState): Promise<Blob> {
   throw new Error(`Slot kind ${slot.kind} should be handled in atlas batch`)
 }
 
-type RecipeKind = 'portrait' | 'abstract2x2' | 'abstract3x2' | 'moviePoster'
+export type RecipeKind = 'portrait' | 'abstract2x2' | 'abstract3x2' | 'moviePoster'
 
-function pickRecipeKind(slot: SlotDef, vanillaBlock: string): RecipeKind {
+export function pickRecipeKind(slot: SlotDef, vanillaBlock: string): RecipeKind {
   if (slot.kind === 'portrait') return 'portrait'
   if (slot.kind === 'moviePoster') return 'moviePoster'
   if (slot.kind === 'decor' || slot.kind === 'canvasTile') return 'moviePoster' // small print cost
@@ -166,14 +166,14 @@ function pickRecipeKind(slot: SlotDef, vanillaBlock: string): RecipeKind {
 
 // ---- Sanitizers ----------------------------------------------------------
 
-function sanitizeIdentifier(s: string): string {
+export function sanitizeIdentifier(s: string): string {
   // 7DTD's mod loader requires <Name> + block names to match ^[0-9a-zA-Z_\-]+$.
   return s.replace(/[^A-Za-z0-9_\-]/g, '_').replace(/_+/g, '_').replace(/^_+|_+$/g, '')
 }
 
 // ---- Renderers -----------------------------------------------------------
 
-function renderModInfo(meta: PackMeta): string {
+export function renderModInfo(meta: PackMeta): string {
   // <Name> must be a sanitized identifier; <DisplayName> can keep spaces.
   const sanitizedName = sanitizeIdentifier(meta.name) || 'KitsunePicturePack'
   return `<?xml version="1.0" encoding="UTF-8"?>
@@ -187,7 +187,7 @@ function renderModInfo(meta: PackMeta): string {
 `
 }
 
-function renderBlockEntry(
+export function renderBlockEntry(
   blockName: string,
   vanillaBlock: string,
   pickupable: boolean,
@@ -205,7 +205,7 @@ function renderBlockEntry(
         </block>`
 }
 
-function renderPickupXml(): string {
+export function renderPickupXml(): string {
   // One <append> per vanilla block: just CanPickup="true" so the block can
   // be picked up with a single E press, no tool, no recipe. Wrench-harvest
   // and workbench recipes were tried in v0.5.x but the Harvest drop tag
@@ -232,7 +232,7 @@ ${blockRows}
 `
 }
 
-function renderBlocksXml(rows: string[]): string {
+export function renderBlocksXml(rows: string[]): string {
   return `<?xml version="1.0" encoding="UTF-8" ?>
 <configs>
 
@@ -251,7 +251,7 @@ ${rows.join('\n\n')}
 `
 }
 
-function renderRecipeEntry(blockName: string, kind: RecipeKind): string {
+export function renderRecipeEntry(blockName: string, kind: RecipeKind): string {
   // Costs follow vanilla destroy-drops + multi-block area:
   //  - portrait (1×1):  paper 2 + wood 6 + iron 1
   //  - abstract 2×2:    paper 8 + wood 4 + iron 1
@@ -270,7 +270,7 @@ function renderRecipeEntry(blockName: string, kind: RecipeKind): string {
         </recipe>`
 }
 
-function renderRecipesXml(rows: string[]): string {
+export function renderRecipesXml(rows: string[]): string {
   return `<?xml version="1.0" encoding="UTF-8" ?>
 <configs>
 
@@ -284,7 +284,7 @@ ${rows.join('\n\n')}
 `
 }
 
-function renderLocalizationRow(blockName: string, displayName: string): string {
+export function renderLocalizationRow(blockName: string, displayName: string): string {
   // V2.6 columns: Key,File,Type,UsedInMainMenu,NoTranslate,english,Context,
   //               german,spanish,french,italian,japanese,koreana,polish,
   //               brazilian,russian,turkish,schinese,tchinese
@@ -293,12 +293,12 @@ function renderLocalizationRow(blockName: string, displayName: string): string {
   return `${blockName},blocks,Block,,,${safe},,,,,,,,,,,,,`
 }
 
-function renderLocalization(rows: string[]): string {
+export function renderLocalization(rows: string[]): string {
   const header = 'Key,File,Type,UsedInMainMenu,NoTranslate,english,Context / Alternate Text,german,spanish,french,italian,japanese,koreana,polish,brazilian,russian,turkish,schinese,tchinese'
   return `${header}\n${rows.join('\n')}\n`
 }
 
-function escapeXml(s: string): string {
+export function escapeXml(s: string): string {
   return s
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
