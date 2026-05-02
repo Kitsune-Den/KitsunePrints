@@ -10,6 +10,41 @@ interface Props {
   onChange: (next: SlotState) => void
 }
 
+/**
+ * Pick a thumb sizing class that matches the slot's actual aspect ratio.
+ * Portrait slots get a 3:4 thumb; abstracts get 1:1; atlas-tile slots derive
+ * from atlasTile dimensions and snap to one of three buckets:
+ *   - aspect < 0.85   -> 3:4 portrait (w-9 h-12)
+ *   - 0.85..1.2       -> 1:1 square   (w-12 h-12)
+ *   - > 1.2           -> 16:9 wide    (w-16 h-9)
+ */
+function pickThumbClass(slot: SlotDef): string {
+  if (slot.kind === 'portrait' || slot.kind === 'moviePoster') return 'w-9 h-12'
+  if (slot.kind === 'decor') return 'w-10 h-12 object-contain'
+  if (slot.kind === 'canvasTile' && slot.atlasTile) {
+    const ratio = slot.atlasTile.w / slot.atlasTile.h
+    if (ratio < 0.85) return 'w-9 h-12'
+    if (ratio < 1.2) return 'w-12 h-12'
+    return 'w-16 h-9'
+  }
+  return 'w-12 h-12'
+}
+
+/**
+ * Pick the upload preview drop-zone aspect class. Mirrors pickThumbClass
+ * logic so the upload area matches the slot's actual content shape.
+ */
+function pickPreviewAspectClass(slot: SlotDef): string {
+  if (slot.kind === 'portrait' || slot.kind === 'moviePoster') return 'aspect-[3/4]'
+  if (slot.kind === 'canvasTile' && slot.atlasTile) {
+    const ratio = slot.atlasTile.w / slot.atlasTile.h
+    if (ratio < 0.85) return 'aspect-[3/4]'
+    if (ratio < 1.2) return 'aspect-square'
+    return 'aspect-[16/9]'
+  }
+  return 'aspect-square'
+}
+
 export function SlotCard({ slot, state, onChange }: Props) {
   const fileRef = useRef<HTMLInputElement>(null)
   // When non-null, we're showing the crop dialog for this URL.
@@ -78,12 +113,7 @@ export function SlotCard({ slot, state, onChange }: Props) {
             src={`/vanilla/${slot.slotId}.jpg`}
             alt={`Vanilla ${slot.label}`}
             loading="lazy"
-            className={`${
-              slot.kind === 'portrait' || slot.kind === 'moviePoster' ? 'w-9 h-12' :
-              slot.kind === 'canvasTile' ? 'w-14 h-9' :
-              slot.kind === 'decor' ? 'w-10 h-12 object-contain' :
-              'w-12 h-12'
-            } object-cover rounded border border-zinc-700/60 flex-shrink-0 bg-zinc-950/60`}
+            className={`${pickThumbClass(slot)} object-cover rounded border border-zinc-700/60 flex-shrink-0 bg-zinc-950/60`}
             title={`You'll be replacing this in-game (${slot.slotId})`}
           />
           <div className="flex-1 min-w-0">
@@ -111,11 +141,7 @@ export function SlotCard({ slot, state, onChange }: Props) {
           onDragOver={(e) => e.preventDefault()}
           onDrop={handleDrop}
           onClick={() => fileRef.current?.click()}
-          className={`${
-            slot.kind === 'portrait' || slot.kind === 'moviePoster' ? 'aspect-[3/4]' :
-            slot.kind === 'canvasTile' && slot.atlasTile ? 'aspect-[16/9]' :
-            'aspect-square'
-          } bg-zinc-950 border-2 border-dashed border-zinc-700 rounded cursor-pointer flex items-center justify-center overflow-hidden hover:border-zinc-500 transition-colors`}
+          className={`${pickPreviewAspectClass(slot)} bg-zinc-950 border-2 border-dashed border-zinc-700 rounded cursor-pointer flex items-center justify-center overflow-hidden hover:border-zinc-500 transition-colors`}
         >
           {state.preview ? (
             <img src={state.preview} alt={slot.label} className="w-full h-full object-cover" />

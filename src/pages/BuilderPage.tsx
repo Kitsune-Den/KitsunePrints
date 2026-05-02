@@ -63,7 +63,7 @@ const SLOT_TABS: SlotTabDef[] = [
     blurb:
       "23 individual framed pictures (one per pictureFrame_01<letter> block) across 8 shared atlases. Each frame samples its own tile, so each can take its own image. Hidden-safe picture-frame disguises re-skin automatically since they extend their non-safe twin.",
     filter: (s) => s.kind === 'canvasTile' && s.slotId.startsWith('pictureFrame_01'),
-    gridCols: 'grid-cols-2 md:grid-cols-4 lg:grid-cols-6',
+    gridCols: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3',
   },
   {
     id: 'canvases',
