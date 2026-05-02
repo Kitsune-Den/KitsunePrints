@@ -15,8 +15,15 @@ export function SlotCard({ slot, state, onChange }: Props) {
   // When non-null, we're showing the crop dialog for this URL.
   const [pendingCropUrl, setPendingCropUrl] = useState<string | null>(null)
 
-  // Aspect for the crop frame: portraits go on a 3:4 canvas zone, abstracts square.
-  const aspect = slot.kind === 'portrait' ? 3 / 4 : 1
+  // Aspect for the crop frame:
+  //   - portraits: 3:4 canvas zone
+  //   - abstracts: square (DLL resets UV scale to fill canvas)
+  //   - moviePoster: derived from the atlas tile (each tile is ~3:4)
+  const aspect =
+    slot.kind === 'portrait' ? 3 / 4
+    : slot.kind === 'moviePoster' && slot.atlasTile
+      ? slot.atlasTile.w / slot.atlasTile.h
+    : 1
 
   function handleFile(file: File) {
     // Stash the original as an object URL and open the cropper.
@@ -68,16 +75,16 @@ export function SlotCard({ slot, state, onChange }: Props) {
       <div className="border border-zinc-800 rounded-lg p-4 bg-zinc-900/40">
         <div className="flex items-center gap-3 mb-3">
           <img
-            src={`/vanilla/${slot.materialName}.jpg`}
+            src={`/vanilla/${slot.slotId}.jpg`}
             alt={`Vanilla ${slot.label}`}
             loading="lazy"
-            className={`${slot.kind === 'portrait' ? 'w-9 h-12' : 'w-12 h-12'} object-cover rounded border border-zinc-700/60 flex-shrink-0`}
-            title={`You'll be replacing this in-game painting (${slot.materialName})`}
+            className={`${slot.kind === 'portrait' || slot.kind === 'moviePoster' ? 'w-9 h-12' : 'w-12 h-12'} object-cover rounded border border-zinc-700/60 flex-shrink-0`}
+            title={`You'll be replacing this in-game (${slot.slotId})`}
           />
           <div className="flex-1 min-w-0">
             <h3 className="font-medium truncate">{slot.label}</h3>
             <div className="text-xs text-zinc-500 truncate">
-              replacing <code className="text-zinc-400">{slot.materialName}</code>
+              replacing <code className="text-zinc-400">{slot.slotId}</code>
             </div>
           </div>
         </div>
@@ -99,7 +106,7 @@ export function SlotCard({ slot, state, onChange }: Props) {
           onDragOver={(e) => e.preventDefault()}
           onDrop={handleDrop}
           onClick={() => fileRef.current?.click()}
-          className={`${slot.kind === 'portrait' ? 'aspect-[3/4]' : 'aspect-square'} bg-zinc-950 border-2 border-dashed border-zinc-700 rounded cursor-pointer flex items-center justify-center overflow-hidden hover:border-zinc-500 transition-colors`}
+          className={`${slot.kind === 'portrait' || slot.kind === 'moviePoster' ? 'aspect-[3/4]' : 'aspect-square'} bg-zinc-950 border-2 border-dashed border-zinc-700 rounded cursor-pointer flex items-center justify-center overflow-hidden hover:border-zinc-500 transition-colors`}
         >
           {state.preview ? (
             <img src={state.preview} alt={slot.label} className="w-full h-full object-cover" />

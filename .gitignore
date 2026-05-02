@@ -28,3 +28,6 @@ npm-debug.log*
 *.njsproj
 *.sln
 *.sw?
+
+# One-off debug artifacts produced by extraction scripts
+scripts/_debug_*

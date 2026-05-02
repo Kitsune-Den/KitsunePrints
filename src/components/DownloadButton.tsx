@@ -11,7 +11,7 @@ export function DownloadButton({ slots, meta }: Props) {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const filledCount = SLOTS.filter(s => slots[s.materialName]?.file).length
+  const filledCount = SLOTS.filter(s => slots[s.slotId]?.file).length
 
   async function handleDownload() {
     setBusy(true)

@@ -1,18 +1,41 @@
-// The 10 vanilla painting slots a KitsunePrints pack can replace.
-// Each slot is keyed by the vanilla material name ~ that's what the
-// runtime DLL looks up when it walks Resources.FindObjectsOfTypeAll<Material>()
-// at World.LoadWorld postfix.
+// The vanilla painting + poster slots a KitsunePrints pack can replace.
+// Each slot is keyed by `slotId` (unique per slot card in the UI).
+//
+// `materialName` is what the runtime DLL looks up when it walks
+// Resources.FindObjectsOfTypeAll<Material>() at World.LoadWorld postfix.
+// For atlas slots (movie posters), multiple slot defs share one materialName
+// since each slot writes to a different tile of the same atlas.
 
-export type SlotKind = 'portrait' | 'abstract'
+export type SlotKind = 'portrait' | 'abstract' | 'moviePoster'
+
+/** Pixel rectangle inside an atlas texture. (x,y) is top-left in PIL coords. */
+export interface AtlasTile {
+  x: number
+  y: number
+  w: number
+  h: number
+}
 
 export interface SlotDef {
-  /** Vanilla Material.m_Name in 7DTD V2.6 ~ the key in picture_pack.json. */
-  materialName: string
-  /** Friendly label for the UI. */
+  /** Unique slot identifier ~ used as the React key and the state Record key. */
+  slotId: string
+  /** Friendly UI label. */
   label: string
-  /** Vanilla block this slot maps to (for context, not used by the DLL). */
-  vanillaBlock: string
+  /**
+   * Vanilla Material.m_Name in 7DTD V2.6 ~ the key in picture_pack.json.
+   * Multiple slots may share one materialName (atlas case): all of them
+   * composite into a single output texture for that material.
+   */
+  materialName: string
+  /** Vanilla block names re-skinned by this slot. Used to extend in blocks.xml. */
+  vanillaBlocks: string[]
   kind: SlotKind
+  /**
+   * For atlas slots only. The pixel rectangle inside the shared atlas
+   * (1024×1024 for posterMovie) that this slot writes to. Composer copies
+   * the vanilla atlas as the base and paints this slot's image into the tile.
+   */
+  atlasTile?: AtlasTile
   /**
    * For 'portrait' slots, the texture has a baked-in UV layout: left 25% wraps
    * the 3D wood frame mesh, right 75% is the canvas. Composer paints the
@@ -24,19 +47,62 @@ export interface SlotDef {
    */
 }
 
+/** Pixel layout of the vanilla `posterMovie` 1024×1024 atlas, derived from
+ *  reading each prefab's mesh UVs (see scripts/read_movie_poster_uvs.py). */
+export const POSTER_MOVIE_ATLAS_SIZE = 1024
+export const POSTER_MOVIE_ATLAS_PATH = '/vanilla/_posterMovie_atlas.png'
+
 export const SLOTS: SlotDef[] = [
   // 1×1 backer portraits ~ left 25% wood / right 75% canvas
-  { materialName: 'painting_ben',        label: 'Backer Portrait 1', vanillaBlock: 'paintingBen',    kind: 'portrait' },
-  { materialName: 'painting_lorien',     label: 'Backer Portrait 2', vanillaBlock: 'paintingLorien', kind: 'portrait' },
-  { materialName: 'painting_derek',      label: 'Backer Portrait 3', vanillaBlock: 'paintingDerek',  kind: 'portrait' },
-  { materialName: 'painting_noah',       label: 'Backer Portrait 4', vanillaBlock: 'paintingNoah',   kind: 'portrait' },
-  { materialName: 'painting_duke',       label: 'Backer Portrait 5', vanillaBlock: 'paintingDuke',   kind: 'portrait' },
-  { materialName: 'painting_ken',        label: 'Backer Portrait 6', vanillaBlock: 'paintingKen',    kind: 'portrait' },
-  // Abstracts ~ 2×2 + 3×2 share one Material per design
-  { materialName: 'paintingsAbstract01', label: 'Abstract 1 (2×2 + 3×2)', vanillaBlock: 'paintingAbstract01', kind: 'abstract' },
-  { materialName: 'paintingsAbstract02', label: 'Abstract 2 (2×2 + 3×2)', vanillaBlock: 'paintingAbstract02', kind: 'abstract' },
-  { materialName: 'paintingsAbstract03', label: 'Abstract 3 (2×2 + 3×2)', vanillaBlock: 'paintingAbstract03', kind: 'abstract' },
-  { materialName: 'paintingsAbstract04', label: 'Abstract 4 (2×2 + 3×2)', vanillaBlock: 'paintingAbstract04', kind: 'abstract' },
+  { slotId: 'painting_ben',        materialName: 'painting_ben',        label: 'Backer Portrait 1', vanillaBlocks: ['paintingBen'],    kind: 'portrait' },
+  { slotId: 'painting_lorien',     materialName: 'painting_lorien',     label: 'Backer Portrait 2', vanillaBlocks: ['paintingLorien'], kind: 'portrait' },
+  { slotId: 'painting_derek',      materialName: 'painting_derek',      label: 'Backer Portrait 3', vanillaBlocks: ['paintingDerek'],  kind: 'portrait' },
+  { slotId: 'painting_noah',       materialName: 'painting_noah',       label: 'Backer Portrait 4', vanillaBlocks: ['paintingNoah'],   kind: 'portrait' },
+  { slotId: 'painting_duke',       materialName: 'painting_duke',       label: 'Backer Portrait 5', vanillaBlocks: ['paintingDuke'],   kind: 'portrait' },
+  { slotId: 'painting_ken',        materialName: 'painting_ken',        label: 'Backer Portrait 6', vanillaBlocks: ['paintingKen'],    kind: 'portrait' },
+
+  // Abstracts ~ shared Material drives both the 2×2 and 3×2 vanilla blocks per design.
+  { slotId: 'paintingsAbstract01', materialName: 'paintingsAbstract01', label: 'Abstract 1 (2×2 + 3×2)', vanillaBlocks: ['paintingAbstract01_2x2', 'paintingAbstract01_3x2'], kind: 'abstract' },
+  { slotId: 'paintingsAbstract02', materialName: 'paintingsAbstract02', label: 'Abstract 2 (2×2 + 3×2)', vanillaBlocks: ['paintingAbstract02_2x2', 'paintingAbstract02_3x2'], kind: 'abstract' },
+  { slotId: 'paintingsAbstract03', materialName: 'paintingsAbstract03', label: 'Abstract 3 (2×2 + 3×2)', vanillaBlocks: ['paintingAbstract03_2x2', 'paintingAbstract03_3x2'], kind: 'abstract' },
+  { slotId: 'paintingsAbstract04', materialName: 'paintingsAbstract04', label: 'Abstract 4 (2×2 + 3×2)', vanillaBlocks: ['paintingAbstract04_2x2', 'paintingAbstract04_3x2'], kind: 'abstract' },
+
+  // Movie posters ~ all 4 share the `posterMovie` 1024×1024 atlas. Each slot
+  // writes to its own tile. The matching theater variant block samples the
+  // same tile via its mesh UVs, so the user's image appears on both blocks
+  // automatically.
+  {
+    slotId: 'signPosterMovieMammasJustice',
+    materialName: 'posterMovie',
+    label: "Movie Poster ~ Mama's Justice",
+    vanillaBlocks: ['signPosterMovieMammasJustice', 'signPosterMovieTheaterMammasJustice'],
+    kind: 'moviePoster',
+    atlasTile: { x: 2, y: 25, w: 347, h: 483 },
+  },
+  {
+    slotId: 'signPosterMovieSexualTension',
+    materialName: 'posterMovie',
+    label: 'Movie Poster ~ Sexual Tension',
+    vanillaBlocks: ['signPosterMovieSexualTension', 'signPosterMovieTheaterSexualTension'],
+    kind: 'moviePoster',
+    atlasTile: { x: 350, y: 24, w: 346, h: 484 },
+  },
+  {
+    slotId: 'signPosterMovieLoneWolf',
+    materialName: 'posterMovie',
+    label: 'Movie Poster ~ Lone Wolf',
+    vanillaBlocks: ['signPosterMovieLoneWolf', 'signPosterMovieTheaterLoneWolf'],
+    kind: 'moviePoster',
+    atlasTile: { x: 2, y: 517, w: 346, h: 483 },
+  },
+  {
+    slotId: 'signPosterMovie2159',
+    materialName: 'posterMovie',
+    label: 'Movie Poster ~ 2159',
+    vanillaBlocks: ['signPosterMovie2159', 'signPosterMovieTheater2159'],
+    kind: 'moviePoster',
+    atlasTile: { x: 351, y: 518, w: 345, h: 482 },
+  },
 ]
 
 export interface SlotState {

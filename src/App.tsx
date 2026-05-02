@@ -10,7 +10,7 @@ function Builder() {
   const [slots, setSlots] = useState<Record<string, SlotState>>(() => {
     const init: Record<string, SlotState> = {}
     for (const s of SLOTS) {
-      init[s.materialName] = s.kind === 'portrait' ? { framePresetId: DEFAULT_FRAME_PRESET_ID } : {}
+      init[s.slotId] = s.kind === 'portrait' ? { framePresetId: DEFAULT_FRAME_PRESET_ID } : {}
     }
     return init
   })

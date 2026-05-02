@@ -15,7 +15,13 @@
 //
 // All output is RGBA PNG.
 
-import { FRAME_PRESETS, DEFAULT_FRAME_PRESET_ID } from '../types/slots'
+import {
+  FRAME_PRESETS,
+  DEFAULT_FRAME_PRESET_ID,
+  POSTER_MOVIE_ATLAS_PATH,
+  POSTER_MOVIE_ATLAS_SIZE,
+  type AtlasTile,
+} from '../types/slots'
 
 const PORTRAIT_W = 1024
 const PORTRAIT_H = 1024
@@ -83,7 +89,38 @@ export async function composeAbstract(file: File): Promise<Blob> {
   return canvasToBlob(canvas)
 }
 
-export async function composeIcon(file: File, kind: 'portrait' | 'abstract'): Promise<Blob> {
+/**
+ * Compose the `posterMovie` 1024×1024 atlas. Loads the vanilla atlas as the
+ * base layer (preserves theater-strip / edge regions referenced by mesh UVs
+ * we don't replace) and pastes each filled slot's user image into its tile.
+ */
+export async function composeAtlas(
+  entries: { tile: AtlasTile; file: File }[],
+): Promise<Blob> {
+  const atlas = await loadImageFromUrl(POSTER_MOVIE_ATLAS_PATH)
+  const canvas = document.createElement('canvas')
+  canvas.width = POSTER_MOVIE_ATLAS_SIZE
+  canvas.height = POSTER_MOVIE_ATLAS_SIZE
+  const ctx = canvas.getContext('2d')
+  if (!ctx) throw new Error('Canvas 2d context unavailable')
+
+  // Draw vanilla atlas as the base.
+  ctx.drawImage(atlas, 0, 0, POSTER_MOVIE_ATLAS_SIZE, POSTER_MOVIE_ATLAS_SIZE)
+
+  // Paint each user image into its assigned tile, cover-fitted.
+  for (const { tile, file } of entries) {
+    const img = await loadImage(file)
+    drawCover(ctx, img, tile.x, tile.y, tile.w, tile.h)
+  }
+
+  return canvasToBlob(canvas)
+}
+
+export async function composeIcon(
+  file: File,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _kind: 'portrait' | 'abstract' | 'moviePoster',
+): Promise<Blob> {
   const img = await loadImage(file)
   const canvas = document.createElement('canvas')
   canvas.width = ICON_SIZE
@@ -91,14 +128,9 @@ export async function composeIcon(file: File, kind: 'portrait' | 'abstract'): Pr
   const ctx = canvas.getContext('2d')
   if (!ctx) throw new Error('Canvas 2d context unavailable')
 
-  if (kind === 'portrait') {
-    // For portrait icons, crop from the canvas zone of the user image (don't
-    // include any of the frame paint). User uploaded the raw cat ~ crop the
-    // center square of THAT, not of the composed left-25%-frame texture.
-    drawCover(ctx, img, 0, 0, ICON_SIZE, ICON_SIZE)
-  } else {
-    drawCover(ctx, img, 0, 0, ICON_SIZE, ICON_SIZE)
-  }
+  // Same cover-fit for every kind ~ the icon is just the source image
+  // cropped to a square. Frames/atlases don't apply at icon scale.
+  drawCover(ctx, img, 0, 0, ICON_SIZE, ICON_SIZE)
   return canvasToBlob(canvas)
 }
 

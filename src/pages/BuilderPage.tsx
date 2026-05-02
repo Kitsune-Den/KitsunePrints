@@ -12,7 +12,7 @@ interface Props {
   appVersion: string
 }
 
-type SlotTabId = 'portraits' | 'abstracts'
+type SlotTabId = 'portraits' | 'abstracts' | 'movie-posters'
 type TabId = SlotTabId | 'pack-info'
 
 interface SlotTabDef {
@@ -40,6 +40,14 @@ const SLOT_TABS: SlotTabDef[] = [
     filter: (s) => s.kind === 'abstract',
     gridCols: 'grid-cols-1 md:grid-cols-2',
   },
+  {
+    id: 'movie-posters',
+    label: 'Movie Posters',
+    blurb:
+      'Each movie poster slot writes to a tile of the shared posterMovie atlas. Crops at ~3:4 portrait. Replacing one also re-skins its theater-wall variant automatically.',
+    filter: (s) => s.kind === 'moviePoster',
+    gridCols: 'grid-cols-2 md:grid-cols-4',
+  },
 ]
 
 type FilterMode = 'all' | 'unfilled'
@@ -53,19 +61,20 @@ export function BuilderPage({ slots, setSlots, meta, setMeta, appVersion }: Prop
     const result: Record<SlotTabId, { filled: number; total: number }> = {
       portraits: { filled: 0, total: 0 },
       abstracts: { filled: 0, total: 0 },
+      'movie-posters': { filled: 0, total: 0 },
     }
     for (const tab of SLOT_TABS) {
       const tabSlots = SLOTS.filter(tab.filter)
       result[tab.id] = {
         total: tabSlots.length,
-        filled: tabSlots.filter((s) => slots[s.materialName]?.file).length,
+        filled: tabSlots.filter((s) => slots[s.slotId]?.file).length,
       }
     }
     return result
   }, [slots])
 
-  const totalFilled = counts.portraits.filled + counts.abstracts.filled
-  const totalSlots = counts.portraits.total + counts.abstracts.total
+  const totalFilled = counts.portraits.filled + counts.abstracts.filled + counts['movie-posters'].filled
+  const totalSlots = counts.portraits.total + counts.abstracts.total + counts['movie-posters'].total
 
   // Slots visible in the active tab, after the filter pill.
   const visibleSlots = useMemo(() => {
@@ -73,7 +82,7 @@ export function BuilderPage({ slots, setSlots, meta, setMeta, appVersion }: Prop
     if (!tab) return []
     const all = SLOTS.filter(tab.filter)
     if (filterMode === 'all') return all
-    return all.filter((s) => !slots[s.materialName]?.file)
+    return all.filter((s) => !slots[s.slotId]?.file)
   }, [activeTab, filterMode, slots])
 
   const activeSlotTab = SLOT_TABS.find((t) => t.id === activeTab)
@@ -180,11 +189,11 @@ export function BuilderPage({ slots, setSlots, meta, setMeta, appVersion }: Prop
               <div className={`grid gap-4 ${activeSlotTab.gridCols}`}>
                 {visibleSlots.map((slot) => (
                   <SlotCard
-                    key={slot.materialName}
+                    key={slot.slotId}
                     slot={slot}
-                    state={slots[slot.materialName]}
+                    state={slots[slot.slotId]}
                     onChange={(next) =>
-                      setSlots((prev) => ({ ...prev, [slot.materialName]: next }))
+                      setSlots((prev) => ({ ...prev, [slot.slotId]: next }))
                     }
                   />
                 ))}

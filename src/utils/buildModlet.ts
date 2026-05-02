@@ -1,6 +1,17 @@
 import JSZip from 'jszip'
-import { SLOTS, DEFAULT_FRAME_PRESET_ID, type SlotState, type PackMeta, type SlotDef } from '../types/slots'
-import { composePortrait, composeAbstract, composeIcon } from './composer'
+import {
+  SLOTS,
+  DEFAULT_FRAME_PRESET_ID,
+  type SlotState,
+  type PackMeta,
+  type SlotDef,
+} from '../types/slots'
+import {
+  composePortrait,
+  composeAbstract,
+  composeAtlas,
+  composeIcon,
+} from './composer'
 
 /**
  * Builds the modlet zip. Layout:
@@ -13,7 +24,7 @@ import { composePortrait, composeAbstract, composeIcon } from './composer'
  *       recipes.xml                     (workbench crafting per block)
  *       Localization.txt                ("Print: <title>" display names)
  *     Resources/
- *       Textures/                       (composed textures, one per filled slot)
+ *       Textures/                       (composed textures, one per filled slot OR per atlas)
  *     UIAtlases/
  *       ItemIconAtlas/                  (160x160 icons, named after the new block IDs)
  *
@@ -39,53 +50,64 @@ export async function buildModlet(
 
   root.file('ModInfo.xml', renderModInfo(meta))
 
-  // For each filled slot we generate:
-  //  - composed texture in Resources/Textures/<materialName>.png
-  //  - icon in UIAtlases/ItemIconAtlas/<blockName>.png
-  //  - blocks.xml entry
-  //  - recipes.xml entry
-  //  - Localization.txt row
-  //  - picture_pack.json entry
   const pictureMap: Record<string, string> = {}
   const blocksRows: string[] = []
   const recipesRows: string[] = []
   const locRows: string[] = []
+  const writtenTextures = new Set<string>()
+
+  // Group movie poster slots by material so we composite the atlas once.
+  const filledMoviePosters: { slot: SlotDef; state: SlotState }[] = []
 
   for (const slot of SLOTS) {
-    const state = slots[slot.materialName]
+    const state = slots[slot.slotId]
     if (!state?.file) continue
 
-    const filename = `${slot.materialName}.png`
-    const composed = await composeForSlot(slot, state)
-    root.file(`Resources/Textures/${filename}`, composed)
-    pictureMap[slot.materialName] = filename
+    if (slot.kind === 'moviePoster') {
+      filledMoviePosters.push({ slot, state })
+    } else {
+      // Per-slot texture: one PNG per slot (portraits + abstracts).
+      const filename = `${slot.materialName}.png`
+      if (!writtenTextures.has(filename)) {
+        const composed = await composeForSlot(slot, state)
+        root.file(`Resources/Textures/${filename}`, composed)
+        writtenTextures.add(filename)
+      }
+      pictureMap[slot.materialName] = filename
+    }
 
-    const title = (state.title?.trim() || slot.label)
+    const title = state.title?.trim() || slot.label
     const displayName = `Print: ${title}`
     const iconBlob = await composeIcon(state.file, slot.kind)
 
-    if (slot.kind === 'portrait') {
-      // 1×1 backer portraits: vanilla ships a single block (e.g. paintingBen)
-      // ~ one new block extending it.
-      const blockName = `kp_${packId}_${slot.materialName}`
+    // Generate a kp_* block per vanilla block this slot re-skins.
+    for (const vanillaBlock of slot.vanillaBlocks) {
+      const blockName = `kp_${packId}_${vanillaBlock}`
       root.file(`UIAtlases/ItemIconAtlas/${blockName}.png`, iconBlob)
-      blocksRows.push(renderBlockEntry(blockName, slot.vanillaBlock))
-      recipesRows.push(renderRecipeEntry(blockName, 'portrait'))
-      locRows.push(renderLocalizationRow(blockName, displayName))
-    } else {
-      // Abstract paintings: vanilla ships TWO sizes per design
-      // (paintingAbstract01_2x2 + paintingAbstract01_3x2). There is NO plain
-      // paintingAbstract01 block ~ extending it would fail and cascade-break
-      // every other vanilla XML loader. Generate one extending block per size.
-      for (const size of ['2x2', '3x2'] as const) {
-        const vanillaSized = `${slot.vanillaBlock}_${size}`
-        const blockName = `kp_${packId}_${slot.materialName}_${size}`
-        root.file(`UIAtlases/ItemIconAtlas/${blockName}.png`, iconBlob)
-        blocksRows.push(renderBlockEntry(blockName, vanillaSized))
-        recipesRows.push(renderRecipeEntry(blockName, size === '2x2' ? 'abstract2x2' : 'abstract3x2'))
-        locRows.push(renderLocalizationRow(blockName, `${displayName} ${size}`))
-      }
+      blocksRows.push(renderBlockEntry(blockName, vanillaBlock))
+
+      // Recipe + display label depend on slot kind / block size suffix.
+      const recipeKind = pickRecipeKind(slot, vanillaBlock)
+      recipesRows.push(renderRecipeEntry(blockName, recipeKind))
+
+      // For abstract sized variants, suffix the display name; otherwise plain.
+      const sizeSuffix =
+        vanillaBlock.endsWith('_2x2') ? ' 2×2' :
+        vanillaBlock.endsWith('_3x2') ? ' 3×2' :
+        vanillaBlock.toLowerCase().includes('theater') ? ' (Theater)' : ''
+      locRows.push(renderLocalizationRow(blockName, `${displayName}${sizeSuffix}`))
     }
+  }
+
+  // Movie poster atlas ~ composite once for all filled slots.
+  if (filledMoviePosters.length > 0) {
+    const atlasBlob = await composeAtlas(filledMoviePosters.map(p => ({
+      tile: p.slot.atlasTile!,
+      file: p.state.file!,
+    })))
+    const filename = 'posterMovie.png'
+    root.file(`Resources/Textures/${filename}`, atlasBlob)
+    pictureMap['posterMovie'] = filename
   }
 
   // Config files
@@ -98,11 +120,24 @@ export async function buildModlet(
 }
 
 async function composeForSlot(slot: SlotDef, state: SlotState): Promise<Blob> {
-  if (!state.file) throw new Error(`No file for slot ${slot.materialName}`)
+  if (!state.file) throw new Error(`No file for slot ${slot.slotId}`)
   if (slot.kind === 'portrait') {
     return composePortrait(state.file, state.framePresetId || DEFAULT_FRAME_PRESET_ID)
   }
-  return composeAbstract(state.file)
+  if (slot.kind === 'abstract') {
+    return composeAbstract(state.file)
+  }
+  // Movie posters are handled in batch by composeAtlas, not here.
+  throw new Error(`Slot kind ${slot.kind} should be handled in atlas batch`)
+}
+
+type RecipeKind = 'portrait' | 'abstract2x2' | 'abstract3x2' | 'moviePoster'
+
+function pickRecipeKind(slot: SlotDef, vanillaBlock: string): RecipeKind {
+  if (slot.kind === 'portrait') return 'portrait'
+  if (slot.kind === 'moviePoster') return 'moviePoster'
+  // abstract: distinguish by size suffix on the vanilla block name
+  return vanillaBlock.endsWith('_2x2') ? 'abstract2x2' : 'abstract3x2'
 }
 
 // ---- Sanitizers ----------------------------------------------------------
@@ -140,7 +175,7 @@ function renderBlocksXml(rows: string[]): string {
 <configs>
 
     <!-- Auto-generated by KitsunePrints web tool. Each block extends a
-         vanilla painting whose Material gets re-skinned at runtime by
+         vanilla painting/poster whose Material gets re-skinned at runtime by
          KitsunePrints.dll. The new blocks are searchable in creative menu
          under "Print" or the per-slot title. -->
 
@@ -154,18 +189,20 @@ ${rows.join('\n\n')}
 `
 }
 
-type RecipeKind = 'portrait' | 'abstract2x2' | 'abstract3x2'
-
 function renderRecipeEntry(blockName: string, kind: RecipeKind): string {
   // Costs follow vanilla destroy-drops + multi-block area:
-  //  - portrait (1×1): paper 2 + wood 6 + iron 1
-  //  - abstract 2×2:   paper 8 + wood 4 + iron 1
-  //  - abstract 3×2:   paper 12 + wood 6 + iron 2 (1.5× the 2×2 cost)
-  const ingredients = kind === 'portrait'
-    ? '<ingredient name="resourcePaper" count="2"/>\n            <ingredient name="resourceWood" count="6"/>\n            <ingredient name="resourceForgedIron" count="1"/>'
-    : kind === 'abstract2x2'
-      ? '<ingredient name="resourcePaper" count="8"/>\n            <ingredient name="resourceWood" count="4"/>\n            <ingredient name="resourceForgedIron" count="1"/>'
-      : '<ingredient name="resourcePaper" count="12"/>\n            <ingredient name="resourceWood" count="6"/>\n            <ingredient name="resourceForgedIron" count="2"/>'
+  //  - portrait (1×1):  paper 2 + wood 6 + iron 1
+  //  - abstract 2×2:    paper 8 + wood 4 + iron 1
+  //  - abstract 3×2:    paper 12 + wood 6 + iron 2 (1.5× the 2×2 cost)
+  //  - movie poster:    paper 6 + wood 3 (no frame ~ it's a print)
+  const ingredients =
+    kind === 'portrait'
+      ? '<ingredient name="resourcePaper" count="2"/>\n            <ingredient name="resourceWood" count="6"/>\n            <ingredient name="resourceForgedIron" count="1"/>'
+      : kind === 'abstract2x2'
+        ? '<ingredient name="resourcePaper" count="8"/>\n            <ingredient name="resourceWood" count="4"/>\n            <ingredient name="resourceForgedIron" count="1"/>'
+        : kind === 'abstract3x2'
+          ? '<ingredient name="resourcePaper" count="12"/>\n            <ingredient name="resourceWood" count="6"/>\n            <ingredient name="resourceForgedIron" count="2"/>'
+          : '<ingredient name="resourcePaper" count="6"/>\n            <ingredient name="resourceWood" count="3"/>'
   return `        <recipe name="${escapeXml(blockName)}" count="1" craft_area="workbench" tags="workbenchCrafting">
             ${ingredients}
         </recipe>`

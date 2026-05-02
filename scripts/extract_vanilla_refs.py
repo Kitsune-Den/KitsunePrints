@@ -29,6 +29,17 @@ ABSTRACT_MATERIALS = [
     "paintingsAbstract01", "paintingsAbstract02",
     "paintingsAbstract03", "paintingsAbstract04",
 ]
+# Movie poster atlas tiles ~ the posterMovie material is a 1024x1024 atlas with
+# 4 distinct posters laid out across the left ~70% of the image. Each prefab's
+# mesh UVs sample one of these tiles. Coordinates derived from reading mesh
+# UVs in commercial.bundle (see read_movie_poster_uvs.py).
+MOVIE_POSTER_TILES = {
+    # slot_id -> (PIL_left, PIL_top, PIL_right, PIL_bottom)
+    "signPosterMovieMammasJustice": (2, 25, 349, 508),    # top-left
+    "signPosterMovieSexualTension": (350, 24, 696, 508),  # top-middle
+    "signPosterMovieLoneWolf":      (2, 517, 348, 1000),  # bottom-left
+    "signPosterMovie2159":          (351, 518, 696, 1000),# bottom-middle
+}
 
 OUT_DIR = Path(__file__).resolve().parent.parent / "public" / "vanilla"
 THUMB_SIZE = 256
@@ -51,7 +62,7 @@ def collect_textures_and_materials(game_root: Path):
     textures = {}   # name -> PIL.Image (RGBA)
     materials = {}  # name -> dict with main_texture_name, scale, offset
 
-    targets = set(PORTRAITS) | set(ABSTRACT_MATERIALS) | {"signsMisc_d"}
+    targets = set(PORTRAITS) | set(ABSTRACT_MATERIALS) | {"signsMisc_d", "posterMovie"}
 
     for bundle_path in iter_bundles(game_root):
         try:
@@ -206,6 +217,27 @@ def main():
             out = OUT_DIR / f"{name}.jpg"
             thumb.convert("RGB").save(out, quality=88)
             print(f"  -> wrote {out.relative_to(OUT_DIR.parent.parent)}  (uv scale={mat['scale']}, offset={mat['offset']})")
+            written += 1
+
+    # Movie poster atlas tiles ~ crop the posterMovie atlas at hardcoded pixel
+    # rects derived from each prefab's mesh UVs. Also ship the full atlas so
+    # the web composer can use it as the base layer when baking user images.
+    poster_atlas = textures.get("posterMovie")
+    if poster_atlas is None:
+        print("  ! posterMovie atlas not found ~ skipping movie posters")
+    else:
+        # Ship the full vanilla atlas for the browser composer to load.
+        atlas_out = OUT_DIR / "_posterMovie_atlas.png"
+        poster_atlas.convert("RGBA").save(atlas_out)
+        print(f"  -> wrote {atlas_out.relative_to(OUT_DIR.parent.parent)}  (full atlas, 1024x1024)")
+        written += 1
+        # Per-slot reference tiles.
+        for slot_id, rect in MOVIE_POSTER_TILES.items():
+            tile = poster_atlas.crop(rect)
+            thumb = make_thumb(tile)
+            out = OUT_DIR / f"{slot_id}.jpg"
+            thumb.convert("RGB").save(out, quality=88)
+            print(f"  -> wrote {out.relative_to(OUT_DIR.parent.parent)}  (atlas tile {rect})")
             written += 1
 
     print(f"\nDone. {written} thumbnails written to {OUT_DIR}.")
