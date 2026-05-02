@@ -313,3 +313,10 @@ export const DEFAULT_PACK_META: PackMeta = {
   version: '0.1.0',
   enablePickup: true,
 }
+
+/** True if the pack info still looks like our defaults ~ name unchanged
+ *  AND author still empty. Used to nudge users to the Pack Info tab before
+ *  they download a pack named "My Picture Pack" by an unnamed author. */
+export function isDefaultPackMeta(meta: PackMeta): boolean {
+  return meta.name === DEFAULT_PACK_META.name && meta.author.trim() === ''
+}

@@ -1,19 +1,33 @@
 import { useState } from 'react'
-import { SLOTS, type SlotState, type PackMeta } from '../types/slots'
+import { SLOTS, isDefaultPackMeta, type SlotState, type PackMeta } from '../types/slots'
 import { buildModlet } from '../utils/buildModlet'
 
 interface Props {
   slots: Record<string, SlotState>
   meta: PackMeta
+  /** Called when the user clicks Download but the Pack Info still has
+   *  default values ~ BuilderPage uses this to switch to the Pack Info tab
+   *  so the user can fill in name/author before building. */
+  onRequestPackInfo?: () => void
 }
 
-export function DownloadButton({ slots, meta }: Props) {
+export function DownloadButton({ slots, meta, onRequestPackInfo }: Props) {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [needsPackInfo, setNeedsPackInfo] = useState(false)
 
   const filledCount = SLOTS.filter(s => slots[s.slotId]?.file).length
 
   async function handleDownload() {
+    // If the pack metadata is still at defaults, nudge the user to fill it in
+    // first ~ don't auto-build a pack called "My Picture Pack" by an unnamed
+    // author. Switch to the Pack Info tab and let them confirm.
+    if (isDefaultPackMeta(meta)) {
+      setNeedsPackInfo(true)
+      onRequestPackInfo?.()
+      return
+    }
+    setNeedsPackInfo(false)
     setBusy(true)
     setError(null)
     try {
@@ -53,6 +67,9 @@ export function DownloadButton({ slots, meta }: Props) {
       </button>
       {filledCount === 0 && (
         <p className="text-xs text-zinc-500">Upload at least one image to enable download.</p>
+      )}
+      {needsPackInfo && (
+        <p className="text-xs text-orange-400">Set your pack name + author first ~ check the Pack Info tab.</p>
       )}
       {error && <p className="text-sm text-red-400">{error}</p>}
     </div>
