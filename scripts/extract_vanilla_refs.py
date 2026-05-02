@@ -368,15 +368,23 @@ def main():
             written += 1
 
     # Picture frames: standalone textures (each one drives 2-3 vanilla blocks).
+    # Top half of each atlas is wood frame border; bottom half has the actual
+    # 3-4 picture sub-tiles. Crop to bottom half so the thumb shows what users
+    # are actually replacing instead of mostly-wood-texture.
     for slot_id, tex_name in PICTURE_FRAME_TEXTURES.items():
         tex = textures.get(tex_name)
         if tex is None:
             print(f"  ! missing texture {tex_name} for {slot_id}")
             continue
-        thumb = make_thumb(tex)
+        w, h = tex.size
+        # Bottom 45% ~ skips the wood frame/border row at top of each atlas
+        # (some atlases have a wider wood-frame row that bleeds into the
+        # bottom half).
+        cropped = tex.crop((0, int(h * 0.55), w, h))
+        thumb = make_thumb(cropped)
         out = OUT_DIR / f"{slot_id}.jpg"
         thumb.convert("RGB").save(out, quality=88)
-        print(f"  -> wrote {out.relative_to(OUT_DIR.parent.parent)}  (from {tex_name})")
+        print(f"  -> wrote {out.relative_to(OUT_DIR.parent.parent)}  (bottom half of {tex_name})")
         written += 1
 
     # Picture canvas atlases: ship full atlas + per-tile thumbs so each canvas
