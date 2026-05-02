@@ -30,16 +30,16 @@ export function PackMetaForm({ meta, setMeta }: Props) {
           />
           <div className="flex-1">
             <div className="text-sm font-medium text-zinc-200 group-hover:text-zinc-100">
-              Make every painting / poster / canvas pickup-able
+              Make every painting / poster / canvas pickup-able + craftable
             </div>
             <p className="text-xs text-zinc-500 mt-1 leading-relaxed">
               Adds <span className="text-zinc-400">hold-E pickup</span> (bare-handed,
-              no tool) <span className="text-zinc-600">+</span>{' '}
-              <span className="text-zinc-400">wrench harvest</span> to ~115 vanilla
+              no tool), <span className="text-zinc-400">wrench harvest</span>, and a{' '}
+              <span className="text-zinc-400">workbench recipe</span> to ~115 vanilla
               blocks (paintings, snack posters, movie posters + theaters, canvases,
-              picture frames, and hidden-safe disguises). Either way the block goes
-              to your inventory; place it back wherever you want. On by default ~
-              uncheck if you'd rather POIs stayed undismantleable.
+              picture frames, and hidden-safe disguises). Either pick one up from a
+              POI or craft a fresh one at your workbench. On by default ~ uncheck
+              if you'd rather POIs stayed undismantleable.
             </p>
           </div>
         </label>
