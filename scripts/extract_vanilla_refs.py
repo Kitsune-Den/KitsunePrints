@@ -52,6 +52,34 @@ def crop_half(img: Image.Image, side: str | None) -> Image.Image:
     if side == "left":   return img.crop((0, 0, w // 2, h))
     if side == "right":  return img.crop((w // 2, 0, w, h))
     return img
+
+
+# Snack poster atlas (snackPosters_d, 2048×2048) tile rects. Hand-mapped from
+# the visual layout: 5×4 grid except row 3, which has a small Fort Bites tile
+# + a wide Health Bar tile. PIL pixel rects (left, top, right, bottom).
+SNACK_POSTER_TILES = {
+    # Row 1 ~ vertical posters
+    "signSnackPosterJerky":        (0,    0,    410,  512),  # Thick Nick's Jerky
+    "signSnackPosterGoblinO":      (410,  0,    820,  512),
+    "signSnackPosterOops":         (820,  0,    1230, 512),  # Mostly Air OOPS Country
+    "signSnackPosterOopsClassic":  (1230, 0,    1640, 512),  # Mostly Air OOPS Classic
+    "signSnackPosterBretzels":     (1640, 0,    2048, 512),
+    # Row 2
+    "signSnackPosterJailBreakers": (0,    512,  410,  1024),
+    "signSnackPosterEyeCandy":     (410,  512,  820,  1024),
+    "signSnackPosterSkullCrusher": (820,  512,  1230, 1024),
+    "signSnackPosterNachos":       (1230, 512,  1640, 1024),
+    "signSnackPosterNachosRanch":  (1640, 512,  2048, 1024),
+    # Row 3 ~ wide row
+    "signSnackPosterFortBites":    (0,    1024, 410,  1536),
+    "signSnackPosterHealth":       (410,  1024, 2048, 1536),
+    # Row 4
+    "signSnackPosterHackers":      (0,    1536, 410,  2048),
+    "signSnackPosterPrime":        (410,  1536, 820,  2048),
+    "signSnackPosterAtom":         (820,  1536, 1230, 2048),
+    "signSnackPosterNerd":         (1230, 1536, 1640, 2048),
+    "signSnackPosterRamen":        (1640, 1536, 2048, 2048),
+}
 # Movie poster atlas tiles ~ the posterMovie material is a 1024x1024 atlas with
 # 4 distinct posters laid out across the left ~70% of the image. Each prefab's
 # mesh UVs sample one of these tiles. Coordinates derived from reading mesh
@@ -88,7 +116,7 @@ def collect_textures_and_materials(game_root: Path):
     targets = (
         set(PORTRAITS)
         | set(ABSTRACT_MATERIALS)
-        | {"signsMisc_d", "posterMovie"}
+        | {"signsMisc_d", "posterMovie", "snackPosters_d"}
         | {tex for (tex, _side) in MISC_DECOR_TEXTURES.values()}
     )
 
@@ -282,6 +310,19 @@ def main():
         side_note = f" [{side} half]" if side else ""
         print(f"  -> wrote {out.relative_to(OUT_DIR.parent.parent)}  (from {tex_name}{side_note})")
         written += 1
+
+    # Snack posters: crop each tile from snackPosters_d.
+    snack_atlas = textures.get("snackPosters_d")
+    if snack_atlas is None:
+        print("  ! snackPosters_d atlas not found ~ skipping snack posters")
+    else:
+        for slot_id, rect in SNACK_POSTER_TILES.items():
+            tile = snack_atlas.crop(rect)
+            thumb = make_thumb(tile)
+            out = OUT_DIR / f"{slot_id}.jpg"
+            thumb.convert("RGB").save(out, quality=88)
+            print(f"  -> wrote {out.relative_to(OUT_DIR.parent.parent)}  (snackPosters_d tile {rect})")
+            written += 1
 
     print(f"\nDone. {written} thumbnails written to {OUT_DIR}.")
 

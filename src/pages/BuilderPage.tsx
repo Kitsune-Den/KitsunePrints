@@ -13,7 +13,7 @@ interface Props {
   appVersion: string
 }
 
-type SlotTabId = 'portraits' | 'abstracts' | 'movie-posters' | 'misc-decor'
+type SlotTabId = 'portraits' | 'abstracts' | 'movie-posters' | 'misc-decor' | 'snack-posters'
 type TabId = SlotTabId | 'pack-info'
 
 interface SlotTabDef {
@@ -54,8 +54,16 @@ const SLOT_TABS: SlotTabDef[] = [
     label: 'Misc Decor',
     blurb:
       'Calendar, gun blueprints, target posters ~ standalone single-block decor. Each gets its own composed texture; the runtime DLL resets the material UV so your full image fills the canvas, even on slots that share an atlas in vanilla.',
-    filter: (s) => s.kind === 'decor',
+    filter: (s) => s.kind === 'decor' && !s.slotId.startsWith('signSnackPoster'),
     gridCols: 'grid-cols-2 md:grid-cols-3',
+  },
+  {
+    id: 'snack-posters',
+    label: 'Snack Posters',
+    blurb:
+      'The 17-poster snack-shop wall of fame ~ Thick Nick\'s Jerky, Goblin-O\'s, Atom Junkies, Health Bar, the lot. Each has its own material so they swap independently. The reference thumb shows the vanilla art for that slot.',
+    filter: (s) => s.kind === 'decor' && s.slotId.startsWith('signSnackPoster'),
+    gridCols: 'grid-cols-2 md:grid-cols-4 xl:grid-cols-5',
   },
 ]
 
@@ -72,6 +80,7 @@ export function BuilderPage({ slots, setSlots, meta, setMeta, appVersion }: Prop
       abstracts: { filled: 0, total: 0 },
       'movie-posters': { filled: 0, total: 0 },
       'misc-decor': { filled: 0, total: 0 },
+      'snack-posters': { filled: 0, total: 0 },
     }
     for (const tab of SLOT_TABS) {
       const tabSlots = SLOTS.filter(tab.filter)
@@ -87,12 +96,14 @@ export function BuilderPage({ slots, setSlots, meta, setMeta, appVersion }: Prop
     counts.portraits.filled +
     counts.abstracts.filled +
     counts['movie-posters'].filled +
-    counts['misc-decor'].filled
+    counts['misc-decor'].filled +
+    counts['snack-posters'].filled
   const totalSlots =
     counts.portraits.total +
     counts.abstracts.total +
     counts['movie-posters'].total +
-    counts['misc-decor'].total
+    counts['misc-decor'].total +
+    counts['snack-posters'].total
 
   // Slots visible in the active tab, after the filter pill.
   const visibleSlots = useMemo(() => {
