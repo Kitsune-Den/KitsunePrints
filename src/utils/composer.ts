@@ -93,12 +93,18 @@ export async function composeAbstract(file: File): Promise<Blob> {
  * materialName) as the base layer (preserves regions referenced by mesh UVs
  * we don't write to) and pastes each filled slot's user image into its tile.
  *
- * Used by movie posters (posterMovie atlas) and picture canvases
- * (pictureCanvas1, pictureCanvas2 atlases).
+ * For picture-frame atlases (those with frameTintHeightPct set in
+ * ATLAS_SOURCES), an optional tint color is multiply-blended over the top
+ * wood-frame zone so users can recolor the vanilla wood pattern without
+ * losing its grain detail. Tint applies AFTER the base draw and BEFORE
+ * picture tiles are painted (so picture tiles are untinted).
+ *
+ * Used by movie posters, picture canvases, and picture frames.
  */
 export async function composeAtlas(
   materialName: string,
   entries: { tile: AtlasTile; file: File }[],
+  frameTint?: string,
 ): Promise<Blob> {
   const source = ATLAS_SOURCES[materialName]
   if (!source) {
@@ -111,10 +117,21 @@ export async function composeAtlas(
   const ctx = canvas.getContext('2d')
   if (!ctx) throw new Error('Canvas 2d context unavailable')
 
-  // Draw vanilla atlas as the base.
+  // 1. Draw vanilla atlas as the base.
   ctx.drawImage(atlas, 0, 0, source.size, source.size)
 
-  // Paint each user image into its assigned tile, cover-fitted.
+  // 2. If this atlas has a wood-frame zone and a tint was picked, multiply-
+  //    blend the tint color over that zone (preserves wood grain).
+  if (source.frameTintHeightPct && frameTint) {
+    const tintHeight = Math.round(source.size * source.frameTintHeightPct)
+    ctx.save()
+    ctx.globalCompositeOperation = 'multiply'
+    ctx.fillStyle = frameTint
+    ctx.fillRect(0, 0, source.size, tintHeight)
+    ctx.restore()
+  }
+
+  // 3. Paint each user image into its assigned tile, cover-fitted.
   for (const { tile, file } of entries) {
     const img = await loadImage(file)
     drawCover(ctx, img, tile.x, tile.y, tile.w, tile.h)

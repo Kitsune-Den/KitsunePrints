@@ -175,6 +175,20 @@ export function SlotCard({ slot, state, onChange }: Props) {
           </div>
         )}
 
+        {slot.kind === 'canvasTile' && slot.slotId.startsWith('pictureFrame_01') && (
+          <div className="mt-3">
+            <FramePresetPicker
+              selectedId={state.framePresetId || DEFAULT_FRAME_PRESET_ID}
+              onChange={(id) => onChange({ ...state, framePresetId: id })}
+            />
+            <p className="mt-1 text-[10px] text-zinc-600 leading-tight">
+              Wood frame tint ~ shared with sibling frames in this style group
+              (vanilla atlas means letters in the same atlas all share the
+              wood region).
+            </p>
+          </div>
+        )}
+
         {state.preview && (
           <div className="mt-3 grid grid-cols-3 gap-2">
             <button

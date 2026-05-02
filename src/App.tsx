@@ -11,7 +11,11 @@ function Builder() {
   const [slots, setSlots] = useState<Record<string, SlotState>>(() => {
     const init: Record<string, SlotState> = {}
     for (const s of SLOTS) {
-      init[s.slotId] = s.kind === 'portrait' ? { framePresetId: DEFAULT_FRAME_PRESET_ID } : {}
+      // Portraits + picture-frame canvas tiles both default to a wood frame.
+      const wantsFramePreset =
+        s.kind === 'portrait' ||
+        (s.kind === 'canvasTile' && s.slotId.startsWith('pictureFrame_01'))
+      init[s.slotId] = wantsFramePreset ? { framePresetId: DEFAULT_FRAME_PRESET_ID } : {}
     }
     return loadStoredSlots(init)
   })

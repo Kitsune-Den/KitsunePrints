@@ -275,7 +275,29 @@ export function BuilderPage({ slots, setSlots, meta, setMeta, appVersion }: Prop
                     slot={slot}
                     state={slots[slot.slotId]}
                     onChange={(next) =>
-                      setSlots((prev) => ({ ...prev, [slot.slotId]: next }))
+                      setSlots((prev) => {
+                        const updated = { ...prev, [slot.slotId]: next }
+                        // Sync framePresetId across siblings sharing the same
+                        // picture-frame atlas (wood-frame tint is shared per atlas).
+                        if (
+                          slot.kind === 'canvasTile' &&
+                          slot.slotId.startsWith('pictureFrame_01') &&
+                          next.framePresetId !== prev[slot.slotId]?.framePresetId
+                        ) {
+                          for (const sibling of SLOTS) {
+                            if (
+                              sibling.slotId !== slot.slotId &&
+                              sibling.materialName === slot.materialName
+                            ) {
+                              updated[sibling.slotId] = {
+                                ...updated[sibling.slotId],
+                                framePresetId: next.framePresetId,
+                              }
+                            }
+                          }
+                        }
+                        return updated
+                      })
                     }
                   />
                 ))}

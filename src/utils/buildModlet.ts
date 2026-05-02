@@ -2,6 +2,8 @@ import JSZip from 'jszip'
 import {
   SLOTS,
   DEFAULT_FRAME_PRESET_ID,
+  ATLAS_SOURCES,
+  FRAME_PRESETS,
   type SlotState,
   type PackMeta,
   type SlotDef,
@@ -103,10 +105,19 @@ export async function buildModlet(
 
   // Atlas materials ~ one composite per shared-material atlas.
   for (const [materialName, group] of Object.entries(filledAtlasSlots)) {
+    // For picture-frame atlases, look up the chosen frame tint from any
+    // filled slot in the group (siblings share the wood-frame zone, so any
+    // sibling's framePresetId works ~ they're synced via BuilderPage's
+    // onChange handler).
+    let frameTint: string | undefined
+    if (ATLAS_SOURCES[materialName]?.frameTintHeightPct) {
+      const presetId = group.find(p => p.state.framePresetId)?.state.framePresetId || DEFAULT_FRAME_PRESET_ID
+      frameTint = FRAME_PRESETS.find(p => p.id === presetId)?.tint
+    }
     const atlasBlob = await composeAtlas(materialName, group.map(p => ({
       tile: p.slot.atlasTile!,
       file: p.state.file!,
-    })))
+    })), frameTint)
     const filename = `${materialName}.png`
     root.file(`Resources/Textures/${filename}`, atlasBlob)
     pictureMap[materialName] = filename

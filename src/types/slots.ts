@@ -53,20 +53,24 @@ export interface AtlasSource {
   vanillaPath: string
   /** Atlas width (= height for square atlases). */
   size: number
+  /** When set, the composer applies a multiply tint over this top region
+   *  using the chosen FRAME_PRESETS tint color. Used for picture-frame
+   *  atlases where the top portion is the wood-frame border zone. */
+  frameTintHeightPct?: number
 }
 
 export const ATLAS_SOURCES: Record<string, AtlasSource> = {
   posterMovie:    { vanillaPath: '/vanilla/_posterMovie_atlas.png',    size: 1024 },
   pictureCanvas1: { vanillaPath: '/vanilla/_pictureCanvas1_atlas.png', size: 2048 },
   pictureCanvas2: { vanillaPath: '/vanilla/_pictureCanvas2_atlas.png', size: 2048 },
-  pictureFramed:  { vanillaPath: '/vanilla/_pictureFramed_atlas.png',  size: 2048 },
-  pictureFramed2: { vanillaPath: '/vanilla/_pictureFramed2_atlas.png', size: 2048 },
-  pictureFramed3: { vanillaPath: '/vanilla/_pictureFramed3_atlas.png', size: 2048 },
-  pictureFramed4: { vanillaPath: '/vanilla/_pictureFramed4_atlas.png', size: 2048 },
-  pictureFramed5: { vanillaPath: '/vanilla/_pictureFramed5_atlas.png', size: 2048 },
-  pictureFramed6: { vanillaPath: '/vanilla/_pictureFramed6_atlas.png', size: 2048 },
-  pictureFramed7: { vanillaPath: '/vanilla/_pictureFramed7_atlas.png', size: 2048 },
-  pictureFramed8: { vanillaPath: '/vanilla/_pictureFramed8_atlas.png', size: 2048 },
+  pictureFramed:  { vanillaPath: '/vanilla/_pictureFramed_atlas.png',  size: 2048, frameTintHeightPct: 0.55 },
+  pictureFramed2: { vanillaPath: '/vanilla/_pictureFramed2_atlas.png', size: 2048, frameTintHeightPct: 0.55 },
+  pictureFramed3: { vanillaPath: '/vanilla/_pictureFramed3_atlas.png', size: 2048, frameTintHeightPct: 0.55 },
+  pictureFramed4: { vanillaPath: '/vanilla/_pictureFramed4_atlas.png', size: 2048, frameTintHeightPct: 0.55 },
+  pictureFramed5: { vanillaPath: '/vanilla/_pictureFramed5_atlas.png', size: 2048, frameTintHeightPct: 0.55 },
+  pictureFramed6: { vanillaPath: '/vanilla/_pictureFramed6_atlas.png', size: 2048, frameTintHeightPct: 0.55 },
+  pictureFramed7: { vanillaPath: '/vanilla/_pictureFramed7_atlas.png', size: 2048, frameTintHeightPct: 0.55 },
+  pictureFramed8: { vanillaPath: '/vanilla/_pictureFramed8_atlas.png', size: 2048, frameTintHeightPct: 0.55 },
 }
 
 /** Legacy aliases ~ kept for any external callers. */
@@ -257,28 +261,32 @@ export interface SlotState {
 export interface FramePreset {
   id: string
   label: string
-  /** Path under public/frames/ ~ used both for the picker thumbnail and the composer. */
+  /** Path under public/frames/ ~ used both for the picker thumbnail and the
+   *  portrait composer (paints the strip into the left 25% UV zone). */
   imagePath: string
+  /** Hex color used as a multiply-blend tint over the wood-frame region of
+   *  picture-frame atlases. Preserves vanilla wood-grain detail, just recolored. */
+  tint: string
 }
 
 /**
- * Frame texture presets. Each is a 256×1024 vertical strip that fills the
- * left 25% of a 1024×1024 portrait texture. The vanilla painting prefab's
- * UV layout maps that strip to wrap the 3D wooden frame mesh, so picking a
- * preset effectively re-skins the frame.
+ * Frame presets. Used by:
+ *   - Portrait composer: paints `imagePath` into the left 25% UV zone (each
+ *     preset is a 256×1024 vertical strip that wraps the 3D wood frame mesh).
+ *   - Picture-frame composer: applies `tint` as a multiply blend over the
+ *     top 55% of the picture-frame atlas. Preserves the vanilla wood-grain
+ *     pattern, just recolored to match the picked style.
  *
- * Tier 1 (current): just swaps the visual color/pattern. Vanilla's _Normal
- * map still adds wood-grain carved relief regardless of which preset is
- * picked ~ fine stylization, but "metal" is faux-metal until Tier 2 ships
- * matching normal maps.
+ * Tier 1 (current): just swaps visual color/pattern. Vanilla's _Normal map
+ * still adds wood-grain carved relief regardless of which preset is picked.
  */
 export const FRAME_PRESETS: FramePreset[] = [
-  { id: 'wood_dark',   label: 'Dark Wood',   imagePath: '/frames/wood_dark.png' },
-  { id: 'wood_light',  label: 'Light Wood',  imagePath: '/frames/wood_light.png' },
-  { id: 'gold_gilt',   label: 'Gold Gilt',   imagePath: '/frames/gold_gilt.png' },
-  { id: 'silver',      label: 'Silver',      imagePath: '/frames/silver.png' },
-  { id: 'matte_black', label: 'Matte Black', imagePath: '/frames/matte_black.png' },
-  { id: 'ornate_gold', label: 'Ornate Gold', imagePath: '/frames/ornate_gold.png' },
+  { id: 'wood_dark',   label: 'Dark Wood',   imagePath: '/frames/wood_dark.png',   tint: '#5c3a1e' },
+  { id: 'wood_light',  label: 'Light Wood',  imagePath: '/frames/wood_light.png',  tint: '#c39065' },
+  { id: 'gold_gilt',   label: 'Gold Gilt',   imagePath: '/frames/gold_gilt.png',   tint: '#d4af37' },
+  { id: 'silver',      label: 'Silver',      imagePath: '/frames/silver.png',      tint: '#b0b0b0' },
+  { id: 'matte_black', label: 'Matte Black', imagePath: '/frames/matte_black.png', tint: '#2a2a2a' },
+  { id: 'ornate_gold', label: 'Ornate Gold', imagePath: '/frames/ornate_gold.png', tint: '#a37428' },
 ]
 
 export const DEFAULT_FRAME_PRESET_ID = 'wood_dark'
