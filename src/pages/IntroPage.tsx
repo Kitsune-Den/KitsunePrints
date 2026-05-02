@@ -209,9 +209,9 @@ export default function IntroPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="flex flex-col gap-2">
               <div className="rounded-xl overflow-hidden border border-zinc-800 shadow-[0_0_40px_rgba(0,0,0,0.6)]">
-                <img src="/screenshots/screenshot_slots.png" alt="Slot grid with 6 backer portrait slots, three filled with Kitsune art" className="w-full object-cover" />
+                <img src="/screenshots/screenshot_slots.jpg" alt="Builder page with three of six portrait slots filled with Kitsune art, tab bar showing Portraits 3/6, sticky download bar at the bottom" className="w-full object-cover" />
               </div>
-              <p className="text-xs text-zinc-600 text-center">Per-slot title, frame texture, drag-and-drop image</p>
+              <p className="text-xs text-zinc-600 text-center">Tabbed slot grid, vanilla refs in the headers, sticky progress bar</p>
             </div>
             <div className="flex flex-col gap-2">
               <div className="rounded-xl overflow-hidden border border-zinc-800 shadow-[0_0_40px_rgba(0,0,0,0.6)]">
@@ -297,6 +297,10 @@ export default function IntroPage() {
           <p className="text-center text-xs tracking-[0.3em] uppercase text-zinc-500 font-medium">Frequently Asked Questions</p>
           <div className="flex flex-col gap-3">
             {[
+              {
+                q: 'Do I have to fill in all 14 slots?',
+                a: "Nope ~ fill in as many or as few as you want. Skipped slots stay vanilla. You can ship a pack with one custom painting and the other thirteen untouched, or fill out everything, or anywhere in between. The download button works as soon as one slot has an image.",
+              },
               {
                 q: 'What 7DTD version does this need?',
                 a: 'V2.6. The vanilla painting material names and atlas layout we patch are V2.6-specific. Earlier versions had different conventions, and future versions may shift again.',
