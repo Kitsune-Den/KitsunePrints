@@ -119,7 +119,7 @@ export async function composeAtlas(
 export async function composeIcon(
   file: File,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  _kind: 'portrait' | 'abstract' | 'moviePoster',
+  _kind: 'portrait' | 'abstract' | 'moviePoster' | 'decor',
 ): Promise<Blob> {
   const img = await loadImage(file)
   const canvas = document.createElement('canvas')

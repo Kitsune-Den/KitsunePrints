@@ -6,7 +6,7 @@
 // For atlas slots (movie posters), multiple slot defs share one materialName
 // since each slot writes to a different tile of the same atlas.
 
-export type SlotKind = 'portrait' | 'abstract' | 'moviePoster'
+export type SlotKind = 'portrait' | 'abstract' | 'moviePoster' | 'decor'
 
 /** Pixel rectangle inside an atlas texture. (x,y) is top-left in PIL coords. */
 export interface AtlasTile {
@@ -102,6 +102,45 @@ export const SLOTS: SlotDef[] = [
     vanillaBlocks: ['signPosterMovie2159', 'signPosterMovieTheater2159'],
     kind: 'moviePoster',
     atlasTile: { x: 351, y: 518, w: 345, h: 482 },
+  },
+
+  // Misc decor ~ standalone or material-pair atlas slots (DLL resets UV
+  // scale/offset so each material renders the user's full image regardless
+  // of the original atlas-half offset).
+  {
+    slotId: 'posterCalendarPinupWorkingStiff',
+    materialName: 'posterCalendarPinupWorkingStiff',
+    label: 'Working Stiff Calendar',
+    vanillaBlocks: ['posterCalendarPinupWorkingStiff'],
+    kind: 'decor',
+  },
+  {
+    slotId: 'gunBlueprintPistol',
+    materialName: 'gunBlueprintPistol',
+    label: 'Pistol Blueprint',
+    vanillaBlocks: ['posterBlueprintPistol'],
+    kind: 'decor',
+  },
+  {
+    slotId: 'gunBlueprintRifle',
+    materialName: 'gunBlueprintRifle',
+    label: 'Rifle Blueprint',
+    vanillaBlocks: ['posterBlueprintRifle'],
+    kind: 'decor',
+  },
+  {
+    slotId: 'targetPoster1',
+    materialName: 'targetPosters',
+    label: 'Target Poster 1',
+    vanillaBlocks: ['targetPoster1'],
+    kind: 'decor',
+  },
+  {
+    slotId: 'targetPoster2',
+    materialName: 'targetPosters2',
+    label: 'Target Poster 2',
+    vanillaBlocks: ['targetPoster2'],
+    kind: 'decor',
   },
 ]
 

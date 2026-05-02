@@ -29,6 +29,29 @@ ABSTRACT_MATERIALS = [
     "paintingsAbstract01", "paintingsAbstract02",
     "paintingsAbstract03", "paintingsAbstract04",
 ]
+# Misc decor slots ~ (slot_id -> (source_texture_name, crop_side_or_None)).
+# `crop_side` is one of None/'top'/'bottom'/'left'/'right' for atlases that
+# pack two posters into one texture. Each slot's material samples its half
+# via UV offset; the DLL resets UV on swap so the user's full image fills.
+MISC_DECOR_TEXTURES = {
+    "posterCalendarPinupWorkingStiff": ("posterCalendarPinupWorkingStiff", None),
+    "gunBlueprintPistol": ("gunBlueprints_d", "top"),
+    "gunBlueprintRifle": ("gunBlueprints_d", "bottom"),
+    "targetPoster1":     ("targetPosters_d", "left"),
+    "targetPoster2":     ("targetPosters_d", "right"),
+}
+
+
+def crop_half(img: Image.Image, side: str | None) -> Image.Image:
+    """Crop an atlas half so the reference thumb shows only the slot's region."""
+    if side is None:
+        return img
+    w, h = img.size
+    if side == "top":    return img.crop((0, 0, w, h // 2))
+    if side == "bottom": return img.crop((0, h // 2, w, h))
+    if side == "left":   return img.crop((0, 0, w // 2, h))
+    if side == "right":  return img.crop((w // 2, 0, w, h))
+    return img
 # Movie poster atlas tiles ~ the posterMovie material is a 1024x1024 atlas with
 # 4 distinct posters laid out across the left ~70% of the image. Each prefab's
 # mesh UVs sample one of these tiles. Coordinates derived from reading mesh
@@ -62,7 +85,12 @@ def collect_textures_and_materials(game_root: Path):
     textures = {}   # name -> PIL.Image (RGBA)
     materials = {}  # name -> dict with main_texture_name, scale, offset
 
-    targets = set(PORTRAITS) | set(ABSTRACT_MATERIALS) | {"signsMisc_d", "posterMovie"}
+    targets = (
+        set(PORTRAITS)
+        | set(ABSTRACT_MATERIALS)
+        | {"signsMisc_d", "posterMovie"}
+        | {tex for (tex, _side) in MISC_DECOR_TEXTURES.values()}
+    )
 
     for bundle_path in iter_bundles(game_root):
         try:
@@ -239,6 +267,21 @@ def main():
             thumb.convert("RGB").save(out, quality=88)
             print(f"  -> wrote {out.relative_to(OUT_DIR.parent.parent)}  (atlas tile {rect})")
             written += 1
+
+    # Misc decor: per-slot thumbs, atlas pairs cropped to the half each
+    # slot's material samples in vanilla.
+    for slot_id, (tex_name, side) in MISC_DECOR_TEXTURES.items():
+        tex = textures.get(tex_name)
+        if tex is None:
+            print(f"  ! missing texture {tex_name} for {slot_id}")
+            continue
+        cropped = crop_half(tex, side)
+        thumb = make_thumb(cropped)
+        out = OUT_DIR / f"{slot_id}.jpg"
+        thumb.convert("RGB").save(out, quality=88)
+        side_note = f" [{side} half]" if side else ""
+        print(f"  -> wrote {out.relative_to(OUT_DIR.parent.parent)}  (from {tex_name}{side_note})")
+        written += 1
 
     print(f"\nDone. {written} thumbnails written to {OUT_DIR}.")
 

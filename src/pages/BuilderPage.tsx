@@ -13,7 +13,7 @@ interface Props {
   appVersion: string
 }
 
-type SlotTabId = 'portraits' | 'abstracts' | 'movie-posters'
+type SlotTabId = 'portraits' | 'abstracts' | 'movie-posters' | 'misc-decor'
 type TabId = SlotTabId | 'pack-info'
 
 interface SlotTabDef {
@@ -49,6 +49,14 @@ const SLOT_TABS: SlotTabDef[] = [
     filter: (s) => s.kind === 'moviePoster',
     gridCols: 'grid-cols-2 md:grid-cols-4',
   },
+  {
+    id: 'misc-decor',
+    label: 'Misc Decor',
+    blurb:
+      'Calendar, gun blueprints, target posters ~ standalone single-block decor. Each gets its own composed texture; the runtime DLL resets the material UV so your full image fills the canvas, even on slots that share an atlas in vanilla.',
+    filter: (s) => s.kind === 'decor',
+    gridCols: 'grid-cols-2 md:grid-cols-3',
+  },
 ]
 
 type FilterMode = 'all' | 'unfilled'
@@ -63,6 +71,7 @@ export function BuilderPage({ slots, setSlots, meta, setMeta, appVersion }: Prop
       portraits: { filled: 0, total: 0 },
       abstracts: { filled: 0, total: 0 },
       'movie-posters': { filled: 0, total: 0 },
+      'misc-decor': { filled: 0, total: 0 },
     }
     for (const tab of SLOT_TABS) {
       const tabSlots = SLOTS.filter(tab.filter)
@@ -74,8 +83,16 @@ export function BuilderPage({ slots, setSlots, meta, setMeta, appVersion }: Prop
     return result
   }, [slots])
 
-  const totalFilled = counts.portraits.filled + counts.abstracts.filled + counts['movie-posters'].filled
-  const totalSlots = counts.portraits.total + counts.abstracts.total + counts['movie-posters'].total
+  const totalFilled =
+    counts.portraits.filled +
+    counts.abstracts.filled +
+    counts['movie-posters'].filled +
+    counts['misc-decor'].filled
+  const totalSlots =
+    counts.portraits.total +
+    counts.abstracts.total +
+    counts['movie-posters'].total +
+    counts['misc-decor'].total
 
   // Slots visible in the active tab, after the filter pill.
   const visibleSlots = useMemo(() => {

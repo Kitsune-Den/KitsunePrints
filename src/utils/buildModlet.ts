@@ -131,7 +131,10 @@ async function composeForSlot(slot: SlotDef, state: SlotState): Promise<Blob> {
   if (slot.kind === 'portrait') {
     return composePortrait(state.file, state.framePresetId || DEFAULT_FRAME_PRESET_ID)
   }
-  if (slot.kind === 'abstract') {
+  if (slot.kind === 'abstract' || slot.kind === 'decor') {
+    // Both kinds normalize to a square 1024x1024 ~ DLL resets UV scale/offset
+    // on swap so the user's full image fills the canvas regardless of the
+    // material's vanilla atlas-half offset.
     return composeAbstract(state.file)
   }
   // Movie posters are handled in batch by composeAtlas, not here.
@@ -143,6 +146,7 @@ type RecipeKind = 'portrait' | 'abstract2x2' | 'abstract3x2' | 'moviePoster' | '
 function pickRecipeKind(slot: SlotDef, vanillaBlock: string): RecipeKind {
   if (slot.kind === 'portrait') return 'portrait'
   if (slot.kind === 'moviePoster') return 'moviePoster'
+  if (slot.kind === 'decor') return 'moviePoster' // small print cost
   // abstract: distinguish by size suffix on the vanilla block name
   return vanillaBlock.endsWith('_2x2') ? 'abstract2x2' : 'abstract3x2'
 }

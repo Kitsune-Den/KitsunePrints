@@ -78,7 +78,7 @@ export function SlotCard({ slot, state, onChange }: Props) {
             src={`/vanilla/${slot.slotId}.jpg`}
             alt={`Vanilla ${slot.label}`}
             loading="lazy"
-            className={`${slot.kind === 'portrait' || slot.kind === 'moviePoster' ? 'w-9 h-12' : 'w-12 h-12'} object-cover rounded border border-zinc-700/60 flex-shrink-0`}
+            className={`${slot.kind === 'portrait' || slot.kind === 'moviePoster' ? 'w-9 h-12' : slot.kind === 'decor' ? 'w-10 h-12 object-contain' : 'w-12 h-12'} object-cover rounded border border-zinc-700/60 flex-shrink-0 bg-zinc-950/60`}
             title={`You'll be replacing this in-game (${slot.slotId})`}
           />
           <div className="flex-1 min-w-0">
