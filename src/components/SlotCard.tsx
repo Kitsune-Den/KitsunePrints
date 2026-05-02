@@ -53,12 +53,33 @@ export function SlotCard({ slot, state, onChange }: Props) {
     }
   }
 
+  function replaceImage(e: React.MouseEvent) {
+    e.stopPropagation()
+    fileRef.current?.click()
+  }
+
+  function clearImage(e: React.MouseEvent) {
+    e.stopPropagation()
+    onChange(slot.kind === 'portrait' ? { framePresetId: state.framePresetId } : {})
+  }
+
   return (
     <>
       <div className="border border-zinc-800 rounded-lg p-4 bg-zinc-900/40">
-        <div className="flex items-baseline justify-between mb-3">
-          <h3 className="font-medium">{slot.label}</h3>
-          <code className="text-xs text-zinc-500">{slot.materialName}</code>
+        <div className="flex items-center gap-3 mb-3">
+          <img
+            src={`/vanilla/${slot.materialName}.jpg`}
+            alt={`Vanilla ${slot.label}`}
+            loading="lazy"
+            className={`${slot.kind === 'portrait' ? 'w-9 h-12' : 'w-12 h-12'} object-cover rounded border border-zinc-700/60 flex-shrink-0`}
+            title={`You'll be replacing this in-game painting (${slot.materialName})`}
+          />
+          <div className="flex-1 min-w-0">
+            <h3 className="font-medium truncate">{slot.label}</h3>
+            <div className="text-xs text-zinc-500 truncate">
+              replacing <code className="text-zinc-400">{slot.materialName}</code>
+            </div>
+          </div>
         </div>
 
         <div className="mb-3">
@@ -78,7 +99,7 @@ export function SlotCard({ slot, state, onChange }: Props) {
           onDragOver={(e) => e.preventDefault()}
           onDrop={handleDrop}
           onClick={() => fileRef.current?.click()}
-          className="aspect-square bg-zinc-950 border-2 border-dashed border-zinc-700 rounded cursor-pointer flex items-center justify-center overflow-hidden hover:border-zinc-500 transition-colors"
+          className={`${slot.kind === 'portrait' ? 'aspect-[3/4]' : 'aspect-square'} bg-zinc-950 border-2 border-dashed border-zinc-700 rounded cursor-pointer flex items-center justify-center overflow-hidden hover:border-zinc-500 transition-colors`}
         >
           {state.preview ? (
             <img src={state.preview} alt={slot.label} className="w-full h-full object-cover" />
@@ -113,18 +134,45 @@ export function SlotCard({ slot, state, onChange }: Props) {
         )}
 
         {state.preview && (
-          <div className="mt-3 flex gap-3">
+          <div className="mt-3 grid grid-cols-3 gap-2">
             <button
-              onClick={reCrop}
-              className="text-xs text-zinc-500 hover:text-zinc-300"
+              type="button"
+              onClick={replaceImage}
+              className="flex items-center justify-center gap-1.5 h-9 px-2 text-xs font-medium text-zinc-200 bg-zinc-800/60 hover:bg-zinc-700 border border-zinc-700 hover:border-zinc-600 rounded transition-colors"
+              title="Pick a different image"
             >
-              re-crop
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="17 8 12 3 7 8" />
+                <line x1="12" y1="3" x2="12" y2="15" />
+              </svg>
+              Replace
             </button>
             <button
-              onClick={() => onChange(slot.kind === 'portrait' ? { framePresetId: state.framePresetId } : {})}
-              className="text-xs text-zinc-500 hover:text-zinc-300"
+              type="button"
+              onClick={reCrop}
+              className="flex items-center justify-center gap-1.5 h-9 px-2 text-xs font-medium text-zinc-200 bg-zinc-800/60 hover:bg-zinc-700 border border-zinc-700 hover:border-zinc-600 rounded transition-colors"
+              title="Re-crop the same image"
             >
-              clear
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M6 2v14a2 2 0 0 0 2 2h14" />
+                <path d="M18 22V8a2 2 0 0 0-2-2H2" />
+              </svg>
+              Re-crop
+            </button>
+            <button
+              type="button"
+              onClick={clearImage}
+              className="flex items-center justify-center gap-1.5 h-9 px-2 text-xs font-medium text-zinc-400 hover:text-rose-300 bg-zinc-800/60 hover:bg-rose-950/40 border border-zinc-700 hover:border-rose-900 rounded transition-colors"
+              title="Remove this image (keeps your title and frame choice)"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <polyline points="3 6 5 6 21 6" />
+                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                <path d="M10 11v6M14 11v6" />
+                <path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2" />
+              </svg>
+              Clear
             </button>
           </div>
         )}
