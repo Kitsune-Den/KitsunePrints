@@ -230,8 +230,8 @@ export default function IntroPage() {
             <div className="text-2xl">🖼️</div>
             <h3 className="text-sm font-bold tracking-widest uppercase text-zinc-200">Slot-Based Upload</h3>
             <p className="text-sm text-zinc-500 leading-relaxed">
-              Ten vanilla painting slots ~ six 1×1 backer portraits and four abstract scenes (each driving both 2×2 and 3×2 frames).
-              Drop an image into any slot. Skipped slots stay vanilla.
+              Fourteen vanilla wall-art slots ~ six 1×1 backer portraits, four abstract scenes (each driving both 2×2 and 3×2 frames),
+              and four movie posters (theater variants ride along). Drop an image into any slot. Skipped slots stay vanilla.
             </p>
           </div>
           <div className="flex flex-col gap-3">
@@ -274,6 +274,20 @@ export default function IntroPage() {
               swaps vanilla material textures at <code className="font-mono text-zinc-400">World.LoadWorld</code>. One DLL, infinite packs.
             </p>
           </div>
+          <div className="flex flex-col gap-3 md:col-span-3 border border-orange-500/30 bg-orange-500/[0.04] rounded-lg p-6">
+            <div className="flex items-center gap-3">
+              <div className="text-2xl">🪝</div>
+              <span className="text-[10px] tracking-[0.3em] uppercase text-orange-400 font-bold">New in v0.5</span>
+            </div>
+            <h3 className="text-sm font-bold tracking-widest uppercase text-zinc-200">Pick Up + Place Anywhere</h3>
+            <p className="text-sm text-zinc-500 leading-relaxed">
+              On by default ~ every pack ships with a one-line patch that adds <span className="text-zinc-300 font-medium">hold-E pickup</span> and{' '}
+              <span className="text-zinc-300 font-medium">wrench harvest</span> to every vanilla painting, poster, canvas, picture frame, and
+              hidden-safe disguise in the game (~115 blocks).
+              Find one in a POI, grab it, hang it back at base. Your custom blocks get the same treatment, so wrenching one of yours returns
+              <em>yours</em>, not the vanilla parent. Toggle off in Pack Info if you'd rather leave POIs intact.
+            </p>
+          </div>
         </div>
       </section>
 
@@ -286,6 +300,10 @@ export default function IntroPage() {
               {
                 q: 'What 7DTD version does this need?',
                 a: 'V2.6. The vanilla painting material names and atlas layout we patch are V2.6-specific. Earlier versions had different conventions, and future versions may shift again.',
+              },
+              {
+                q: 'Does this make every painting in the game pickup-able?',
+                a: "By default, yes ~ packs ship with a Config/pickup.xml patch that adds CanPickup=true and a wrench Harvest drop to ~115 vanilla wall-art blocks (paintings, snack posters, movie posters and theaters, canvases, picture frames, and hidden-safe disguises). Hold E or wrench to grab any of them, place from inventory wherever. There's a checkbox in the Pack Info tab to disable if you'd rather POIs stayed undismantleable.",
               },
               {
                 q: 'Does it conflict with other mods?',

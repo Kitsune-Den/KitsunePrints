@@ -38,8 +38,8 @@ export function PackMetaForm({ meta, setMeta }: Props) {
               <span className="text-zinc-400">wrench harvest</span> to ~115 vanilla
               blocks (paintings, snack posters, movie posters + theaters, canvases,
               picture frames, and hidden-safe disguises). Either way the block goes
-              to your inventory; place it back wherever you want. Off by default ~
-              existing POIs stay as-is unless you opt in.
+              to your inventory; place it back wherever you want. On by default ~
+              uncheck if you'd rather POIs stayed undismantleable.
             </p>
           </div>
         </label>
