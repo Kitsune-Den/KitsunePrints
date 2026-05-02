@@ -41,6 +41,22 @@ MISC_DECOR_TEXTURES = {
     "targetPoster2":     ("targetPosters_d", "right"),
 }
 
+# Picture frame + canvas slots ~ each material drives 3-5 vanilla blocks
+# (picture frame letter triplets plus their hidden-safe twins). Reference
+# thumbs come from the standalone _d textures (no atlas dance).
+PICTURE_FRAME_TEXTURES = {
+    "pictureFramed":  "pictureFramed_d",
+    "pictureFramed2": "PictureFramed2_d",
+    "pictureFramed3": "PictureFramed3_d",
+    "pictureFramed4": "PictureFramed4_d",
+    "pictureFramed5": "PictureFramed5_d",
+    "pictureFramed6": "PictureFramed6_d",
+    "pictureFramed7": "PictureFramed7_d",
+    "pictureFramed8": "PictureFramed8_d",
+    "pictureCanvas1": "pictureCanvas_d",
+    "pictureCanvas2": "pictureCanvas2_d",
+}
+
 
 def crop_half(img: Image.Image, side: str | None) -> Image.Image:
     """Crop an atlas half so the reference thumb shows only the slot's region."""
@@ -118,6 +134,7 @@ def collect_textures_and_materials(game_root: Path):
         | set(ABSTRACT_MATERIALS)
         | {"signsMisc_d", "posterMovie", "snackPosters_d"}
         | {tex for (tex, _side) in MISC_DECOR_TEXTURES.values()}
+        | set(PICTURE_FRAME_TEXTURES.values())
     )
 
     for bundle_path in iter_bundles(game_root):
@@ -323,6 +340,18 @@ def main():
             thumb.convert("RGB").save(out, quality=88)
             print(f"  -> wrote {out.relative_to(OUT_DIR.parent.parent)}  (snackPosters_d tile {rect})")
             written += 1
+
+    # Picture frames + canvases: standalone textures, full thumb each.
+    for slot_id, tex_name in PICTURE_FRAME_TEXTURES.items():
+        tex = textures.get(tex_name)
+        if tex is None:
+            print(f"  ! missing texture {tex_name} for {slot_id}")
+            continue
+        thumb = make_thumb(tex)
+        out = OUT_DIR / f"{slot_id}.jpg"
+        thumb.convert("RGB").save(out, quality=88)
+        print(f"  -> wrote {out.relative_to(OUT_DIR.parent.parent)}  (from {tex_name})")
+        written += 1
 
     print(f"\nDone. {written} thumbnails written to {OUT_DIR}.")
 

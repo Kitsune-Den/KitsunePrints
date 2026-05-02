@@ -165,6 +165,26 @@ export const SLOTS: SlotDef[] = [
   { slotId: 'signSnackPosterAtom',         materialName: 'snackPosterAtom',         label: 'Snack ~ Atom Junkies',        vanillaBlocks: ['signSnackPosterAtom'],         kind: 'decor', atlasTile: { x: 820,  y: 1536, w: 410,  h: 512 } },
   { slotId: 'signSnackPosterNerd',         materialName: 'snackPosterNerd',         label: 'Snack ~ Nerd Tats',           vanillaBlocks: ['signSnackPosterNerd'],         kind: 'decor', atlasTile: { x: 1230, y: 1536, w: 410,  h: 512 } },
   { slotId: 'signSnackPosterRamen',        materialName: 'snackPosterRamen',        label: 'Snack ~ Ramen',               vanillaBlocks: ['signSnackPosterRamen'],        kind: 'decor', atlasTile: { x: 1640, y: 1536, w: 408,  h: 512 } },
+
+  // Picture frames + canvases ~ each material backs 2-5 vanilla blocks (a
+  // letter triplet of pictureFrame_01* + the matching hidden-safe variants
+  // that visually inherit through extends). Hidden-safe blocks aren't listed
+  // in vanillaBlocks (we don't generate kp_safe_* variants), but they re-skin
+  // automatically since they share the material.
+  // Note: the underlying textures pack 3-6 sub-images into one (vanilla mesh
+  // UVs select a tile), so each frame in a sibling group may show a different
+  // region of your uploaded image. Looks like a "different angle per frame"
+  // collage.
+  { slotId: 'pictureFramed',  materialName: 'pictureFramed',  label: 'Framed Pictures ~ Style 1', vanillaBlocks: ['pictureFrame_01a', 'pictureFrame_01b', 'pictureFrame_01c'], kind: 'decor' },
+  { slotId: 'pictureFramed2', materialName: 'pictureFramed2', label: 'Framed Pictures ~ Style 2', vanillaBlocks: ['pictureFrame_01d', 'pictureFrame_01e', 'pictureFrame_01f'], kind: 'decor' },
+  { slotId: 'pictureFramed3', materialName: 'pictureFramed3', label: 'Framed Pictures ~ Style 3', vanillaBlocks: ['pictureFrame_01g', 'pictureFrame_01h', 'pictureFrame_01i'], kind: 'decor' },
+  { slotId: 'pictureFramed4', materialName: 'pictureFramed4', label: 'Framed Pictures ~ Style 4', vanillaBlocks: ['pictureFrame_01j', 'pictureFrame_01k', 'pictureFrame_01l'], kind: 'decor' },
+  { slotId: 'pictureFramed5', materialName: 'pictureFramed5', label: 'Framed Pictures ~ Style 5', vanillaBlocks: ['pictureFrame_01m', 'pictureFrame_01n', 'pictureFrame_01o'], kind: 'decor' },
+  { slotId: 'pictureFramed6', materialName: 'pictureFramed6', label: 'Framed Pictures ~ Style 6', vanillaBlocks: ['pictureFrame_01p', 'pictureFrame_01q', 'pictureFrame_01r'], kind: 'decor' },
+  { slotId: 'pictureFramed7', materialName: 'pictureFramed7', label: 'Framed Pictures ~ Style 7', vanillaBlocks: ['pictureFrame_01s', 'pictureFrame_01t', 'pictureFrame_01u'], kind: 'decor' },
+  { slotId: 'pictureFramed8', materialName: 'pictureFramed8', label: 'Framed Pictures ~ Style 8', vanillaBlocks: ['pictureFrame_01v', 'pictureFrame_01w'], kind: 'decor' },
+  { slotId: 'pictureCanvas1', materialName: 'pictureCanvas1', label: 'Canvas Pictures ~ Style 1',  vanillaBlocks: ['pictureCanvas_01a', 'pictureCanvas_01b', 'pictureCanvas_01c', 'pictureCanvas_01d', 'pictureCanvas_01f'], kind: 'decor' },
+  { slotId: 'pictureCanvas2', materialName: 'pictureCanvas2', label: 'Canvas Pictures ~ Style 2',  vanillaBlocks: ['pictureCanvas_01e', 'pictureCanvas_01g', 'pictureCanvas_01h', 'pictureCanvas_01i', 'pictureCanvas_01j'], kind: 'decor' },
 ]
 
 export interface SlotState {
