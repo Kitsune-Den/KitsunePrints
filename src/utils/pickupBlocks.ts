@@ -62,7 +62,11 @@ export const PICKUP_BLOCKS: string[] = [
   'signPosterMovieTheaterMammasJustice',
   'signPosterMovieTheaterSexualTension',
 
-  // --- Picture canvases A-J + helper (11) ---
+  // --- Picture canvases A-J (10) ~ pictureCanvasRandomHelper deliberately
+  //     excluded; it's an internal placeholder block POIs reference via
+  //     extends, and CanPickup on it triggered NRE floods during POI load
+  //     (diner_02/03, rest_area_03/04, skyscraper_02). Helpers are not
+  //     meant to be player-pickup-able. ---
   'pictureCanvas_01a',
   'pictureCanvas_01b',
   'pictureCanvas_01c',
@@ -73,7 +77,6 @@ export const PICKUP_BLOCKS: string[] = [
   'pictureCanvas_01h',
   'pictureCanvas_01i',
   'pictureCanvas_01j',
-  'pictureCanvasRandomHelper',
 
   // --- Picture frames A-W (23) ---
   'pictureFrame_01a', 'pictureFrame_01b', 'pictureFrame_01c', 'pictureFrame_01d',
@@ -83,23 +86,15 @@ export const PICKUP_BLOCKS: string[] = [
   'pictureFrame_01q', 'pictureFrame_01r', 'pictureFrame_01s', 'pictureFrame_01t',
   'pictureFrame_01u', 'pictureFrame_01v', 'pictureFrame_01w',
 
-  // --- Hidden-safe disguises (16) ---
-  'hiddenSafePictureFrame_01a',
-  'hiddenSafePictureFrame_01c',
-  'hiddenSafePictureFrame_01d',
-  'hiddenSafePictureFrame_01e',
-  'hiddenSafePictureFrame_01f',
-  'hiddenSafePictureFrame_01h',
-  'hiddenSafePictureFrame_01j',
-  'hiddenSafePictureFrame_01l',
-  'hiddenSafePictureFrame_01m',
-  'hiddenSafePictureFrame_01o',
-  'hiddenSafePictureFrame_01p',
-  'hiddenSafePictureFrame_01q',
-  'hiddenSafePictureFrame_01r',
-  'hiddenSafePictureFrame_01s',
-  'hiddenSafePictureFrame_01t',
-  'hiddenSafePictureFrame_01u',
+  // --- Hidden-safe disguises EXCLUDED ~ they're loot-container TileEntities
+  //     under the hood (extend paintings/frames but spawn random loot via
+  //     DowngradeBlock=cntWallSafeRandomLootHelper). Adding CanPickup conflicted
+  //     with their init flow and caused "Object reference not set to an
+  //     instance of an object / Skipping loading of active block data" NREs
+  //     during POI load (skyscraper_02, diner_02/03, rest_area_03/04 reported).
+  //     Visual swap still applies since they extend their non-safe twin and
+  //     inherit material via Extends ~ users still see their custom art on
+  //     hidden-safe walls; they just can't press E to pick the safe up. ---
 ]
 
 /** XML harvest-tag the wrench/disassemble tool matches against to pick a block up. */

@@ -245,10 +245,11 @@ PICKUP_BLOCKS = [
     "signPosterMovieSexualTension", "signPosterMovieTheater2159",
     "signPosterMovieTheaterLoneWolf", "signPosterMovieTheaterMammasJustice",
     "signPosterMovieTheaterSexualTension",
-    # Picture canvases A-J + helper
+    # Picture canvases A-J (pictureCanvasRandomHelper EXCLUDED ~ internal
+    # helper block; CanPickup triggers POI-load NREs)
     "pictureCanvas_01a", "pictureCanvas_01b", "pictureCanvas_01c", "pictureCanvas_01d",
     "pictureCanvas_01e", "pictureCanvas_01f", "pictureCanvas_01g", "pictureCanvas_01h",
-    "pictureCanvas_01i", "pictureCanvas_01j", "pictureCanvasRandomHelper",
+    "pictureCanvas_01i", "pictureCanvas_01j",
     # Picture frames A-W
     "pictureFrame_01a", "pictureFrame_01b", "pictureFrame_01c", "pictureFrame_01d",
     "pictureFrame_01e", "pictureFrame_01f", "pictureFrame_01g", "pictureFrame_01h",
@@ -256,13 +257,10 @@ PICKUP_BLOCKS = [
     "pictureFrame_01m", "pictureFrame_01n", "pictureFrame_01o", "pictureFrame_01p",
     "pictureFrame_01q", "pictureFrame_01r", "pictureFrame_01s", "pictureFrame_01t",
     "pictureFrame_01u", "pictureFrame_01v", "pictureFrame_01w",
-    # Hidden-safe variants
-    "hiddenSafePictureFrame_01a", "hiddenSafePictureFrame_01c", "hiddenSafePictureFrame_01d",
-    "hiddenSafePictureFrame_01e", "hiddenSafePictureFrame_01f", "hiddenSafePictureFrame_01h",
-    "hiddenSafePictureFrame_01j", "hiddenSafePictureFrame_01l", "hiddenSafePictureFrame_01m",
-    "hiddenSafePictureFrame_01o", "hiddenSafePictureFrame_01p", "hiddenSafePictureFrame_01q",
-    "hiddenSafePictureFrame_01r", "hiddenSafePictureFrame_01s", "hiddenSafePictureFrame_01t",
-    "hiddenSafePictureFrame_01u",
+    # Hidden-safe variants EXCLUDED ~ they're loot-container TileEntities under
+    # the hood. CanPickup conflicted with their init flow and caused POI-load
+    # NREs. Visual swap still applies via Extends so users still see their art
+    # on hidden-safe walls; they just can't E-pick-up the safes themselves.
 ]
 
 PORTRAIT_SIZE = 1024

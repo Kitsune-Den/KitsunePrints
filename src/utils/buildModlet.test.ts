@@ -202,13 +202,20 @@ describe('renderPickupAppendRows', () => {
     expect(rows).toContain("@name='signPosterMovieTheaterLoneWolf'")
     expect(rows).toContain("@name='pictureFrame_01a'")
     expect(rows).toContain("@name='pictureCanvas_01j'")
-    expect(rows).toContain("@name='hiddenSafePictureFrame_01u'")
   })
 
-  it('produces ~100 append patches (one per pickup block)', () => {
+  it('does NOT patch hidden-safe variants (they break POI load)', () => {
+    expect(rows).not.toContain('hiddenSafe')
+  })
+
+  it('does NOT patch pictureCanvasRandomHelper (internal placeholder)', () => {
+    expect(rows).not.toContain('pictureCanvasRandomHelper')
+  })
+
+  it('produces ~83 append patches (one per pickup block)', () => {
     const patchCount = (rows.match(/<append /g) || []).length
-    expect(patchCount).toBeGreaterThanOrEqual(95)
-    expect(patchCount).toBeLessThanOrEqual(110)
+    expect(patchCount).toBeGreaterThanOrEqual(80)
+    expect(patchCount).toBeLessThanOrEqual(95)
   })
 })
 
