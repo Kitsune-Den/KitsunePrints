@@ -158,6 +158,14 @@ export interface PackMeta {
   author: string
   description: string
   version: string
+  /**
+   * When true, the modlet ships a Config/pickup.xml patch that adds a Harvest
+   * drop to every vanilla picture/poster/canvas/safe block (and to every
+   * generated kp_* block in this pack), making them wrench-pickup-able and
+   * placeable from inventory in survival mode. Defaults off so existing
+   * users aren't surprised by their POIs becoming dismantle-friendly.
+   */
+  enablePickup: boolean
 }
 
 export const DEFAULT_PACK_META: PackMeta = {
@@ -165,4 +173,5 @@ export const DEFAULT_PACK_META: PackMeta = {
   author: '',
   description: 'A custom picture pack for 7 Days to Die V2.6',
   version: '0.1.0',
+  enablePickup: false,
 }

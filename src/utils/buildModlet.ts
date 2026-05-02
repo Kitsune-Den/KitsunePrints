@@ -12,6 +12,7 @@ import {
   composeAtlas,
   composeIcon,
 } from './composer'
+import { PICKUP_BLOCKS, HARVEST_TAG } from './pickupBlocks'
 
 /**
  * Builds the modlet zip. Layout:
@@ -84,7 +85,7 @@ export async function buildModlet(
     for (const vanillaBlock of slot.vanillaBlocks) {
       const blockName = `kp_${packId}_${vanillaBlock}`
       root.file(`UIAtlases/ItemIconAtlas/${blockName}.png`, iconBlob)
-      blocksRows.push(renderBlockEntry(blockName, vanillaBlock))
+      blocksRows.push(renderBlockEntry(blockName, vanillaBlock, meta.enablePickup))
 
       // Recipe + display label depend on slot kind / block size suffix.
       const recipeKind = pickRecipeKind(slot, vanillaBlock)
@@ -115,6 +116,12 @@ export async function buildModlet(
   root.file('Config/blocks.xml', renderBlocksXml(blocksRows))
   root.file('Config/recipes.xml', renderRecipesXml(recipesRows))
   root.file('Config/Localization.txt', renderLocalization(locRows))
+
+  // Optional pickup patch ~ when the pack opts in, vanilla painting/poster/canvas/safe
+  // blocks become wrench-pickup-able by adding a Harvest drop returning the block as itself.
+  if (meta.enablePickup) {
+    root.file('Config/pickup.xml', renderPickupXml())
+  }
 
   return zip.generateAsync({ type: 'blob' })
 }
@@ -163,11 +170,44 @@ function renderModInfo(meta: PackMeta): string {
 `
 }
 
-function renderBlockEntry(blockName: string, vanillaBlock: string): string {
+function renderBlockEntry(
+  blockName: string,
+  vanillaBlock: string,
+  pickupable: boolean,
+): string {
+  // When pickup is enabled, add a Harvest drop returning the kp_* block as
+  // itself ~ otherwise wrenching it would drop a vanilla copy (since the
+  // parent block's Harvest drop, if any, hardcodes its own name).
+  const pickupLine = pickupable
+    ? `\n            <drop event="Harvest" name="${escapeXml(blockName)}" count="1" tag="${HARVEST_TAG}"/>`
+    : ''
   return `        <block name="${escapeXml(blockName)}">
             <property name="Extends" value="${escapeXml(vanillaBlock)}"/>
-            <property name="CustomIcon" value="${escapeXml(blockName)}"/>
+            <property name="CustomIcon" value="${escapeXml(blockName)}"/>${pickupLine}
         </block>`
+}
+
+function renderPickupXml(): string {
+  // One <append> per vanilla block since the drop's `name` attribute must be
+  // the block's own name ~ no way to template that across XPath.
+  const rows = PICKUP_BLOCKS.map(name =>
+    `    <append xpath="/blocks/block[@name='${escapeXml(name)}']">
+        <drop event="Harvest" name="${escapeXml(name)}" count="1" tag="${HARVEST_TAG}"/>
+    </append>`
+  ).join('\n\n')
+  return `<?xml version="1.0" encoding="UTF-8" ?>
+<configs>
+
+    <!-- KitsunePrints optional pickup patch.
+         Adds a Harvest drop to every vanilla picture/poster/canvas/safe block
+         so the wrench returns it as an item, making "wrench → inventory →
+         place anywhere" the survival workflow. Only emitted when the pack
+         opts in via the Pack Info checkbox. -->
+
+${rows}
+
+</configs>
+`
 }
 
 function renderBlocksXml(rows: string[]): string {
