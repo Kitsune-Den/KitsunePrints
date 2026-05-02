@@ -54,23 +54,23 @@ const SLOT_TABS: SlotTabDef[] = [
     label: 'Misc Decor',
     blurb:
       'Calendar, gun blueprints, target posters ~ standalone single-block decor. Each gets its own composed texture; the runtime DLL resets the material UV so your full image fills the canvas, even on slots that share an atlas in vanilla.',
-    filter: (s) => s.kind === 'decor' && !s.slotId.startsWith('signSnackPoster') && !s.slotId.startsWith('pictureFramed') && !s.slotId.startsWith('pictureCanvas'),
+    filter: (s) => s.kind === 'decor' && !s.slotId.startsWith('signSnackPoster'),
     gridCols: 'grid-cols-2 md:grid-cols-3',
   },
   {
     id: 'picture-frames',
     label: 'Picture Frames',
     blurb:
-      "The little framed pictures on POI walls ~ 8 style slots covering 23 vanilla blocks via shared materials (each slot re-skins 2-3 frames). Vanilla packs 3-4 sub-images into each texture, so sibling frames in a style may each show a different region of your uploaded image (collage effect). Hidden-safe variants in POIs re-skin automatically.",
-    filter: (s) => s.kind === 'decor' && s.slotId.startsWith('pictureFramed'),
-    gridCols: 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4',
+      "23 individual framed pictures (one per pictureFrame_01<letter> block) across 8 shared atlases. Each frame samples its own tile, so each can take its own image. Hidden-safe picture-frame disguises re-skin automatically since they extend their non-safe twin.",
+    filter: (s) => s.kind === 'canvasTile' && s.slotId.startsWith('pictureFrame_01'),
+    gridCols: 'grid-cols-2 md:grid-cols-4 lg:grid-cols-6',
   },
   {
     id: 'canvases',
     label: 'Canvases',
     blurb:
       "10 individual canvas paintings (5 per shared atlas) ~ each block can take its own image since the composer writes per-tile into the shared 2048×2048 atlas. Aspect is ~16:9 widescreen since each tile is wider than tall.",
-    filter: (s) => s.kind === 'canvasTile',
+    filter: (s) => s.kind === 'canvasTile' && s.slotId.startsWith('pictureCanvas_01'),
     gridCols: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3',
   },
   {

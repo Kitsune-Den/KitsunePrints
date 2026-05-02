@@ -59,6 +59,14 @@ export const ATLAS_SOURCES: Record<string, AtlasSource> = {
   posterMovie:    { vanillaPath: '/vanilla/_posterMovie_atlas.png',    size: 1024 },
   pictureCanvas1: { vanillaPath: '/vanilla/_pictureCanvas1_atlas.png', size: 2048 },
   pictureCanvas2: { vanillaPath: '/vanilla/_pictureCanvas2_atlas.png', size: 2048 },
+  pictureFramed:  { vanillaPath: '/vanilla/_pictureFramed_atlas.png',  size: 2048 },
+  pictureFramed2: { vanillaPath: '/vanilla/_pictureFramed2_atlas.png', size: 2048 },
+  pictureFramed3: { vanillaPath: '/vanilla/_pictureFramed3_atlas.png', size: 2048 },
+  pictureFramed4: { vanillaPath: '/vanilla/_pictureFramed4_atlas.png', size: 2048 },
+  pictureFramed5: { vanillaPath: '/vanilla/_pictureFramed5_atlas.png', size: 2048 },
+  pictureFramed6: { vanillaPath: '/vanilla/_pictureFramed6_atlas.png', size: 2048 },
+  pictureFramed7: { vanillaPath: '/vanilla/_pictureFramed7_atlas.png', size: 2048 },
+  pictureFramed8: { vanillaPath: '/vanilla/_pictureFramed8_atlas.png', size: 2048 },
 }
 
 /** Legacy aliases ~ kept for any external callers. */
@@ -179,23 +187,37 @@ export const SLOTS: SlotDef[] = [
   { slotId: 'signSnackPosterNerd',         materialName: 'snackPosterNerd',         label: 'Snack ~ Nerd Tats',           vanillaBlocks: ['signSnackPosterNerd'],         kind: 'decor', atlasTile: { x: 1230, y: 1536, w: 410,  h: 512 } },
   { slotId: 'signSnackPosterRamen',        materialName: 'snackPosterRamen',        label: 'Snack ~ Ramen',               vanillaBlocks: ['signSnackPosterRamen'],        kind: 'decor', atlasTile: { x: 1640, y: 1536, w: 408,  h: 512 } },
 
-  // Picture frames + canvases ~ each material backs 2-5 vanilla blocks (a
-  // letter triplet of pictureFrame_01* + the matching hidden-safe variants
-  // that visually inherit through extends). Hidden-safe blocks aren't listed
-  // in vanillaBlocks (we don't generate kp_safe_* variants), but they re-skin
-  // automatically since they share the material.
-  // Note: the underlying textures pack 3-6 sub-images into one (vanilla mesh
-  // UVs select a tile), so each frame in a sibling group may show a different
-  // region of your uploaded image. Looks like a "different angle per frame"
-  // collage.
-  { slotId: 'pictureFramed',  materialName: 'pictureFramed',  label: 'Frame Style 1 (a-c)', vanillaBlocks: ['pictureFrame_01a', 'pictureFrame_01b', 'pictureFrame_01c'], kind: 'decor' },
-  { slotId: 'pictureFramed2', materialName: 'pictureFramed2', label: 'Frame Style 2 (d-f)', vanillaBlocks: ['pictureFrame_01d', 'pictureFrame_01e', 'pictureFrame_01f'], kind: 'decor' },
-  { slotId: 'pictureFramed3', materialName: 'pictureFramed3', label: 'Frame Style 3 (g-i)', vanillaBlocks: ['pictureFrame_01g', 'pictureFrame_01h', 'pictureFrame_01i'], kind: 'decor' },
-  { slotId: 'pictureFramed4', materialName: 'pictureFramed4', label: 'Frame Style 4 (j-l)', vanillaBlocks: ['pictureFrame_01j', 'pictureFrame_01k', 'pictureFrame_01l'], kind: 'decor' },
-  { slotId: 'pictureFramed5', materialName: 'pictureFramed5', label: 'Frame Style 5 (m-o)', vanillaBlocks: ['pictureFrame_01m', 'pictureFrame_01n', 'pictureFrame_01o'], kind: 'decor' },
-  { slotId: 'pictureFramed6', materialName: 'pictureFramed6', label: 'Frame Style 6 (p-r)', vanillaBlocks: ['pictureFrame_01p', 'pictureFrame_01q', 'pictureFrame_01r'], kind: 'decor' },
-  { slotId: 'pictureFramed7', materialName: 'pictureFramed7', label: 'Frame Style 7 (s-u)', vanillaBlocks: ['pictureFrame_01s', 'pictureFrame_01t', 'pictureFrame_01u'], kind: 'decor' },
-  { slotId: 'pictureFramed8', materialName: 'pictureFramed8', label: 'Frame Style 8 (v-w)', vanillaBlocks: ['pictureFrame_01v', 'pictureFrame_01w'], kind: 'decor' },
+  // Picture frames ~ 23 individual slots (one per pictureFrame_01<letter>
+  // block) across 8 shared atlases. Same architecture as canvases: each
+  // letter samples its own tile of the shared 2048×2048 atlas via mesh UVs;
+  // composer batches by materialName and writes one composite per atlas.
+  // Hidden-safe variants (pictureFrame_01a -> hiddenSafePictureFrame_01a etc.)
+  // re-skin automatically since they extend their non-safe twin.
+  // Tile rects are equal-thirds in the bottom 45% of each atlas (alphabetical
+  // letter -> left/middle/right). Best-guess; tweak if wrong.
+  { slotId: 'pictureFrame_01a', materialName: 'pictureFramed',  label: 'Frame A', vanillaBlocks: ['pictureFrame_01a'], kind: 'canvasTile', atlasTile: { x: 0,    y: 1126, w: 683, h: 922 } },
+  { slotId: 'pictureFrame_01b', materialName: 'pictureFramed',  label: 'Frame B', vanillaBlocks: ['pictureFrame_01b'], kind: 'canvasTile', atlasTile: { x: 683,  y: 1126, w: 683, h: 922 } },
+  { slotId: 'pictureFrame_01c', materialName: 'pictureFramed',  label: 'Frame C', vanillaBlocks: ['pictureFrame_01c'], kind: 'canvasTile', atlasTile: { x: 1366, y: 1126, w: 682, h: 922 } },
+  { slotId: 'pictureFrame_01d', materialName: 'pictureFramed2', label: 'Frame D', vanillaBlocks: ['pictureFrame_01d'], kind: 'canvasTile', atlasTile: { x: 0,    y: 1126, w: 683, h: 922 } },
+  { slotId: 'pictureFrame_01e', materialName: 'pictureFramed2', label: 'Frame E', vanillaBlocks: ['pictureFrame_01e'], kind: 'canvasTile', atlasTile: { x: 683,  y: 1126, w: 683, h: 922 } },
+  { slotId: 'pictureFrame_01f', materialName: 'pictureFramed2', label: 'Frame F', vanillaBlocks: ['pictureFrame_01f'], kind: 'canvasTile', atlasTile: { x: 1366, y: 1126, w: 682, h: 922 } },
+  { slotId: 'pictureFrame_01g', materialName: 'pictureFramed3', label: 'Frame G', vanillaBlocks: ['pictureFrame_01g'], kind: 'canvasTile', atlasTile: { x: 0,    y: 1126, w: 683, h: 922 } },
+  { slotId: 'pictureFrame_01h', materialName: 'pictureFramed3', label: 'Frame H', vanillaBlocks: ['pictureFrame_01h'], kind: 'canvasTile', atlasTile: { x: 683,  y: 1126, w: 683, h: 922 } },
+  { slotId: 'pictureFrame_01i', materialName: 'pictureFramed3', label: 'Frame I', vanillaBlocks: ['pictureFrame_01i'], kind: 'canvasTile', atlasTile: { x: 1366, y: 1126, w: 682, h: 922 } },
+  { slotId: 'pictureFrame_01j', materialName: 'pictureFramed4', label: 'Frame J', vanillaBlocks: ['pictureFrame_01j'], kind: 'canvasTile', atlasTile: { x: 0,    y: 1126, w: 683, h: 922 } },
+  { slotId: 'pictureFrame_01k', materialName: 'pictureFramed4', label: 'Frame K', vanillaBlocks: ['pictureFrame_01k'], kind: 'canvasTile', atlasTile: { x: 683,  y: 1126, w: 683, h: 922 } },
+  { slotId: 'pictureFrame_01l', materialName: 'pictureFramed4', label: 'Frame L', vanillaBlocks: ['pictureFrame_01l'], kind: 'canvasTile', atlasTile: { x: 1366, y: 1126, w: 682, h: 922 } },
+  { slotId: 'pictureFrame_01m', materialName: 'pictureFramed5', label: 'Frame M', vanillaBlocks: ['pictureFrame_01m'], kind: 'canvasTile', atlasTile: { x: 0,    y: 1126, w: 683, h: 922 } },
+  { slotId: 'pictureFrame_01n', materialName: 'pictureFramed5', label: 'Frame N', vanillaBlocks: ['pictureFrame_01n'], kind: 'canvasTile', atlasTile: { x: 683,  y: 1126, w: 683, h: 922 } },
+  { slotId: 'pictureFrame_01o', materialName: 'pictureFramed5', label: 'Frame O', vanillaBlocks: ['pictureFrame_01o'], kind: 'canvasTile', atlasTile: { x: 1366, y: 1126, w: 682, h: 922 } },
+  { slotId: 'pictureFrame_01p', materialName: 'pictureFramed6', label: 'Frame P', vanillaBlocks: ['pictureFrame_01p'], kind: 'canvasTile', atlasTile: { x: 0,    y: 1126, w: 683, h: 922 } },
+  { slotId: 'pictureFrame_01q', materialName: 'pictureFramed6', label: 'Frame Q', vanillaBlocks: ['pictureFrame_01q'], kind: 'canvasTile', atlasTile: { x: 683,  y: 1126, w: 683, h: 922 } },
+  { slotId: 'pictureFrame_01r', materialName: 'pictureFramed6', label: 'Frame R', vanillaBlocks: ['pictureFrame_01r'], kind: 'canvasTile', atlasTile: { x: 1366, y: 1126, w: 682, h: 922 } },
+  { slotId: 'pictureFrame_01s', materialName: 'pictureFramed7', label: 'Frame S', vanillaBlocks: ['pictureFrame_01s'], kind: 'canvasTile', atlasTile: { x: 0,    y: 1126, w: 683, h: 922 } },
+  { slotId: 'pictureFrame_01t', materialName: 'pictureFramed7', label: 'Frame T', vanillaBlocks: ['pictureFrame_01t'], kind: 'canvasTile', atlasTile: { x: 683,  y: 1126, w: 683, h: 922 } },
+  { slotId: 'pictureFrame_01u', materialName: 'pictureFramed7', label: 'Frame U', vanillaBlocks: ['pictureFrame_01u'], kind: 'canvasTile', atlasTile: { x: 1366, y: 1126, w: 682, h: 922 } },
+  { slotId: 'pictureFrame_01v', materialName: 'pictureFramed8', label: 'Frame V', vanillaBlocks: ['pictureFrame_01v'], kind: 'canvasTile', atlasTile: { x: 0,    y: 1126, w: 1024, h: 922 } },
+  { slotId: 'pictureFrame_01w', materialName: 'pictureFramed8', label: 'Frame W', vanillaBlocks: ['pictureFrame_01w'], kind: 'canvasTile', atlasTile: { x: 1024, y: 1126, w: 1024, h: 922 } },
   // Picture canvases ~ each pictureCanvas_01<letter> samples its own tile of
   // the shared 2048×2048 canvas atlas (pictureCanvas_d / pictureCanvas2_d).
   // Per-prefab slots so users can replace each canvas independently. Composer

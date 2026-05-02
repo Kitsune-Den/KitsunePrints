@@ -41,10 +41,11 @@ MISC_DECOR_TEXTURES = {
     "targetPoster2":     ("targetPosters_d", "right"),
 }
 
-# Picture frame slots ~ each material drives 3-5 vanilla blocks
-# (picture frame letter triplets plus their hidden-safe twins). Reference
-# thumbs come from the standalone _d textures (no atlas dance).
-PICTURE_FRAME_TEXTURES = {
+# Picture frame atlases ~ each is 2048×2048 with wood frame border in the
+# top ~55% and 2-3 sub-pictures in the bottom 45%. Each pictureFrame_01<letter>
+# samples one sub-picture via mesh UVs. Atlases mapped to materials (and the
+# vanilla _d texture name they reference).
+PICTURE_FRAME_ATLAS_SOURCES = {
     "pictureFramed":  "pictureFramed_d",
     "pictureFramed2": "PictureFramed2_d",
     "pictureFramed3": "PictureFramed3_d",
@@ -54,6 +55,36 @@ PICTURE_FRAME_TEXTURES = {
     "pictureFramed7": "PictureFramed7_d",
     "pictureFramed8": "PictureFramed8_d",
 }
+
+# Per-prefab tile rects on each 2048×2048 atlas. Bottom 45% (y=1126..2048)
+# holds the actual sub-pictures, divided into 3 equal columns (or 2 for
+# pictureFramed8). Letter-to-tile assignment is alphabetical (a,d,g,...
+# get the leftmost tile; c,f,i,... the rightmost). Best-guess; tweak if
+# wrong by swapping rects.
+PICTURE_FRAME_TILE_3WIDE = [
+    (0,    1126, 683,  2048),  # left third
+    (683,  1126, 1366, 2048),  # middle third
+    (1366, 1126, 2048, 2048),  # right third
+]
+PICTURE_FRAME_TILE_2WIDE = [
+    (0,    1126, 1024, 2048),  # left half
+    (1024, 1126, 2048, 2048),  # right half
+]
+# Build the full slot_id -> (material, rect) dict.
+PICTURE_FRAME_TILE: dict[str, tuple[str, tuple[int, int, int, int]]] = {}
+for material, letters in [
+    ("pictureFramed",  "abc"),
+    ("pictureFramed2", "def"),
+    ("pictureFramed3", "ghi"),
+    ("pictureFramed4", "jkl"),
+    ("pictureFramed5", "mno"),
+    ("pictureFramed6", "pqr"),
+    ("pictureFramed7", "stu"),
+    ("pictureFramed8", "vw"),
+]:
+    rects = PICTURE_FRAME_TILE_3WIDE if len(letters) == 3 else PICTURE_FRAME_TILE_2WIDE
+    for letter, rect in zip(letters, rects):
+        PICTURE_FRAME_TILE[f"pictureFrame_01{letter}"] = (material, rect)
 
 # Picture canvas atlases ~ each is a 2048×2048 texture with 6 distinct canvas
 # paintings in a 2-col × 3-row grid. Each pictureCanvas_01<letter> prefab
@@ -159,7 +190,7 @@ def collect_textures_and_materials(game_root: Path):
         | set(ABSTRACT_MATERIALS)
         | {"signsMisc_d", "posterMovie", "snackPosters_d"}
         | {tex for (tex, _side) in MISC_DECOR_TEXTURES.values()}
-        | set(PICTURE_FRAME_TEXTURES.values())
+        | set(PICTURE_FRAME_ATLAS_SOURCES.values())
         | set(CANVAS_ATLAS_SOURCES.values())
     )
 
@@ -367,24 +398,29 @@ def main():
             print(f"  -> wrote {out.relative_to(OUT_DIR.parent.parent)}  (snackPosters_d tile {rect})")
             written += 1
 
-    # Picture frames: standalone textures (each one drives 2-3 vanilla blocks).
-    # Top half of each atlas is wood frame border; bottom half has the actual
-    # 3-4 picture sub-tiles. Crop to bottom half so the thumb shows what users
-    # are actually replacing instead of mostly-wood-texture.
-    for slot_id, tex_name in PICTURE_FRAME_TEXTURES.items():
+    # Picture frame atlases: ship full atlas + per-tile thumb so each frame
+    # block becomes its own slot.
+    pf_atlas_imgs = {}
+    for material, tex_name in PICTURE_FRAME_ATLAS_SOURCES.items():
         tex = textures.get(tex_name)
         if tex is None:
-            print(f"  ! missing texture {tex_name} for {slot_id}")
+            print(f"  ! missing picture frame atlas {tex_name}")
             continue
-        w, h = tex.size
-        # Bottom 45% ~ skips the wood frame/border row at top of each atlas
-        # (some atlases have a wider wood-frame row that bleeds into the
-        # bottom half).
-        cropped = tex.crop((0, int(h * 0.55), w, h))
-        thumb = make_thumb(cropped)
+        pf_atlas_imgs[material] = tex
+        atlas_out = OUT_DIR / f"_{material}_atlas.png"
+        tex.convert("RGBA").save(atlas_out)
+        print(f"  -> wrote {atlas_out.relative_to(OUT_DIR.parent.parent)}  (full atlas, {tex.width}x{tex.height})")
+        written += 1
+    for slot_id, (material, rect) in PICTURE_FRAME_TILE.items():
+        atlas = pf_atlas_imgs.get(material)
+        if atlas is None:
+            print(f"  ! no atlas for {slot_id}")
+            continue
+        tile = atlas.crop(rect)
+        thumb = make_thumb(tile)
         out = OUT_DIR / f"{slot_id}.jpg"
         thumb.convert("RGB").save(out, quality=88)
-        print(f"  -> wrote {out.relative_to(OUT_DIR.parent.parent)}  (bottom half of {tex_name})")
+        print(f"  -> wrote {out.relative_to(OUT_DIR.parent.parent)}  ({material} tile {rect})")
         written += 1
 
     # Picture canvas atlases: ship full atlas + per-tile thumbs so each canvas
