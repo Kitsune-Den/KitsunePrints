@@ -14,7 +14,7 @@ import {
   composeAtlas,
   composeIcon,
 } from './composer'
-import { PICKUP_BLOCKS, HARVEST_TAG } from './pickupBlocks'
+import { PICKUP_BLOCKS } from './pickupBlocks'
 
 /**
  * Builds the modlet zip. Layout:
@@ -130,7 +130,8 @@ export async function buildModlet(
   root.file('Config/Localization.txt', renderLocalization(locRows))
 
   // Optional pickup patch ~ when the pack opts in, vanilla painting/poster/canvas/safe
-  // blocks become wrench-pickup-able by adding a Harvest drop returning the block as itself.
+  // blocks gain CanPickup="true" so the player can pick them up with a single
+  // E press (no tool, no recipe).
   if (meta.enablePickup) {
     root.file('Config/pickup.xml', renderPickupXml())
   }
@@ -153,7 +154,7 @@ async function composeForSlot(slot: SlotDef, state: SlotState): Promise<Blob> {
   throw new Error(`Slot kind ${slot.kind} should be handled in atlas batch`)
 }
 
-type RecipeKind = 'portrait' | 'abstract2x2' | 'abstract3x2' | 'moviePoster' | 'hiddenSafe'
+type RecipeKind = 'portrait' | 'abstract2x2' | 'abstract3x2' | 'moviePoster'
 
 function pickRecipeKind(slot: SlotDef, vanillaBlock: string): RecipeKind {
   if (slot.kind === 'portrait') return 'portrait'
@@ -161,19 +162,6 @@ function pickRecipeKind(slot: SlotDef, vanillaBlock: string): RecipeKind {
   if (slot.kind === 'decor' || slot.kind === 'canvasTile') return 'moviePoster' // small print cost
   // abstract: distinguish by size suffix on the vanilla block name
   return vanillaBlock.endsWith('_2x2') ? 'abstract2x2' : 'abstract3x2'
-}
-
-/** Classify a vanilla pickup-list block into a recipe cost bucket by name. */
-function classifyVanillaPickupBlock(name: string): RecipeKind {
-  if (name.startsWith('hiddenSafe')) return 'hiddenSafe'
-  if (name.startsWith('paintingAbstract')) {
-    return name.endsWith('_3x2') ? 'abstract3x2' : 'abstract2x2'
-  }
-  if (name.startsWith('painting')) return 'portrait'
-  // Everything else (snack posters, picture canvases, picture frames,
-  // movie posters and theaters, calendars, blueprints, target, wanted/missing,
-  // cats/dogs, signs) shares the moviePoster small-print recipe.
-  return 'moviePoster'
 }
 
 // ---- Sanitizers ----------------------------------------------------------
@@ -204,12 +192,12 @@ function renderBlockEntry(
   vanillaBlock: string,
   pickupable: boolean,
 ): string {
-  // When pickup is enabled, add CanPickup="true" (hold-E pickup, no tool)
-  // AND a Harvest drop returning the kp_* block as itself (wrench pickup).
-  // Both mechanisms return the user's custom block (not a vanilla copy).
+  // When pickup is enabled, add CanPickup="true" (single E press to pick up,
+  // no tool). Wrench-harvest + workbench recipes were tried in v0.5.x but
+  // conflicted with vanilla loot/destroy flows on hidden-safe variants and
+  // helper blocks that ship as decor. CanPickup alone is the cleanest path.
   const pickupLines = pickupable
-    ? `\n            <property name="CanPickup" value="true"/>` +
-      `\n            <drop event="Harvest" name="${escapeXml(blockName)}" count="1" tag="${HARVEST_TAG}"/>`
+    ? `\n            <property name="CanPickup" value="true"/>`
     : ''
   return `        <block name="${escapeXml(blockName)}">
             <property name="Extends" value="${escapeXml(vanillaBlock)}"/>
@@ -218,49 +206,27 @@ function renderBlockEntry(
 }
 
 function renderPickupXml(): string {
-  // One <append> per vanilla block for the block patches since each Harvest
-  // drop's `name` attribute must be the block's own name. Both CanPickup
-  // (hold-E, no tool) AND Harvest (wrench) so users have a choice ~ press E
-  // for quick decor flow, wrench for the tool-based feel.
+  // One <append> per vanilla block: just CanPickup="true" so the block can
+  // be picked up with a single E press, no tool, no recipe. Wrench-harvest
+  // and workbench recipes were tried in v0.5.x but the Harvest drop tag
+  // conflicted with hidden-safe loot init (NREs on POI load) and recipes
+  // bloated the workbench menu with ~115 entries no one was crafting.
   const blockRows = PICKUP_BLOCKS.map(name =>
     `    <append xpath="/blocks/block[@name='${escapeXml(name)}']">
         <property name="CanPickup" value="true"/>
-        <drop event="Harvest" name="${escapeXml(name)}" count="1" tag="${HARVEST_TAG}"/>
     </append>`
   ).join('\n\n')
-
-  // One big <append xpath="/recipes"> for the workbench recipes ~ adding all
-  // 115 recipes inside a single append node keeps the patch file leaner.
-  const recipeRows = PICKUP_BLOCKS.map(name => {
-    const kind = classifyVanillaPickupBlock(name)
-    return renderRecipeEntry(name, kind)
-  }).join('\n\n')
 
   return `<?xml version="1.0" encoding="UTF-8" ?>
 <configs>
 
     <!-- KitsunePrints optional pickup patch.
-         Adds two pickup mechanisms to every vanilla picture/poster/canvas/safe block:
-           1. CanPickup="true" ~ hold-E to pick up bare-handed (vanilla pattern,
-              same as frameShapes etc).
-           2. Harvest drop returning the block as itself, tag="${HARVEST_TAG}"
-              ~ wrench harvests it back to inventory.
-         Plus workbench recipes for all of them so they're craftable too.
-         Either one places the block in your inventory; place it back from
-         there. Only emitted when the pack opts in via the Pack Info checkbox. -->
+         Adds CanPickup="true" to every vanilla picture/poster/canvas/safe
+         block, so the player can pick them up with a single E press (no tool).
+         Place from inventory wherever you want. Only emitted when the pack
+         opts in via the Pack Info checkbox. -->
 
 ${blockRows}
-
-    <!-- Workbench recipes for every pickup-able block. Costs scale by block
-         size: tiny prints (paper 6 + wood 3), 1×1 framed paintings
-         (paper 2 + wood 6 + iron 1), abstract 2×2/3×2 (paper 8/12 + wood 4/6 + iron 1/2),
-         hidden-safe disguises (paper 2 + wood 6 + iron 8 ~ they're real safes). -->
-
-    <append xpath="/recipes">
-
-${recipeRows}
-
-    </append>
 
 </configs>
 `
@@ -291,7 +257,6 @@ function renderRecipeEntry(blockName: string, kind: RecipeKind): string {
   //  - abstract 2×2:    paper 8 + wood 4 + iron 1
   //  - abstract 3×2:    paper 12 + wood 6 + iron 2 (1.5× the 2×2 cost)
   //  - movie poster:    paper 6 + wood 3 (no frame ~ it's a print)
-  //  - hidden safe:     paper 2 + wood 6 + iron 8 (it's a wall safe, after all)
   const ingredients =
     kind === 'portrait'
       ? '<ingredient name="resourcePaper" count="2"/>\n            <ingredient name="resourceWood" count="6"/>\n            <ingredient name="resourceForgedIron" count="1"/>'
@@ -299,9 +264,7 @@ function renderRecipeEntry(blockName: string, kind: RecipeKind): string {
         ? '<ingredient name="resourcePaper" count="8"/>\n            <ingredient name="resourceWood" count="4"/>\n            <ingredient name="resourceForgedIron" count="1"/>'
         : kind === 'abstract3x2'
           ? '<ingredient name="resourcePaper" count="12"/>\n            <ingredient name="resourceWood" count="6"/>\n            <ingredient name="resourceForgedIron" count="2"/>'
-          : kind === 'hiddenSafe'
-            ? '<ingredient name="resourcePaper" count="2"/>\n            <ingredient name="resourceWood" count="6"/>\n            <ingredient name="resourceForgedIron" count="8"/>'
-            : '<ingredient name="resourcePaper" count="6"/>\n            <ingredient name="resourceWood" count="3"/>'
+          : '<ingredient name="resourcePaper" count="6"/>\n            <ingredient name="resourceWood" count="3"/>'
   return `        <recipe name="${escapeXml(blockName)}" count="1" craft_area="workbench" tags="workbenchCrafting">
             ${ingredients}
         </recipe>`

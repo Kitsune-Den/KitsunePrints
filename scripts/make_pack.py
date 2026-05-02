@@ -147,7 +147,6 @@ PICKUP_BLOCKS = [
     "hiddenSafePictureFrame_01r", "hiddenSafePictureFrame_01s", "hiddenSafePictureFrame_01t",
     "hiddenSafePictureFrame_01u",
 ]
-HARVEST_TAG = "oreWoodHarvest"
 
 PORTRAIT_SIZE = 1024
 ABSTRACT_SIZE = 1024
@@ -275,10 +274,9 @@ def render_blocks_xml(rows: list[str]) -> str:
 def render_block_entry(block_name: str, vanilla_block: str, pickupable: bool) -> str:
     pickup_lines = ""
     if pickupable:
-        pickup_lines = (
-            f'\n            <property name="CanPickup" value="true"/>'
-            f'\n            <drop event="Harvest" name="{escape_xml(block_name)}" count="1" tag="{HARVEST_TAG}"/>'
-        )
+        # Single E press to pick up. Wrench harvest + workbench recipes were
+        # tried earlier but conflicted with hidden-safe loot init on POI load.
+        pickup_lines = '\n            <property name="CanPickup" value="true"/>'
     return (
         f'        <block name="{escape_xml(block_name)}">\n'
         f'            <property name="Extends" value="{escape_xml(vanilla_block)}"/>\n'
@@ -317,12 +315,6 @@ def render_recipe_entry(block_name: str, kind: str) -> str:
             '            <ingredient name="resourceWood" count="6"/>\n'
             '            <ingredient name="resourceForgedIron" count="2"/>'
         )
-    elif kind == "hiddenSafe":
-        ingredients = (
-            '            <ingredient name="resourcePaper" count="2"/>\n'
-            '            <ingredient name="resourceWood" count="6"/>\n'
-            '            <ingredient name="resourceForgedIron" count="8"/>'
-        )
     else:  # moviePoster / catch-all small print
         ingredients = (
             '            <ingredient name="resourcePaper" count="6"/>\n'
@@ -335,42 +327,23 @@ def render_recipe_entry(block_name: str, kind: str) -> str:
     )
 
 
-def classify_vanilla_pickup_block(name: str) -> str:
-    """Classify a vanilla pickup-list block into a recipe cost bucket by name."""
-    if name.startswith("hiddenSafe"):
-        return "hiddenSafe"
-    if name.startswith("paintingAbstract"):
-        return "abstract3x2" if name.endswith("_3x2") else "abstract2x2"
-    if name.startswith("painting"):
-        return "portrait"
-    return "moviePoster"
-
-
 def render_pickup_xml() -> str:
     block_rows = []
     for name in PICKUP_BLOCKS:
         block_rows.append(
             f'    <append xpath="/blocks/block[@name=\'{escape_xml(name)}\']">\n'
             f'        <property name="CanPickup" value="true"/>\n'
-            f'        <drop event="Harvest" name="{escape_xml(name)}" count="1" tag="{HARVEST_TAG}"/>\n'
             f'    </append>'
         )
-    recipe_rows = []
-    for name in PICKUP_BLOCKS:
-        kind = classify_vanilla_pickup_block(name)
-        recipe_rows.append(render_recipe_entry(name, kind))
     return (
         '<?xml version="1.0" encoding="UTF-8" ?>\n'
         '<configs>\n\n'
         '    <!-- KitsunePrints optional pickup patch.\n'
-        '         Adds CanPickup=true (hold-E), wrench Harvest, and a workbench\n'
-        '         recipe to every covered vanilla block. Set enablePickup=false\n'
-        '         in config.json to skip this file. -->\n\n'
+        '         Adds CanPickup="true" (single E press, no tool, no recipe) to\n'
+        '         every covered vanilla block. Set enablePickup=false in\n'
+        '         config.json to skip this file. -->\n\n'
         + "\n\n".join(block_rows)
-        + '\n\n    <!-- Workbench recipes for every pickup-able block. -->\n\n'
-        + '    <append xpath="/recipes">\n\n'
-        + "\n\n".join(recipe_rows)
-        + '\n\n    </append>\n\n</configs>\n'
+        + '\n\n</configs>\n'
     )
 
 

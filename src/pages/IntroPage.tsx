@@ -279,13 +279,13 @@ export default function IntroPage() {
               <div className="text-2xl">🪝</div>
               <span className="text-[10px] tracking-[0.3em] uppercase text-orange-400 font-bold">New in v0.5</span>
             </div>
-            <h3 className="text-sm font-bold tracking-widest uppercase text-zinc-200">Pick Up · Place · Craft</h3>
+            <h3 className="text-sm font-bold tracking-widest uppercase text-zinc-200">Press E to Pick Up</h3>
             <p className="text-sm text-zinc-500 leading-relaxed">
-              On by default ~ every pack ships with a patch that adds <span className="text-zinc-300 font-medium">hold-E pickup</span>,{' '}
-              <span className="text-zinc-300 font-medium">wrench harvest</span>, and a <span className="text-zinc-300 font-medium">workbench recipe</span>{' '}
+              On by default ~ every pack ships with a tiny patch that adds <span className="text-zinc-300 font-medium">press-E pickup</span>{' '}
               to every vanilla painting, poster, canvas, picture frame, and hidden-safe disguise in the game (~115 blocks).
-              Find one in a POI and grab it, or craft a fresh one at your workbench. Your custom blocks get the same treatment, so wrenching one of yours returns
-              <em>yours</em>, not the vanilla parent. Toggle off in Pack Info if you'd rather leave POIs intact.
+              Find one in a POI, tap E, place from inventory wherever. No tool, no recipe, no fuss. Your custom blocks
+              get the same treatment so they swap in and out of inventory just like vanilla. Toggle off in Pack Info if
+              you'd rather leave POIs intact.
             </p>
           </div>
         </div>
@@ -307,7 +307,7 @@ export default function IntroPage() {
               },
               {
                 q: 'Does this make every painting in the game pickup-able?',
-                a: "By default, yes ~ packs ship with a Config/pickup.xml patch that adds CanPickup=true, a wrench Harvest drop, AND a workbench recipe to ~115 vanilla wall-art blocks (paintings, snack posters, movie posters and theaters, canvases, picture frames, and hidden-safe disguises). Hold E or wrench to grab any of them in a POI, or craft a fresh one at your workbench, place from inventory wherever. There's a checkbox in the Pack Info tab to disable if you'd rather POIs stayed undismantleable.",
+                a: "By default, yes ~ packs ship with a Config/pickup.xml patch that adds CanPickup=true to ~115 vanilla wall-art blocks (paintings, snack posters, movie posters and theaters, canvases, picture frames, and hidden-safe disguises). Press E on any of them in a POI to drop into your inventory, then place wherever. There's a checkbox in the Pack Info tab to disable if you'd rather POIs stayed undismantleable.",
               },
               {
                 q: 'Does it conflict with other mods?',
