@@ -6,6 +6,8 @@ import {
   renderBlockEntry,
   renderRecipeEntry,
   renderPickupXml,
+  renderPickupAppendRows,
+  renderBlocksXml,
   renderModInfo,
   type RecipeKind,
 } from './buildModlet'
@@ -182,39 +184,65 @@ describe('renderRecipeEntry', () => {
   })
 })
 
-// ---- renderPickupXml -----------------------------------------------------
+// ---- renderPickupAppendRows ----------------------------------------------
 
-describe('renderPickupXml', () => {
-  const xml = renderPickupXml()
+describe('renderPickupAppendRows', () => {
+  const rows = renderPickupAppendRows()
 
   it('only adds CanPickup=true (no Harvest drop, no recipe)', () => {
-    expect(xml).toContain('<property name="CanPickup" value="true"/>')
-    expect(xml).not.toContain('Harvest')
-    expect(xml).not.toContain('<recipe ')
-    expect(xml).not.toContain('xpath="/recipes"')
+    expect(rows).toContain('<property name="CanPickup" value="true"/>')
+    expect(rows).not.toContain('Harvest')
+    expect(rows).not.toContain('<recipe ')
   })
 
   it('patches all known categories of vanilla blocks', () => {
-    // A few representative names from each category
-    expect(xml).toContain("@name='paintingBen'")
-    expect(xml).toContain("@name='paintingAbstract01_2x2'")
-    expect(xml).toContain("@name='signSnackPosterAtom'")
-    expect(xml).toContain("@name='signPosterMovieTheaterLoneWolf'")
-    expect(xml).toContain("@name='pictureFrame_01a'")
-    expect(xml).toContain("@name='pictureCanvas_01j'")
-    expect(xml).toContain("@name='hiddenSafePictureFrame_01u'")
+    expect(rows).toContain("@name='paintingBen'")
+    expect(rows).toContain("@name='paintingAbstract01_2x2'")
+    expect(rows).toContain("@name='signSnackPosterAtom'")
+    expect(rows).toContain("@name='signPosterMovieTheaterLoneWolf'")
+    expect(rows).toContain("@name='pictureFrame_01a'")
+    expect(rows).toContain("@name='pictureCanvas_01j'")
+    expect(rows).toContain("@name='hiddenSafePictureFrame_01u'")
   })
 
-  it('produces ~100 append patches (one per pickup block in PICKUP_BLOCKS)', () => {
-    const patchCount = (xml.match(/<append /g) || []).length
+  it('produces ~100 append patches (one per pickup block)', () => {
+    const patchCount = (rows.match(/<append /g) || []).length
     expect(patchCount).toBeGreaterThanOrEqual(95)
     expect(patchCount).toBeLessThanOrEqual(110)
   })
+})
 
-  it('starts with the XML prolog and a configs root', () => {
+// ---- renderPickupXml (legacy wrapper) ------------------------------------
+
+describe('renderPickupXml (legacy wrapper)', () => {
+  it('wraps the append rows in a full configs document', () => {
+    const xml = renderPickupXml()
     expect(xml.startsWith('<?xml version="1.0" encoding="UTF-8" ?>')).toBe(true)
     expect(xml).toContain('<configs>')
     expect(xml.trimEnd().endsWith('</configs>')).toBe(true)
+    expect(xml).toContain('<property name="CanPickup" value="true"/>')
+  })
+})
+
+// ---- renderBlocksXml ------------------------------------------------------
+
+describe('renderBlocksXml', () => {
+  const KP_ROW = '        <block name="kp_pack_paintingBen"></block>'
+
+  it('emits an append /blocks wrapper around the kp_* rows', () => {
+    const xml = renderBlocksXml([KP_ROW])
+    expect(xml).toContain('<append xpath="/blocks">')
+    expect(xml).toContain(KP_ROW)
+    expect(xml).not.toContain("xpath=\"/blocks/block[@name='paintingBen']\"")
+  })
+
+  it('inlines pickup append patches when pickupAppendRows is provided', () => {
+    const xml = renderBlocksXml([KP_ROW], renderPickupAppendRows())
+    // kp_* block should still be present
+    expect(xml).toContain(KP_ROW)
+    // Plus per-vanilla-block <append> patches with CanPickup
+    expect(xml).toContain("xpath=\"/blocks/block[@name='paintingBen']\"")
+    expect(xml).toContain('<property name="CanPickup" value="true"/>')
   })
 })
 

@@ -429,13 +429,27 @@ def render_modinfo(meta: dict, sanitized_name: str) -> str:
     )
 
 
-def render_blocks_xml(rows: list[str]) -> str:
+def render_blocks_xml(rows: list[str], pickup_append_rows: str = "") -> str:
+    """Render Config/blocks.xml. Inlines the pickup <append> patches when
+    provided so 7DTD's XmlPatcher reliably picks them up (patches in a file
+    named after the master they target get applied most consistently)."""
+    pickup_section = ""
+    if pickup_append_rows:
+        pickup_section = (
+            "\n\n"
+            "    <!-- Optional pickup patch ~ adds CanPickup=\"true\" to every covered\n"
+            "         vanilla decor block. Single E press to grab, no tool, no recipe. -->\n\n"
+            + pickup_append_rows
+            + "\n"
+        )
     return (
         '<?xml version="1.0" encoding="UTF-8" ?>\n'
         "<configs>\n\n"
         "    <append xpath=\"/blocks\">\n\n"
         + "\n\n".join(rows)
-        + "\n\n    </append>\n\n</configs>\n"
+        + "\n\n    </append>"
+        + pickup_section
+        + "\n</configs>\n"
     )
 
 
@@ -495,24 +509,18 @@ def render_recipe_entry(block_name: str, kind: str) -> str:
     )
 
 
-def render_pickup_xml() -> str:
-    block_rows = []
+def render_pickup_append_rows() -> str:
+    """Render the per-block pickup <append> patches. Inlined into
+    Config/blocks.xml by render_blocks_xml() so 7DTD's XmlPatcher reliably
+    applies them."""
+    rows = []
     for name in PICKUP_BLOCKS:
-        block_rows.append(
+        rows.append(
             f'    <append xpath="/blocks/block[@name=\'{escape_xml(name)}\']">\n'
             f'        <property name="CanPickup" value="true"/>\n'
             f'    </append>'
         )
-    return (
-        '<?xml version="1.0" encoding="UTF-8" ?>\n'
-        '<configs>\n\n'
-        '    <!-- KitsunePrints optional pickup patch.\n'
-        '         Adds CanPickup="true" (single E press, no tool, no recipe) to\n'
-        '         every covered vanilla block. Set enablePickup=false in\n'
-        '         config.json to skip this file. -->\n\n'
-        + "\n\n".join(block_rows)
-        + '\n\n</configs>\n'
-    )
+    return "\n\n".join(rows)
 
 
 def render_localization(rows: list[str]) -> str:
@@ -678,11 +686,12 @@ def build_pack(pack_dir: Path) -> Path:
     (config_out / "picture_pack.json").write_text(
         json.dumps(pic_map, indent=2), encoding="utf-8"
     )
-    (config_out / "blocks.xml").write_text(render_blocks_xml(block_rows), encoding="utf-8")
+    pickup_rows = render_pickup_append_rows() if enable_pickup else ""
+    (config_out / "blocks.xml").write_text(
+        render_blocks_xml(block_rows, pickup_rows), encoding="utf-8"
+    )
     (config_out / "recipes.xml").write_text(render_recipes_xml(recipe_rows), encoding="utf-8")
     (config_out / "Localization.txt").write_text(render_localization(loc_rows), encoding="utf-8")
-    if enable_pickup:
-        (config_out / "pickup.xml").write_text(render_pickup_xml(), encoding="utf-8")
 
     # Zip
     zip_path = pack_dir / f"{sanitized}.zip"

@@ -123,18 +123,18 @@ export async function buildModlet(
     pictureMap[materialName] = filename
   }
 
-  // Config files
+  // Config files. When pickup is enabled, the pickup `<append>` patches are
+  // inlined into Config/blocks.xml (rather than shipped as a separate
+  // pickup.xml) so 7DTD's XmlPatcher reliably loads them ~ patches in a file
+  // named after the master they target (blocks.xml) get applied most
+  // consistently across V2.x mod loaders.
   root.file('Config/picture_pack.json', JSON.stringify(pictureMap, null, 2))
-  root.file('Config/blocks.xml', renderBlocksXml(blocksRows))
+  root.file(
+    'Config/blocks.xml',
+    renderBlocksXml(blocksRows, meta.enablePickup ? renderPickupAppendRows() : undefined),
+  )
   root.file('Config/recipes.xml', renderRecipesXml(recipesRows))
   root.file('Config/Localization.txt', renderLocalization(locRows))
-
-  // Optional pickup patch ~ when the pack opts in, vanilla painting/poster/canvas/safe
-  // blocks gain CanPickup="true" so the player can pick them up with a single
-  // E press (no tool, no recipe).
-  if (meta.enablePickup) {
-    root.file('Config/pickup.xml', renderPickupXml())
-  }
 
   return zip.generateAsync({ type: 'blob' })
 }
@@ -205,34 +205,42 @@ export function renderBlockEntry(
         </block>`
 }
 
-export function renderPickupXml(): string {
-  // One <append> per vanilla block: just CanPickup="true" so the block can
-  // be picked up with a single E press, no tool, no recipe. Wrench-harvest
-  // and workbench recipes were tried in v0.5.x but the Harvest drop tag
-  // conflicted with hidden-safe loot init (NREs on POI load) and recipes
-  // bloated the workbench menu with ~115 entries no one was crafting.
-  const blockRows = PICKUP_BLOCKS.map(name =>
+/**
+ * Render the per-block pickup `<append>` patches. These get inlined into
+ * Config/blocks.xml (rather than shipped as a separate pickup.xml) so 7DTD's
+ * XmlPatcher reliably picks them up ~ patches in a file named after the
+ * master they target are loaded most consistently.
+ *
+ * Each patch adds CanPickup="true" so the block can be picked up with a
+ * single E press, no tool, no recipe. Wrench-harvest + workbench recipes
+ * were tried in v0.5.x but the Harvest drop conflicted with hidden-safe
+ * loot init (NREs on POI load) and the recipes bloated the workbench menu.
+ */
+export function renderPickupAppendRows(): string {
+  return PICKUP_BLOCKS.map(name =>
     `    <append xpath="/blocks/block[@name='${escapeXml(name)}']">
         <property name="CanPickup" value="true"/>
     </append>`
   ).join('\n\n')
+}
 
+/** Backwards-compatible wrapper that wraps the append rows in a full
+ *  Config/pickup.xml document. Currently unused by the production builder
+ *  (we inline patches into blocks.xml) but kept around for tests + tools. */
+export function renderPickupXml(): string {
   return `<?xml version="1.0" encoding="UTF-8" ?>
 <configs>
 
-    <!-- KitsunePrints optional pickup patch.
-         Adds CanPickup="true" to every vanilla picture/poster/canvas/safe
-         block, so the player can pick them up with a single E press (no tool).
-         Place from inventory wherever you want. Only emitted when the pack
-         opts in via the Pack Info checkbox. -->
-
-${blockRows}
+${renderPickupAppendRows()}
 
 </configs>
 `
 }
 
-export function renderBlocksXml(rows: string[]): string {
+export function renderBlocksXml(rows: string[], pickupAppendRows?: string): string {
+  const pickupSection = pickupAppendRows
+    ? `\n\n    <!-- Optional pickup patch ~ adds CanPickup="true" to every covered\n         vanilla decor block. Single E press to grab, no tool, no recipe. -->\n\n${pickupAppendRows}\n`
+    : ''
   return `<?xml version="1.0" encoding="UTF-8" ?>
 <configs>
 
@@ -245,8 +253,7 @@ export function renderBlocksXml(rows: string[]): string {
 
 ${rows.join('\n\n')}
 
-    </append>
-
+    </append>${pickupSection}
 </configs>
 `
 }
