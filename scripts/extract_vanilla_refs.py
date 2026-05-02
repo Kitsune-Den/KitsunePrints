@@ -56,34 +56,28 @@ PICTURE_FRAME_ATLAS_SOURCES = {
     "pictureFramed8": "PictureFramed8_d",
 }
 
-# Per-prefab tile rects on each 2048×2048 atlas. Bottom 45% (y=1126..2048)
-# holds the actual sub-pictures, divided into 3 equal columns (or 2 for
-# pictureFramed8). Letter-to-tile assignment is alphabetical (a,d,g,...
-# get the leftmost tile; c,f,i,... the rightmost). Best-guess; tweak if
-# wrong by swapping rects.
-PICTURE_FRAME_TILE_3WIDE = [
-    (0,    1126, 683,  2048),  # left third
-    (683,  1126, 1366, 2048),  # middle third
-    (1366, 1126, 2048, 2048),  # right third
-]
-PICTURE_FRAME_TILE_2WIDE = [
-    (0,    1126, 1024, 2048),  # left half
-    (1024, 1126, 2048, 2048),  # right half
-]
-# Build the full slot_id -> (material, rect) dict.
+# Per-prefab tile rects on each 2048×2048 atlas. Derived from each prefab's
+# actual mesh UVs (front-face quad, filtered by outward-pointing vertex
+# normals). See scripts/read_picture_frame_uvs.py.
+#
+# Three distinct tile sizes per atlas:
+TILE_BIG    = (1288, 1138, 2023, 2036)  # right column, 735×898
+TILE_MEDIUM = (741,  1361, 1273, 2035)  # bottom-middle, 532×674
+TILE_SMALL  = (373,  1533, 723,  2035)  # bottom-left, 350×502
+# Letter-to-tile-size mapping per atlas (atlases 3 + 4 reverse the cycle).
+_LETTER_PATTERNS = {
+    "pictureFramed":  {"a": TILE_BIG, "b": TILE_SMALL, "c": TILE_MEDIUM},
+    "pictureFramed2": {"d": TILE_BIG, "e": TILE_SMALL, "f": TILE_MEDIUM},
+    "pictureFramed3": {"g": TILE_MEDIUM, "h": TILE_SMALL, "i": TILE_BIG},
+    "pictureFramed4": {"j": TILE_MEDIUM, "k": TILE_SMALL, "l": TILE_BIG},
+    "pictureFramed5": {"m": TILE_BIG, "n": TILE_SMALL, "o": TILE_MEDIUM},
+    "pictureFramed6": {"p": TILE_BIG, "q": TILE_SMALL, "r": TILE_MEDIUM},
+    "pictureFramed7": {"s": TILE_BIG, "t": TILE_SMALL, "u": TILE_MEDIUM},
+    "pictureFramed8": {"v": TILE_MEDIUM, "w": TILE_SMALL},
+}
 PICTURE_FRAME_TILE: dict[str, tuple[str, tuple[int, int, int, int]]] = {}
-for material, letters in [
-    ("pictureFramed",  "abc"),
-    ("pictureFramed2", "def"),
-    ("pictureFramed3", "ghi"),
-    ("pictureFramed4", "jkl"),
-    ("pictureFramed5", "mno"),
-    ("pictureFramed6", "pqr"),
-    ("pictureFramed7", "stu"),
-    ("pictureFramed8", "vw"),
-]:
-    rects = PICTURE_FRAME_TILE_3WIDE if len(letters) == 3 else PICTURE_FRAME_TILE_2WIDE
-    for letter, rect in zip(letters, rects):
+for material, letter_map in _LETTER_PATTERNS.items():
+    for letter, rect in letter_map.items():
         PICTURE_FRAME_TILE[f"pictureFrame_01{letter}"] = (material, rect)
 
 # Picture canvas atlases ~ each is a 2048×2048 texture with 6 distinct canvas
