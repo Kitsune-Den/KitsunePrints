@@ -57,15 +57,16 @@ export async function buildModlet(
   const locRows: string[] = []
   const writtenTextures = new Set<string>()
 
-  // Group movie poster slots by material so we composite the atlas once.
-  const filledMoviePosters: { slot: SlotDef; state: SlotState }[] = []
+  // Group atlas slots (moviePoster, canvasTile) by materialName so we
+  // composite each shared atlas exactly once.
+  const filledAtlasSlots: Record<string, { slot: SlotDef; state: SlotState }[]> = {}
 
   for (const slot of SLOTS) {
     const state = slots[slot.slotId]
     if (!state?.file) continue
 
-    if (slot.kind === 'moviePoster') {
-      filledMoviePosters.push({ slot, state })
+    if (slot.kind === 'moviePoster' || slot.kind === 'canvasTile') {
+      (filledAtlasSlots[slot.materialName] ||= []).push({ slot, state })
     } else {
       // Per-slot texture: one PNG per slot (portraits + abstracts).
       const filename = `${slot.materialName}.png`
@@ -100,15 +101,15 @@ export async function buildModlet(
     }
   }
 
-  // Movie poster atlas ~ composite once for all filled slots.
-  if (filledMoviePosters.length > 0) {
-    const atlasBlob = await composeAtlas(filledMoviePosters.map(p => ({
+  // Atlas materials ~ one composite per shared-material atlas.
+  for (const [materialName, group] of Object.entries(filledAtlasSlots)) {
+    const atlasBlob = await composeAtlas(materialName, group.map(p => ({
       tile: p.slot.atlasTile!,
       file: p.state.file!,
     })))
-    const filename = 'posterMovie.png'
+    const filename = `${materialName}.png`
     root.file(`Resources/Textures/${filename}`, atlasBlob)
-    pictureMap['posterMovie'] = filename
+    pictureMap[materialName] = filename
   }
 
   // Config files
@@ -137,7 +138,7 @@ async function composeForSlot(slot: SlotDef, state: SlotState): Promise<Blob> {
     // material's vanilla atlas-half offset.
     return composeAbstract(state.file)
   }
-  // Movie posters are handled in batch by composeAtlas, not here.
+  // moviePoster / canvasTile are handled in batch by composeAtlas, not here.
   throw new Error(`Slot kind ${slot.kind} should be handled in atlas batch`)
 }
 
@@ -146,7 +147,7 @@ type RecipeKind = 'portrait' | 'abstract2x2' | 'abstract3x2' | 'moviePoster' | '
 function pickRecipeKind(slot: SlotDef, vanillaBlock: string): RecipeKind {
   if (slot.kind === 'portrait') return 'portrait'
   if (slot.kind === 'moviePoster') return 'moviePoster'
-  if (slot.kind === 'decor') return 'moviePoster' // small print cost
+  if (slot.kind === 'decor' || slot.kind === 'canvasTile') return 'moviePoster' // small print cost
   // abstract: distinguish by size suffix on the vanilla block name
   return vanillaBlock.endsWith('_2x2') ? 'abstract2x2' : 'abstract3x2'
 }

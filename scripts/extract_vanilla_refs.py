@@ -41,7 +41,7 @@ MISC_DECOR_TEXTURES = {
     "targetPoster2":     ("targetPosters_d", "right"),
 }
 
-# Picture frame + canvas slots ~ each material drives 3-5 vanilla blocks
+# Picture frame slots ~ each material drives 3-5 vanilla blocks
 # (picture frame letter triplets plus their hidden-safe twins). Reference
 # thumbs come from the standalone _d textures (no atlas dance).
 PICTURE_FRAME_TEXTURES = {
@@ -53,8 +53,33 @@ PICTURE_FRAME_TEXTURES = {
     "pictureFramed6": "PictureFramed6_d",
     "pictureFramed7": "PictureFramed7_d",
     "pictureFramed8": "PictureFramed8_d",
+}
+
+# Picture canvas atlases ~ each is a 2048×2048 texture with 6 distinct canvas
+# paintings in a 2-col × 3-row grid. Each pictureCanvas_01<letter> prefab
+# samples one tile via mesh UVs. Ship the full atlas + per-tile thumbs so we
+# can offer per-canvas swap granularity (10 slots, 5 per material).
+CANVAS_ATLAS_SOURCES = {
     "pictureCanvas1": "pictureCanvas_d",
     "pictureCanvas2": "pictureCanvas2_d",
+}
+# Visual 2×3 layout on 2048×2048: top ~273px is wood frame border, then
+# 3 rows of canvas paintings. TL position is empty/border (no painting), so
+# only 5 active tiles per atlas (matches the 5 prefabs per material).
+# Tile rects: each ~1024×590, starting at y=273.
+CANVAS_TILE = {
+    # canvas 1 letters (a, b, c, d, f) -> TR, ML, MR, BL, BR
+    "pictureCanvas_01a": ("pictureCanvas1", (1024, 273,  2048, 863)),   # TR
+    "pictureCanvas_01b": ("pictureCanvas1", (0,    863,  1024, 1456)),  # ML
+    "pictureCanvas_01c": ("pictureCanvas1", (1024, 863,  2048, 1456)),  # MR
+    "pictureCanvas_01d": ("pictureCanvas1", (0,    1456, 1024, 2048)),  # BL
+    "pictureCanvas_01f": ("pictureCanvas1", (1024, 1456, 2048, 2048)),  # BR
+    # canvas 2 letters (e, g, h, i, j) -> TR, ML, MR, BL, BR
+    "pictureCanvas_01e": ("pictureCanvas2", (1024, 273,  2048, 863)),   # TR
+    "pictureCanvas_01g": ("pictureCanvas2", (0,    863,  1024, 1456)),  # ML
+    "pictureCanvas_01h": ("pictureCanvas2", (1024, 863,  2048, 1456)),  # MR
+    "pictureCanvas_01i": ("pictureCanvas2", (0,    1456, 1024, 2048)),  # BL
+    "pictureCanvas_01j": ("pictureCanvas2", (1024, 1456, 2048, 2048)),  # BR
 }
 
 
@@ -135,6 +160,7 @@ def collect_textures_and_materials(game_root: Path):
         | {"signsMisc_d", "posterMovie", "snackPosters_d"}
         | {tex for (tex, _side) in MISC_DECOR_TEXTURES.values()}
         | set(PICTURE_FRAME_TEXTURES.values())
+        | set(CANVAS_ATLAS_SOURCES.values())
     )
 
     for bundle_path in iter_bundles(game_root):
@@ -341,7 +367,7 @@ def main():
             print(f"  -> wrote {out.relative_to(OUT_DIR.parent.parent)}  (snackPosters_d tile {rect})")
             written += 1
 
-    # Picture frames + canvases: standalone textures, full thumb each.
+    # Picture frames: standalone textures (each one drives 2-3 vanilla blocks).
     for slot_id, tex_name in PICTURE_FRAME_TEXTURES.items():
         tex = textures.get(tex_name)
         if tex is None:
@@ -351,6 +377,31 @@ def main():
         out = OUT_DIR / f"{slot_id}.jpg"
         thumb.convert("RGB").save(out, quality=88)
         print(f"  -> wrote {out.relative_to(OUT_DIR.parent.parent)}  (from {tex_name})")
+        written += 1
+
+    # Picture canvas atlases: ship full atlas + per-tile thumbs so each canvas
+    # block becomes its own slot.
+    canvas_atlas_imgs = {}
+    for material_name, tex_name in CANVAS_ATLAS_SOURCES.items():
+        tex = textures.get(tex_name)
+        if tex is None:
+            print(f"  ! missing canvas atlas {tex_name}")
+            continue
+        canvas_atlas_imgs[material_name] = tex
+        atlas_out = OUT_DIR / f"_{material_name}_atlas.png"
+        tex.convert("RGBA").save(atlas_out)
+        print(f"  -> wrote {atlas_out.relative_to(OUT_DIR.parent.parent)}  (full atlas, {tex.width}x{tex.height})")
+        written += 1
+    for slot_id, (material_name, rect) in CANVAS_TILE.items():
+        atlas = canvas_atlas_imgs.get(material_name)
+        if atlas is None:
+            print(f"  ! no atlas for {slot_id}")
+            continue
+        tile = atlas.crop(rect)
+        thumb = make_thumb(tile)
+        out = OUT_DIR / f"{slot_id}.jpg"
+        thumb.convert("RGB").save(out, quality=88)
+        print(f"  -> wrote {out.relative_to(OUT_DIR.parent.parent)}  ({material_name} tile {rect})")
         written += 1
 
     print(f"\nDone. {written} thumbnails written to {OUT_DIR}.")

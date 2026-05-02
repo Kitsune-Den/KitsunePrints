@@ -6,7 +6,7 @@
 // For atlas slots (movie posters), multiple slot defs share one materialName
 // since each slot writes to a different tile of the same atlas.
 
-export type SlotKind = 'portrait' | 'abstract' | 'moviePoster' | 'decor'
+export type SlotKind = 'portrait' | 'abstract' | 'moviePoster' | 'decor' | 'canvasTile'
 
 /** Pixel rectangle inside an atlas texture. (x,y) is top-left in PIL coords. */
 export interface AtlasTile {
@@ -47,10 +47,23 @@ export interface SlotDef {
    */
 }
 
-/** Pixel layout of the vanilla `posterMovie` 1024×1024 atlas, derived from
- *  reading each prefab's mesh UVs (see scripts/read_movie_poster_uvs.py). */
-export const POSTER_MOVIE_ATLAS_SIZE = 1024
-export const POSTER_MOVIE_ATLAS_PATH = '/vanilla/_posterMovie_atlas.png'
+/** Map a shared-atlas materialName to its base atlas image + dimensions. */
+export interface AtlasSource {
+  /** Public path to the vanilla atlas PNG. */
+  vanillaPath: string
+  /** Atlas width (= height for square atlases). */
+  size: number
+}
+
+export const ATLAS_SOURCES: Record<string, AtlasSource> = {
+  posterMovie:    { vanillaPath: '/vanilla/_posterMovie_atlas.png',    size: 1024 },
+  pictureCanvas1: { vanillaPath: '/vanilla/_pictureCanvas1_atlas.png', size: 2048 },
+  pictureCanvas2: { vanillaPath: '/vanilla/_pictureCanvas2_atlas.png', size: 2048 },
+}
+
+/** Legacy aliases ~ kept for any external callers. */
+export const POSTER_MOVIE_ATLAS_SIZE = ATLAS_SOURCES.posterMovie.size
+export const POSTER_MOVIE_ATLAS_PATH = ATLAS_SOURCES.posterMovie.vanillaPath
 
 export const SLOTS: SlotDef[] = [
   // 1×1 backer portraits ~ left 25% wood / right 75% canvas
@@ -175,16 +188,29 @@ export const SLOTS: SlotDef[] = [
   // UVs select a tile), so each frame in a sibling group may show a different
   // region of your uploaded image. Looks like a "different angle per frame"
   // collage.
-  { slotId: 'pictureFramed',  materialName: 'pictureFramed',  label: 'Framed Pictures ~ Style 1', vanillaBlocks: ['pictureFrame_01a', 'pictureFrame_01b', 'pictureFrame_01c'], kind: 'decor' },
-  { slotId: 'pictureFramed2', materialName: 'pictureFramed2', label: 'Framed Pictures ~ Style 2', vanillaBlocks: ['pictureFrame_01d', 'pictureFrame_01e', 'pictureFrame_01f'], kind: 'decor' },
-  { slotId: 'pictureFramed3', materialName: 'pictureFramed3', label: 'Framed Pictures ~ Style 3', vanillaBlocks: ['pictureFrame_01g', 'pictureFrame_01h', 'pictureFrame_01i'], kind: 'decor' },
-  { slotId: 'pictureFramed4', materialName: 'pictureFramed4', label: 'Framed Pictures ~ Style 4', vanillaBlocks: ['pictureFrame_01j', 'pictureFrame_01k', 'pictureFrame_01l'], kind: 'decor' },
-  { slotId: 'pictureFramed5', materialName: 'pictureFramed5', label: 'Framed Pictures ~ Style 5', vanillaBlocks: ['pictureFrame_01m', 'pictureFrame_01n', 'pictureFrame_01o'], kind: 'decor' },
-  { slotId: 'pictureFramed6', materialName: 'pictureFramed6', label: 'Framed Pictures ~ Style 6', vanillaBlocks: ['pictureFrame_01p', 'pictureFrame_01q', 'pictureFrame_01r'], kind: 'decor' },
-  { slotId: 'pictureFramed7', materialName: 'pictureFramed7', label: 'Framed Pictures ~ Style 7', vanillaBlocks: ['pictureFrame_01s', 'pictureFrame_01t', 'pictureFrame_01u'], kind: 'decor' },
-  { slotId: 'pictureFramed8', materialName: 'pictureFramed8', label: 'Framed Pictures ~ Style 8', vanillaBlocks: ['pictureFrame_01v', 'pictureFrame_01w'], kind: 'decor' },
-  { slotId: 'pictureCanvas1', materialName: 'pictureCanvas1', label: 'Canvas Pictures ~ Style 1',  vanillaBlocks: ['pictureCanvas_01a', 'pictureCanvas_01b', 'pictureCanvas_01c', 'pictureCanvas_01d', 'pictureCanvas_01f'], kind: 'decor' },
-  { slotId: 'pictureCanvas2', materialName: 'pictureCanvas2', label: 'Canvas Pictures ~ Style 2',  vanillaBlocks: ['pictureCanvas_01e', 'pictureCanvas_01g', 'pictureCanvas_01h', 'pictureCanvas_01i', 'pictureCanvas_01j'], kind: 'decor' },
+  { slotId: 'pictureFramed',  materialName: 'pictureFramed',  label: 'Frame Style 1 (a-c)', vanillaBlocks: ['pictureFrame_01a', 'pictureFrame_01b', 'pictureFrame_01c'], kind: 'decor' },
+  { slotId: 'pictureFramed2', materialName: 'pictureFramed2', label: 'Frame Style 2 (d-f)', vanillaBlocks: ['pictureFrame_01d', 'pictureFrame_01e', 'pictureFrame_01f'], kind: 'decor' },
+  { slotId: 'pictureFramed3', materialName: 'pictureFramed3', label: 'Frame Style 3 (g-i)', vanillaBlocks: ['pictureFrame_01g', 'pictureFrame_01h', 'pictureFrame_01i'], kind: 'decor' },
+  { slotId: 'pictureFramed4', materialName: 'pictureFramed4', label: 'Frame Style 4 (j-l)', vanillaBlocks: ['pictureFrame_01j', 'pictureFrame_01k', 'pictureFrame_01l'], kind: 'decor' },
+  { slotId: 'pictureFramed5', materialName: 'pictureFramed5', label: 'Frame Style 5 (m-o)', vanillaBlocks: ['pictureFrame_01m', 'pictureFrame_01n', 'pictureFrame_01o'], kind: 'decor' },
+  { slotId: 'pictureFramed6', materialName: 'pictureFramed6', label: 'Frame Style 6 (p-r)', vanillaBlocks: ['pictureFrame_01p', 'pictureFrame_01q', 'pictureFrame_01r'], kind: 'decor' },
+  { slotId: 'pictureFramed7', materialName: 'pictureFramed7', label: 'Frame Style 7 (s-u)', vanillaBlocks: ['pictureFrame_01s', 'pictureFrame_01t', 'pictureFrame_01u'], kind: 'decor' },
+  { slotId: 'pictureFramed8', materialName: 'pictureFramed8', label: 'Frame Style 8 (v-w)', vanillaBlocks: ['pictureFrame_01v', 'pictureFrame_01w'], kind: 'decor' },
+  // Picture canvases ~ each pictureCanvas_01<letter> samples its own tile of
+  // the shared 2048×2048 canvas atlas (pictureCanvas_d / pictureCanvas2_d).
+  // Per-prefab slots so users can replace each canvas independently. Composer
+  // batches by materialName and writes a single composite atlas per material;
+  // mesh UVs do the per-block tile selection.
+  { slotId: 'pictureCanvas_01a', materialName: 'pictureCanvas1', label: 'Canvas A (atlas 1)', vanillaBlocks: ['pictureCanvas_01a'], kind: 'canvasTile', atlasTile: { x: 1024, y: 273,  w: 1024, h: 590 } },
+  { slotId: 'pictureCanvas_01b', materialName: 'pictureCanvas1', label: 'Canvas B (atlas 1)', vanillaBlocks: ['pictureCanvas_01b'], kind: 'canvasTile', atlasTile: { x: 0,    y: 863,  w: 1024, h: 593 } },
+  { slotId: 'pictureCanvas_01c', materialName: 'pictureCanvas1', label: 'Canvas C (atlas 1)', vanillaBlocks: ['pictureCanvas_01c'], kind: 'canvasTile', atlasTile: { x: 1024, y: 863,  w: 1024, h: 593 } },
+  { slotId: 'pictureCanvas_01d', materialName: 'pictureCanvas1', label: 'Canvas D (atlas 1)', vanillaBlocks: ['pictureCanvas_01d'], kind: 'canvasTile', atlasTile: { x: 0,    y: 1456, w: 1024, h: 592 } },
+  { slotId: 'pictureCanvas_01f', materialName: 'pictureCanvas1', label: 'Canvas F (atlas 1)', vanillaBlocks: ['pictureCanvas_01f'], kind: 'canvasTile', atlasTile: { x: 1024, y: 1456, w: 1024, h: 592 } },
+  { slotId: 'pictureCanvas_01e', materialName: 'pictureCanvas2', label: 'Canvas E (atlas 2)', vanillaBlocks: ['pictureCanvas_01e'], kind: 'canvasTile', atlasTile: { x: 1024, y: 273,  w: 1024, h: 590 } },
+  { slotId: 'pictureCanvas_01g', materialName: 'pictureCanvas2', label: 'Canvas G (atlas 2)', vanillaBlocks: ['pictureCanvas_01g'], kind: 'canvasTile', atlasTile: { x: 0,    y: 863,  w: 1024, h: 593 } },
+  { slotId: 'pictureCanvas_01h', materialName: 'pictureCanvas2', label: 'Canvas H (atlas 2)', vanillaBlocks: ['pictureCanvas_01h'], kind: 'canvasTile', atlasTile: { x: 1024, y: 863,  w: 1024, h: 593 } },
+  { slotId: 'pictureCanvas_01i', materialName: 'pictureCanvas2', label: 'Canvas I (atlas 2)', vanillaBlocks: ['pictureCanvas_01i'], kind: 'canvasTile', atlasTile: { x: 0,    y: 1456, w: 1024, h: 592 } },
+  { slotId: 'pictureCanvas_01j', materialName: 'pictureCanvas2', label: 'Canvas J (atlas 2)', vanillaBlocks: ['pictureCanvas_01j'], kind: 'canvasTile', atlasTile: { x: 1024, y: 1456, w: 1024, h: 592 } },
 ]
 
 export interface SlotState {

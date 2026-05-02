@@ -13,7 +13,7 @@ interface Props {
   appVersion: string
 }
 
-type SlotTabId = 'portraits' | 'abstracts' | 'movie-posters' | 'misc-decor' | 'snack-posters' | 'picture-frames'
+type SlotTabId = 'portraits' | 'abstracts' | 'movie-posters' | 'misc-decor' | 'snack-posters' | 'picture-frames' | 'canvases'
 type TabId = SlotTabId | 'pack-info'
 
 interface SlotTabDef {
@@ -61,9 +61,17 @@ const SLOT_TABS: SlotTabDef[] = [
     id: 'picture-frames',
     label: 'Picture Frames',
     blurb:
-      "The little framed pictures and canvas paintings on POI walls ~ 10 slots covering ~49 vanilla blocks via shared materials (each slot re-skins 3-5 blocks). Vanilla packs 3-6 sub-images into each texture, so sibling frames may each show a different region of your uploaded image (kind of a collage effect). Hidden-safe variants in POIs re-skin automatically.",
-    filter: (s) => s.kind === 'decor' && (s.slotId.startsWith('pictureFramed') || s.slotId.startsWith('pictureCanvas')),
-    gridCols: 'grid-cols-2 md:grid-cols-3 lg:grid-cols-5',
+      "The little framed pictures on POI walls ~ 8 style slots covering 23 vanilla blocks via shared materials (each slot re-skins 2-3 frames). Vanilla packs 3-4 sub-images into each texture, so sibling frames in a style may each show a different region of your uploaded image (collage effect). Hidden-safe variants in POIs re-skin automatically.",
+    filter: (s) => s.kind === 'decor' && s.slotId.startsWith('pictureFramed'),
+    gridCols: 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4',
+  },
+  {
+    id: 'canvases',
+    label: 'Canvases',
+    blurb:
+      "10 individual canvas paintings (5 per shared atlas) ~ each block can take its own image since the composer writes per-tile into the shared 2048×2048 atlas. Aspect is ~16:9 widescreen since each tile is wider than tall.",
+    filter: (s) => s.kind === 'canvasTile',
+    gridCols: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3',
   },
   {
     id: 'snack-posters',
@@ -90,6 +98,7 @@ export function BuilderPage({ slots, setSlots, meta, setMeta, appVersion }: Prop
       'misc-decor': { filled: 0, total: 0 },
       'snack-posters': { filled: 0, total: 0 },
       'picture-frames': { filled: 0, total: 0 },
+      canvases: { filled: 0, total: 0 },
     }
     for (const tab of SLOT_TABS) {
       const tabSlots = SLOTS.filter(tab.filter)
@@ -107,14 +116,16 @@ export function BuilderPage({ slots, setSlots, meta, setMeta, appVersion }: Prop
     counts['movie-posters'].filled +
     counts['misc-decor'].filled +
     counts['snack-posters'].filled +
-    counts['picture-frames'].filled
+    counts['picture-frames'].filled +
+    counts.canvases.filled
   const totalSlots =
     counts.portraits.total +
     counts.abstracts.total +
     counts['movie-posters'].total +
     counts['misc-decor'].total +
     counts['snack-posters'].total +
-    counts['picture-frames'].total
+    counts['picture-frames'].total +
+    counts.canvases.total
 
   // Slots visible in the active tab, after the filter pill.
   const visibleSlots = useMemo(() => {

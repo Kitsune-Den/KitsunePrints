@@ -18,10 +18,10 @@ export function SlotCard({ slot, state, onChange }: Props) {
   // Aspect for the crop frame:
   //   - portraits: 3:4 canvas zone
   //   - abstracts: square (DLL resets UV scale to fill canvas)
-  //   - moviePoster: derived from the atlas tile (each tile is ~3:4)
+  //   - moviePoster / canvasTile: derived from the atlas tile dimensions
   const aspect =
     slot.kind === 'portrait' ? 3 / 4
-    : slot.kind === 'moviePoster' && slot.atlasTile
+    : (slot.kind === 'moviePoster' || slot.kind === 'canvasTile') && slot.atlasTile
       ? slot.atlasTile.w / slot.atlasTile.h
     : 1
 
@@ -78,7 +78,12 @@ export function SlotCard({ slot, state, onChange }: Props) {
             src={`/vanilla/${slot.slotId}.jpg`}
             alt={`Vanilla ${slot.label}`}
             loading="lazy"
-            className={`${slot.kind === 'portrait' || slot.kind === 'moviePoster' ? 'w-9 h-12' : slot.kind === 'decor' ? 'w-10 h-12 object-contain' : 'w-12 h-12'} object-cover rounded border border-zinc-700/60 flex-shrink-0 bg-zinc-950/60`}
+            className={`${
+              slot.kind === 'portrait' || slot.kind === 'moviePoster' ? 'w-9 h-12' :
+              slot.kind === 'canvasTile' ? 'w-14 h-9' :
+              slot.kind === 'decor' ? 'w-10 h-12 object-contain' :
+              'w-12 h-12'
+            } object-cover rounded border border-zinc-700/60 flex-shrink-0 bg-zinc-950/60`}
             title={`You'll be replacing this in-game (${slot.slotId})`}
           />
           <div className="flex-1 min-w-0">
@@ -106,7 +111,11 @@ export function SlotCard({ slot, state, onChange }: Props) {
           onDragOver={(e) => e.preventDefault()}
           onDrop={handleDrop}
           onClick={() => fileRef.current?.click()}
-          className={`${slot.kind === 'portrait' || slot.kind === 'moviePoster' ? 'aspect-[3/4]' : 'aspect-square'} bg-zinc-950 border-2 border-dashed border-zinc-700 rounded cursor-pointer flex items-center justify-center overflow-hidden hover:border-zinc-500 transition-colors`}
+          className={`${
+            slot.kind === 'portrait' || slot.kind === 'moviePoster' ? 'aspect-[3/4]' :
+            slot.kind === 'canvasTile' && slot.atlasTile ? 'aspect-[16/9]' :
+            'aspect-square'
+          } bg-zinc-950 border-2 border-dashed border-zinc-700 rounded cursor-pointer flex items-center justify-center overflow-hidden hover:border-zinc-500 transition-colors`}
         >
           {state.preview ? (
             <img src={state.preview} alt={slot.label} className="w-full h-full object-cover" />

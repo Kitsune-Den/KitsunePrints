@@ -18,8 +18,7 @@
 import {
   FRAME_PRESETS,
   DEFAULT_FRAME_PRESET_ID,
-  POSTER_MOVIE_ATLAS_PATH,
-  POSTER_MOVIE_ATLAS_SIZE,
+  ATLAS_SOURCES,
   type AtlasTile,
 } from '../types/slots'
 
@@ -90,22 +89,30 @@ export async function composeAbstract(file: File): Promise<Blob> {
 }
 
 /**
- * Compose the `posterMovie` 1024×1024 atlas. Loads the vanilla atlas as the
- * base layer (preserves theater-strip / edge regions referenced by mesh UVs
- * we don't replace) and pastes each filled slot's user image into its tile.
+ * Compose any shared-material atlas. Loads the vanilla atlas (looked up by
+ * materialName) as the base layer (preserves regions referenced by mesh UVs
+ * we don't write to) and pastes each filled slot's user image into its tile.
+ *
+ * Used by movie posters (posterMovie atlas) and picture canvases
+ * (pictureCanvas1, pictureCanvas2 atlases).
  */
 export async function composeAtlas(
+  materialName: string,
   entries: { tile: AtlasTile; file: File }[],
 ): Promise<Blob> {
-  const atlas = await loadImageFromUrl(POSTER_MOVIE_ATLAS_PATH)
+  const source = ATLAS_SOURCES[materialName]
+  if (!source) {
+    throw new Error(`No atlas source registered for material "${materialName}"`)
+  }
+  const atlas = await loadImageFromUrl(source.vanillaPath)
   const canvas = document.createElement('canvas')
-  canvas.width = POSTER_MOVIE_ATLAS_SIZE
-  canvas.height = POSTER_MOVIE_ATLAS_SIZE
+  canvas.width = source.size
+  canvas.height = source.size
   const ctx = canvas.getContext('2d')
   if (!ctx) throw new Error('Canvas 2d context unavailable')
 
   // Draw vanilla atlas as the base.
-  ctx.drawImage(atlas, 0, 0, POSTER_MOVIE_ATLAS_SIZE, POSTER_MOVIE_ATLAS_SIZE)
+  ctx.drawImage(atlas, 0, 0, source.size, source.size)
 
   // Paint each user image into its assigned tile, cover-fitted.
   for (const { tile, file } of entries) {
@@ -119,7 +126,7 @@ export async function composeAtlas(
 export async function composeIcon(
   file: File,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  _kind: 'portrait' | 'abstract' | 'moviePoster' | 'decor',
+  _kind: 'portrait' | 'abstract' | 'moviePoster' | 'decor' | 'canvasTile',
 ): Promise<Blob> {
   const img = await loadImage(file)
   const canvas = document.createElement('canvas')
