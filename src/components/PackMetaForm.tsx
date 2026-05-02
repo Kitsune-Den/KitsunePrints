@@ -33,11 +33,13 @@ export function PackMetaForm({ meta, setMeta }: Props) {
               Make every painting / poster / canvas pickup-able
             </div>
             <p className="text-xs text-zinc-500 mt-1 leading-relaxed">
-              Adds a wrench-harvest patch covering ~115 vanilla blocks (paintings,
-              snack posters, movie posters + theaters, canvases, picture frames,
-              and hidden-safe disguises). Wrench it to grab it; place it back from
-              your inventory wherever you want. Off by default ~ existing POIs stay
-              as-is unless you opt in.
+              Adds <span className="text-zinc-400">hold-E pickup</span> (bare-handed,
+              no tool) <span className="text-zinc-600">+</span>{' '}
+              <span className="text-zinc-400">wrench harvest</span> to ~115 vanilla
+              blocks (paintings, snack posters, movie posters + theaters, canvases,
+              picture frames, and hidden-safe disguises). Either way the block goes
+              to your inventory; place it back wherever you want. Off by default ~
+              existing POIs stay as-is unless you opt in.
             </p>
           </div>
         </label>

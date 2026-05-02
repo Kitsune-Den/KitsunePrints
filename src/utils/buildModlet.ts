@@ -175,23 +175,27 @@ function renderBlockEntry(
   vanillaBlock: string,
   pickupable: boolean,
 ): string {
-  // When pickup is enabled, add a Harvest drop returning the kp_* block as
-  // itself ~ otherwise wrenching it would drop a vanilla copy (since the
-  // parent block's Harvest drop, if any, hardcodes its own name).
-  const pickupLine = pickupable
-    ? `\n            <drop event="Harvest" name="${escapeXml(blockName)}" count="1" tag="${HARVEST_TAG}"/>`
+  // When pickup is enabled, add CanPickup="true" (hold-E pickup, no tool)
+  // AND a Harvest drop returning the kp_* block as itself (wrench pickup).
+  // Both mechanisms return the user's custom block (not a vanilla copy).
+  const pickupLines = pickupable
+    ? `\n            <property name="CanPickup" value="true"/>` +
+      `\n            <drop event="Harvest" name="${escapeXml(blockName)}" count="1" tag="${HARVEST_TAG}"/>`
     : ''
   return `        <block name="${escapeXml(blockName)}">
             <property name="Extends" value="${escapeXml(vanillaBlock)}"/>
-            <property name="CustomIcon" value="${escapeXml(blockName)}"/>${pickupLine}
+            <property name="CustomIcon" value="${escapeXml(blockName)}"/>${pickupLines}
         </block>`
 }
 
 function renderPickupXml(): string {
-  // One <append> per vanilla block since the drop's `name` attribute must be
-  // the block's own name ~ no way to template that across XPath.
+  // One <append> per vanilla block since each Harvest drop's `name` attribute
+  // must be the block's own name (no way to template that across XPath).
+  // Both CanPickup (hold-E, no tool) AND Harvest (wrench) so users have a
+  // choice ~ press E for quick decor flow, wrench for the tool-based feel.
   const rows = PICKUP_BLOCKS.map(name =>
     `    <append xpath="/blocks/block[@name='${escapeXml(name)}']">
+        <property name="CanPickup" value="true"/>
         <drop event="Harvest" name="${escapeXml(name)}" count="1" tag="${HARVEST_TAG}"/>
     </append>`
   ).join('\n\n')
@@ -199,10 +203,13 @@ function renderPickupXml(): string {
 <configs>
 
     <!-- KitsunePrints optional pickup patch.
-         Adds a Harvest drop to every vanilla picture/poster/canvas/safe block
-         so the wrench returns it as an item, making "wrench → inventory →
-         place anywhere" the survival workflow. Only emitted when the pack
-         opts in via the Pack Info checkbox. -->
+         Adds two pickup mechanisms to every vanilla picture/poster/canvas/safe block:
+           1. CanPickup="true" ~ hold-E to pick up bare-handed (vanilla pattern,
+              same as frameShapes etc).
+           2. Harvest drop returning the block as itself, tag="${HARVEST_TAG}"
+              ~ wrench harvests it back to inventory.
+         Either one places the block in your inventory; place it back from
+         there. Only emitted when the pack opts in via the Pack Info checkbox. -->
 
 ${rows}
 
