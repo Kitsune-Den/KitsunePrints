@@ -47,7 +47,12 @@ The full pack state (slot titles, frame choices, pack info) auto-saves to your b
 
 ## Press-E pickup (default on)
 
-Every pack ships with a one-line patch adding `<property name="CanPickup" value="true"/>` to ~100 vanilla decor blocks (all 7 slot categories above + their hidden-safe disguises). Walk up to any vanilla painting, snack poster, picture frame, or wall-safe-disguised-as-painting in a POI ~ press E ~ it lands in your inventory. Place it back from there. No tool, no recipe, no fuss. Toggle off in the Pack Info tab if you'd rather POIs stayed undismantleable.
+Every pack ships with `<property name="CanPickup" value="true"/>` patches that turn vanilla decor blocks into press-E-pickup items. No tool, no recipe ~ walk up, press E, place from inventory. Two opt-in tiers (separate checkboxes on the Pack Info tab):
+
+- **Picture core** (~83 blocks, default on) ~ all 7 slot categories: paintings, snack posters, movie posters + theaters, canvases, picture frames.
+- **Extended decor** (~224 blocks, default on) ~ flags, road signs, OPEN/CLOSED, gun store + shop signs (unlit variants), bathroom signs, wall clocks, mirrors, bulletin boards, planters, ad signs, gas signs.
+
+Trader signage and lit/electrical signs are deliberately excluded from the extended set ~ traders stay nice, and lit signs would risk the same electrical-init NREs that hidden safes triggered. Hidden-safe disguises are also excluded (they're loot-container TileEntities; CanPickup conflicts with their init).
 
 The pickup patches are inlined into `Config/blocks.xml` (the canonical filename 7DTD's `XmlPatcher` reliably loads) ~ a custom `pickup.xml` was tried in v0.5.x and silently dropped by the loader, so v0.8.2 moved them.
 
@@ -88,7 +93,7 @@ If you'd rather skip the web tool, grab [`KitsunePrints-DIY-Kit.zip`](https://pr
 - Vite + React 19 + TypeScript
 - Tailwind CSS v4
 - JSZip + react-easy-crop (client-side composition + zip generation, no server-side image processing)
-- vitest (35 unit tests gating CI)
+- vitest (43 unit tests gating CI)
 - Express (serves the static build + small build-counter API)
 - Pillow (Python, DIY-kit-side image composition)
 - Harmony / C# (DLL patch ~ source in the [KitsunePrints mod repo](https://github.com/Kitsune-Den/KitsunePrints))
@@ -104,7 +109,7 @@ src/
     buildModlet.ts       # zip orchestration, XML rendering, pickup patch inlining (35 unit tests cover the helpers)
     buildModlet.test.ts
     composer.ts          # composePortrait / composeAbstract / composeAtlas / composeIcon
-    pickupBlocks.ts      # the ~100-block PICKUP_BLOCKS list
+    pickupBlocks.ts      # PICKUP_BLOCKS (~83 picture core) + EXTENDED_DECOR_PICKUP_BLOCKS (~224)
     persistence.ts       # localStorage save/load for slot config + pack meta
   types/
     slots.ts             # SLOTS list + ATLAS_SOURCES + FRAME_PRESETS + isDefaultPackMeta
@@ -173,7 +178,7 @@ Architecture is now ready for almost any vanilla wall-art expansion ~ adding a n
 - 🪟 **Wallpaper / floor tiles** ~ bigger lift; same Harmony pattern works in principle
 - 🔧 **Slot pre-tour** ~ visual gallery on the front page showing every replaceable slot before visitors hit the builder
 
-Tracked issues: [#1 (place vanilla paintings in survival)](https://github.com/Kitsune-Den/KitsunePrints/issues/1) ~ shipped via the press-E pickup feature; [#2 (custom inventory icons for picked-up vanilla blocks)](https://github.com/Kitsune-Den/KitsunePrints/issues/2) ~ tracked, not yet fixed.
+Tracked issues: [#1 (place vanilla paintings in survival)](https://github.com/Kitsune-Den/KitsunePrints/issues/1) ~ shipped via press-E pickup; [#2 (custom inventory icons for picked-up vanilla blocks)](https://github.com/Kitsune-Den/KitsunePrints/issues/2) ~ closed in v0.8.5; [#3 (extended decor pickup ~ flags, signs, etc.)](https://github.com/Kitsune-Den/KitsunePrints/issues/3) ~ shipped in v0.9.0.
 
 If a specific block or sign you'd love to skin isn't in the slot list, [open an issue](https://github.com/Kitsune-Den/KitsunePrints/issues) with its name and we'll see if it's swap-friendly.
 

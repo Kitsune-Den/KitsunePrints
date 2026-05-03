@@ -23,6 +23,7 @@ config.json shape:
         "version": "0.1.0",
         "description": "...",
         "enablePickup": true,
+        "enableExtendedDecorPickup": true,
         "slots": {
             "painting_ben":            { "image": "boss-cat.png", "title": "The Boss",   "frame": "ornate_gold" },
             "paintingsAbstract01":     { "image": "hearth.png",   "title": "Hearth" },
@@ -48,9 +49,16 @@ Slot kinds:
                 for a wood-tint multiply-blend on the atlas's top region;
                 siblings in the same atlas share the tint.
 
-`enablePickup` (default true) ships a Config/pickup.xml that adds
-CanPickup="true" to ~115 vanilla decor blocks ~ press E to pick up, no tool,
-no recipe. Set false to skip.
+`enablePickup` (default true) inlines `<append>` patches into Config/blocks.xml
+that add CanPickup="true" to ~83 vanilla picture / poster / canvas / frame
+blocks ~ press E to pick up, no tool, no recipe.
+
+`enableExtendedDecorPickup` (default true) extends the same press-E treatment
+to ~224 more wall decor blocks: flags, road signs, OPEN/CLOSED, gun store +
+shop signs (unlit only), bathroom signs, wall clocks, mirrors, bulletin
+boards, planters, ad signs, gas signs. Trader signage and lit/electrical
+signs are deliberately excluded. Requires enablePickup. Set either to false
+to opt out.
 
 Output: <pack_folder>/<sanitized_name>.zip ~ drop into <7DTD>/Mods/.
 """
@@ -261,6 +269,106 @@ PICKUP_BLOCKS = [
     # the hood. CanPickup conflicted with their init flow and caused POI-load
     # NREs. Visual swap still applies via Extends so users still see their art
     # on hidden-safe walls; they just can't E-pick-up the safes themselves.
+]
+
+# Extended decor pickup tier (issue #3). Mirrors EXTENDED_DECOR_PICKUP_BLOCKS
+# in src/utils/pickupBlocks.ts. Surfaced via scripts/audit_pickup_candidates.py
+# against vanilla blocks.xml. Trader signage and lit/electrical signs are
+# deliberately excluded ~ traders stay nice and lit signs risk electrical-init
+# NREs. Toggled by config["enableExtendedDecorPickup"] (default True).
+EXTENDED_DECOR_PICKUP_BLOCKS = [
+    # Flags ~ wall-hung + top-mount + Gadsden colors (38)
+    "flagPoleWhiteRiver", "flagPoleAmerican",
+    "flagWallHungUSA", "flagWallHungDuke", "flagWallHungHonorDuty",
+    "flagWallHungValiant", "flagWallHungTFP",
+    "flagWallHungThick44Black", "flagWallHungThick44Purple",
+    "flagWallHungGadsdenWhite", "flagWallHungGadsdenBrown", "flagWallHungGadsdenRed",
+    "flagWallHungGadsdenOrange", "flagWallHungGadsdenYellow", "flagWallHungGadsdenGreen",
+    "flagWallHungGadsdenBlue", "flagWallHungGadsdenPurple", "flagWallHungGadsdenGrey",
+    "flagWallHungGadsdenPink", "flagWallHungGadsdenArmyGreen",
+    "flagTopWallHungUSA", "flagTopWallHungDuke", "flagTopWallHungHonorDuty",
+    "flagTopWallHungValiant", "flagTopWallHungTFP",
+    "flagTopWallHungThick44Black", "flagTopWallHungThick44Purple",
+    "flagTopWallHungGadsdenWhite", "flagTopWallHungGadsdenBrown", "flagTopWallHungGadsdenRed",
+    "flagTopWallHungGadsdenOrange", "flagTopWallHungGadsdenYellow", "flagTopWallHungGadsdenGreen",
+    "flagTopWallHungGadsdenBlue", "flagTopWallHungGadsdenPurple", "flagTopWallHungGadsdenGrey",
+    "flagTopWallHungGadsdenPink", "flagTopWallHungGadsdenArmyGreen",
+    # OPEN / CLOSED storefront mounts (4)
+    "signOpenWallMountChain", "signOpenWallMountFrame",
+    "signOpenSideMount", "signOpenCeilingMount",
+    # Storefront / shop signs ~ unlit base variants only (37)
+    "signShopOpen",
+    "signShopGas", "signShopGasWall", "signShopGasLarge", "signShopGasLargeWall",
+    "signShopGunStore", "signShopGunStoreWall", "signShopGunStoreLarge", "signShopGunStoreLargeWall",
+    "signShopBookStore", "signShopBookStoreWall", "signShopBookStoreLarge", "signShopBookStoreLargeWall",
+    "signShopPharmacy", "signShopPharmacyWall", "signShopPharmacyLarge", "signShopPharmacyLargeWall",
+    "signShopToolStore", "signShopToolStoreWall", "signShopToolStoreLarge", "signShopToolStoreLargeWall",
+    "signShopGrocery", "signShopGroceryWall", "signShopGroceryLarge", "signShopGroceryLargeWall",
+    "signShopSavageCountry", "signShopSavageCountryWall", "signShopSavageCountryLarge", "signShopSavageCountryLargeWall",
+    "signShopMoPowerElectronics", "signShopMoPowerElectronicsWall", "signShopMoPowerElectronicsLarge", "signShopMoPowerElectronicsLargeWall",
+    "signShopPostOfficeSign", "signShopPostOfficeSignWall", "signShopPostOfficeSignLarge", "signShopPostOfficeSignLargeWall",
+    # Gun store signs (10)
+    "signGunsThinSafety", "signGunsThinSafety2",
+    "signGunsWideWarning", "signGunsWideWarning2",
+    "signGunsThinAttention", "signGunsThinNo", "signGunsThinPermitted",
+    "signGunsThinReturn", "signGunsThinSmile", "signGunsThinSmoke",
+    # Road / street / traffic signs (59)
+    "signRoadArrowheadApache",
+    "signRoadAZ260eastSpeed65", "signRoadAZ260west", "signRoadAZ260westSpeed65",
+    "signRoadAZ73north", "signRoadAZ73northSpeed65",
+    "signRoadAZ73south", "signRoadAZ73southSpeed65",
+    "signRoadApacheAZ260", "signRoadBellLake", "signRoadCoronado", "signRoadCoronadoCourtland",
+    "signRoadCourtlandApache", "signRoadCourtlandAZ260Left", "signRoadCourtlandAZ260Right",
+    "signRoadCourtlandBell", "signRoadCourtlandHuenink", "signRoadCourtlandMaple",
+    "signRoadCourtlandTran", "signRoadDavis", "signRoadEssig",
+    "signRoadLangTran", "signRoadTran", "signRoadMaple",
+    "signRoadDestinationsEast", "signRoadDestinationsWest",
+    "signNoHazardousWaste", "signRoadWork", "signRoadRoughSurface", "signSchoolZone",
+    "signRoadSlow", "signRoadSpeed25", "signRoadSpeed25noTrucks",
+    "signRoadSpeed35", "signRoadSpeed45", "signRoadSpeed55", "signRoadSpeed65",
+    "signRoadStop", "signRoadStop4way",
+    "signNoParkingHanging", "signCrossWalkYellowHanging", "signSlowHanging", "signDoNotEnterHanging",
+    "signPrivateProperty", "signNotice", "signGunsThinPrivate", "signRoadPrivate",
+    "signYardSign01", "signCrossWalkYellow", "signDoNotEnter",
+    "signHandicapParking", "signNoParking", "signTowAway",
+    "signNotice01", "signNotice02", "signNotice03", "signNotice04",
+    "signMiscDoNotEnter", "signMiscPrivate",
+    # Misc shop / diner / gas / safety signs (62)
+    "signCamping", "signSpillwayLake", "signAnselAdamsRiver", "signNationalPark",
+    "signCampFish", "signInfoCenter", "signNeighborhoodWatch",
+    "signPassNGasHanging", "signPassNGasHanging2",
+    "signPillsLogo", "signPillsLogoSmall",
+    "signDinersMenu", "signDinersMenu2m", "signDinersMenu2mCentered",
+    "signBookSaleAd", "signBread01", "signBread02", "signCigaretteAd",
+    "signLaborDaySaleAd", "signMegaCrushAd", "signSale01", "signSale02", "signShamwaySale",
+    "signGas01", "signGas02", "signGas03", "signGas04", "signGas05",
+    "signGas06", "signGas07", "signGas08", "signGas09", "signGas10",
+    "signGas11", "signGas12", "signGas13", "signGas14", "signGas15",
+    "signGas16", "signGas17", "signGas18", "signGas19", "signGas20", "signGas21",
+    "signSafetyWorkProtection", "signAuthorizedPersonnel", "signStaffOnly",
+    "signCaution", "signHardHat",
+    "signMisc4Lease", "signMisc4Sale", "signMisc4SaleSold",
+    "signMiscAdministration", "signMiscBewareOfDog", "signMiscDangerHazard",
+    "signMiscQuarantineArea", "signMiscRestrictedArea", "signMiscSmile",
+    "signMiscStair", "signMiscSurveilledArea",
+    "signMiscWarningQuarantine", "signMiscQuarantineTape",
+    # Bathroom signs ~ wall + ceiling mount (6)
+    "signBathroomSignUnisexWallMount", "signBathroomSignUnisexCeilingMount",
+    "signBathroomSignWomenWallMount", "signBathroomSignWomenCeilingMount",
+    "signBathroomSignMenWallMount", "signBathroomSignMenCeilingMount",
+    # Wall clocks (2)
+    "wallClock", "wallClockBroken",
+    # Mirrors (2)
+    "wallMirror", "wallMirrorBroken",
+    # Bulletin / cork / chalk boards (2)
+    "signBulletinBoard01", "signBulletinBoard02",
+    # Planters (2)
+    "birdBathPlanter", "planter",
+    # EXCLUDED: trader signage (15) ~ "we won't steal from traders"
+    # EXCLUDED: lit / electrical signs (52) ~ "we won't take the lit signs due
+    #   to risk to electric shock". Anything with Lit/Light/Neon/Trap/Sconce
+    #   in the name or extending lightPorchWhite is auto-flagged by
+    #   scripts/audit_pickup_candidates.py as risky for POI-load NREs.
 ]
 
 PORTRAIT_SIZE = 1024
@@ -507,12 +615,19 @@ def render_recipe_entry(block_name: str, kind: str) -> str:
     )
 
 
-def render_pickup_append_rows() -> str:
+def render_pickup_append_rows(extended_decor: bool = False) -> str:
     """Render the per-block pickup <append> patches. Inlined into
     Config/blocks.xml by render_blocks_xml() so 7DTD's XmlPatcher reliably
-    applies them."""
+    applies them.
+
+    When extended_decor=True, also includes EXTENDED_DECOR_PICKUP_BLOCKS
+    (~224 vanilla flags / road signs / shop signs / clocks / mirrors / etc.)
+    controlled by config["enableExtendedDecorPickup"]."""
+    names = list(PICKUP_BLOCKS)
+    if extended_decor:
+        names.extend(EXTENDED_DECOR_PICKUP_BLOCKS)
     rows = []
-    for name in PICKUP_BLOCKS:
+    for name in names:
         rows.append(
             f'    <append xpath="/blocks/block[@name=\'{escape_xml(name)}\']">\n'
             f'        <property name="CanPickup" value="true"/>\n'
@@ -557,6 +672,7 @@ def build_pack(pack_dir: Path) -> Path:
     pack_name = config.get("name", "My Picture Pack")
     sanitized = sanitize_id(pack_name)
     enable_pickup = bool(config.get("enablePickup", True))
+    enable_extended_decor = bool(config.get("enableExtendedDecorPickup", True))
     out_dir = pack_dir / sanitized
     if out_dir.exists():
         shutil.rmtree(out_dir)
@@ -564,7 +680,10 @@ def build_pack(pack_dir: Path) -> Path:
 
     print(f"Building '{pack_name}' -> {out_dir}/")
     if enable_pickup:
-        print("  pickup patch: ON  (~115 vanilla blocks become press-E pickup-able)")
+        if enable_extended_decor:
+            print("  pickup patch: ON  (picture core + extended decor ~ ~307 blocks)")
+        else:
+            print("  pickup patch: ON  (picture core only ~ ~83 blocks)")
     else:
         print("  pickup patch: OFF")
 
@@ -689,7 +808,10 @@ def build_pack(pack_dir: Path) -> Path:
     (config_out / "picture_pack.json").write_text(
         json.dumps(pic_map, indent=2), encoding="utf-8"
     )
-    pickup_rows = render_pickup_append_rows() if enable_pickup else ""
+    pickup_rows = (
+        render_pickup_append_rows(extended_decor=enable_extended_decor)
+        if enable_pickup else ""
+    )
     (config_out / "blocks.xml").write_text(
         render_blocks_xml(block_rows, pickup_rows), encoding="utf-8"
     )

@@ -14,7 +14,7 @@ import {
   composeAtlas,
   composeIcon,
 } from './composer'
-import { PICKUP_BLOCKS } from './pickupBlocks'
+import { PICKUP_BLOCKS, EXTENDED_DECOR_PICKUP_BLOCKS } from './pickupBlocks'
 
 /**
  * Builds the modlet zip. Layout:
@@ -138,7 +138,12 @@ export async function buildModlet(
   root.file('Config/picture_pack.json', JSON.stringify(pictureMap, null, 2))
   root.file(
     'Config/blocks.xml',
-    renderBlocksXml(blocksRows, meta.enablePickup ? renderPickupAppendRows() : undefined),
+    renderBlocksXml(
+      blocksRows,
+      meta.enablePickup
+        ? renderPickupAppendRows({ extendedDecor: meta.enableExtendedDecorPickup })
+        : undefined,
+    ),
   )
   root.file('Config/recipes.xml', renderRecipesXml(recipesRows))
   root.file('Config/Localization.txt', renderLocalization(locRows))
@@ -223,8 +228,19 @@ export function renderBlockEntry(
  * were tried in v0.5.x but the Harvest drop conflicted with hidden-safe
  * loot init (NREs on POI load) and the recipes bloated the workbench menu.
  */
-export function renderPickupAppendRows(): string {
-  return PICKUP_BLOCKS.map(name =>
+/**
+ * Render the per-vanilla-block <append> patches that add CanPickup="true".
+ *
+ * Always includes PICKUP_BLOCKS (the picture/poster/canvas/frame core).
+ * When `extendedDecor` is true, ALSO includes EXTENDED_DECOR_PICKUP_BLOCKS
+ * (~224 vanilla flags, road signs, shop signs, mirrors, clocks, etc.)
+ * controlled by the separate "Extended decor pickup" checkbox on the pack.
+ */
+export function renderPickupAppendRows(opts?: { extendedDecor?: boolean }): string {
+  const names = opts?.extendedDecor
+    ? [...PICKUP_BLOCKS, ...EXTENDED_DECOR_PICKUP_BLOCKS]
+    : PICKUP_BLOCKS
+  return names.map(name =>
     `    <append xpath="/blocks/block[@name='${escapeXml(name)}']">
         <property name="CanPickup" value="true"/>
     </append>`

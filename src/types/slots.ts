@@ -302,13 +302,21 @@ export interface PackMeta {
   description: string
   version: string
   /**
-   * When true, the modlet ships a Config/pickup.xml patch that adds CanPickup
-   * + a Harvest drop to every vanilla picture/poster/canvas/safe block (and
-   * to every generated kp_* block in this pack), making them hold-E-pickup-able,
-   * wrench-harvestable, and placeable from inventory in survival mode.
-   * Defaults ON ~ this is one of the headline features of the mod.
+   * When true, the modlet adds CanPickup="true" to every vanilla picture /
+   * poster / canvas / frame block (and to every generated kp_* block in this
+   * pack), making them press-E-pickup-able and placeable from inventory in
+   * survival mode. Defaults ON ~ headline feature.
    */
   enablePickup: boolean
+  /**
+   * When true, ALSO adds CanPickup to ~224 additional vanilla wall decor
+   * blocks: flags, road signs, OPEN/CLOSED, gun store signs, shop signs (unlit
+   * variants only), bathroom signs, wall clocks, mirrors, bulletin boards,
+   * planters, and assorted ad/diner/safety signs. Trader signage and
+   * lit/electrical signs are deliberately excluded ~ traders stay nice and
+   * lit signs risk electrical-init NREs. See src/utils/pickupBlocks.ts.
+   */
+  enableExtendedDecorPickup: boolean
 }
 
 export const DEFAULT_PACK_META: PackMeta = {
@@ -317,6 +325,7 @@ export const DEFAULT_PACK_META: PackMeta = {
   description: 'A custom picture pack for 7 Days to Die V2.6',
   version: '0.1.0',
   enablePickup: true,
+  enableExtendedDecorPickup: true,
 }
 
 /** True if the pack info still looks like our defaults ~ name unchanged

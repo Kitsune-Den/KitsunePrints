@@ -19,8 +19,8 @@ export function PackMetaForm({ meta, setMeta }: Props) {
         <Field label="Description" value={meta.description} onChange={(v) => updateText('description', v)} placeholder="What's in the pack" />
       </div>
 
-      <div className="border-t border-zinc-800 pt-6 max-w-2xl">
-        <h3 className="text-xs text-zinc-500 uppercase tracking-wider mb-3">Survival options</h3>
+      <div className="border-t border-zinc-800 pt-6 max-w-2xl space-y-5">
+        <h3 className="text-xs text-zinc-500 uppercase tracking-wider">Survival options</h3>
         <label className="flex items-start gap-3 cursor-pointer group">
           <input
             type="checkbox"
@@ -34,11 +34,38 @@ export function PackMetaForm({ meta, setMeta }: Props) {
             </div>
             <p className="text-xs text-zinc-500 mt-1 leading-relaxed">
               Adds <span className="text-zinc-400">press-E pickup</span> (single
-              tap, no tool, no recipe) to ~115 vanilla blocks ~ paintings, snack
-              posters, movie posters + theaters, canvases, picture frames, and
-              hidden-safe disguises. Find one in a POI, press E, place from
-              inventory wherever. On by default ~ uncheck if you'd rather POIs
-              stayed undismantleable.
+              tap, no tool, no recipe) to ~83 vanilla blocks ~ paintings, snack
+              posters, movie posters + theaters, canvases, and picture frames.
+              Find one in a POI, press E, place from inventory wherever.
+              On by default ~ uncheck if you'd rather POIs stayed undismantleable.
+            </p>
+          </div>
+        </label>
+
+        <label className={`flex items-start gap-3 cursor-pointer group ${!meta.enablePickup ? 'opacity-50' : ''}`}>
+          <input
+            type="checkbox"
+            checked={meta.enableExtendedDecorPickup}
+            disabled={!meta.enablePickup}
+            onChange={(e) => setMeta(prev => ({ ...prev, enableExtendedDecorPickup: e.target.checked }))}
+            className="mt-1 w-4 h-4 accent-orange-500 cursor-pointer disabled:cursor-not-allowed"
+          />
+          <div className="flex-1">
+            <div className="text-sm font-medium text-zinc-200 group-hover:text-zinc-100">
+              Extended decor pickup
+            </div>
+            <p className="text-xs text-zinc-500 mt-1 leading-relaxed">
+              Also adds press-E pickup to ~224 more vanilla wall decor blocks ~
+              flags, road signs, OPEN/CLOSED, gun store + shop signs (unlit
+              variants), bathroom signs, wall clocks, mirrors, bulletin boards,
+              planters, ad signs, gas signs. Trader signage and lit/electrical
+              signs are deliberately skipped (don't steal from traders, don't
+              tangle with electrical TileEntities).
+              {!meta.enablePickup && (
+                <span className="block mt-1 text-zinc-600">
+                  Requires the main pickup toggle above.
+                </span>
+              )}
             </p>
           </div>
         </label>

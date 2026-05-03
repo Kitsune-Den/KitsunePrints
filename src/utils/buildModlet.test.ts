@@ -19,6 +19,7 @@ const META: PackMeta = {
   version: '0.2.0',
   description: 'Cats everywhere',
   enablePickup: true,
+  enableExtendedDecorPickup: false,
 }
 
 const PORTRAIT_SLOT: SlotDef = {
@@ -188,6 +189,7 @@ describe('renderRecipeEntry', () => {
 
 describe('renderPickupAppendRows', () => {
   const rows = renderPickupAppendRows()
+  const extendedRows = renderPickupAppendRows({ extendedDecor: true })
 
   it('only adds CanPickup=true (no Harvest drop, no recipe)', () => {
     expect(rows).toContain('<property name="CanPickup" value="true"/>')
@@ -206,16 +208,67 @@ describe('renderPickupAppendRows', () => {
 
   it('does NOT patch hidden-safe variants (they break POI load)', () => {
     expect(rows).not.toContain('hiddenSafe')
+    expect(extendedRows).not.toContain('hiddenSafe')
   })
 
   it('does NOT patch pictureCanvasRandomHelper (internal placeholder)', () => {
     expect(rows).not.toContain('pictureCanvasRandomHelper')
+    expect(extendedRows).not.toContain('pictureCanvasRandomHelper')
   })
 
-  it('produces ~83 append patches (one per pickup block)', () => {
+  it('produces ~83 append patches in core mode', () => {
     const patchCount = (rows.match(/<append /g) || []).length
     expect(patchCount).toBeGreaterThanOrEqual(80)
     expect(patchCount).toBeLessThanOrEqual(95)
+  })
+
+  // ---- Extended decor pickup (issue #3) -----------------------------------
+
+  it('extended mode adds the new flag/sign/decor entries', () => {
+    expect(extendedRows).toContain("@name='flagWallHungUSA'")
+    expect(extendedRows).toContain("@name='flagWallHungGadsdenYellow'")
+    expect(extendedRows).toContain("@name='signOpenWallMountChain'")
+    expect(extendedRows).toContain("@name='signRoadStop'")
+    expect(extendedRows).toContain("@name='signShopGas'")
+    expect(extendedRows).toContain("@name='wallClock'")
+    expect(extendedRows).toContain("@name='wallMirror'")
+    expect(extendedRows).toContain("@name='signBulletinBoard01'")
+    expect(extendedRows).toContain("@name='signBathroomSignUnisexWallMount'")
+  })
+
+  it('extended mode keeps the picture core intact', () => {
+    expect(extendedRows).toContain("@name='paintingBen'")
+    expect(extendedRows).toContain("@name='pictureFrame_01a'")
+  })
+
+  it("extended mode never includes trader signage (don't steal from traders)", () => {
+    expect(extendedRows).not.toContain("@name='signTrader")
+    expect(extendedRows).not.toContain("@name='flagPoleTrader")
+    expect(extendedRows).not.toContain("@name='signNoticeTrader")
+  })
+
+  it('extended mode never includes lit / electrical signs', () => {
+    // Spot-check the categories the audit flagged risky.
+    expect(extendedRows).not.toContain("@name='signShopGasLit")
+    expect(extendedRows).not.toContain("@name='signNeonColdBeer")
+    expect(extendedRows).not.toContain("@name='signExitLight")
+    expect(extendedRows).not.toContain("@name='signTrafficLight")
+    expect(extendedRows).not.toContain("@name='lightSconce")
+    expect(extendedRows).not.toContain("@name='dartTrap")
+  })
+
+  it('extended mode produces ~300+ append patches total', () => {
+    const patchCount = (extendedRows.match(/<append /g) || []).length
+    expect(patchCount).toBeGreaterThanOrEqual(290)
+    expect(patchCount).toBeLessThanOrEqual(330)
+  })
+
+  it('extended mode is strictly a superset of core mode', () => {
+    const corePatches = (rows.match(/@name='[^']+'/g) || [])
+    const extPatches = new Set(extendedRows.match(/@name='[^']+'/g) || [])
+    for (const p of corePatches) {
+      expect(extPatches.has(p)).toBe(true)
+    }
   })
 })
 
