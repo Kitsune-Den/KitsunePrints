@@ -634,6 +634,11 @@ def build_pack(pack_dir: Path) -> Path:
         for vanilla_block in vanilla_blocks:
             block_name = f"kp_{sanitized}_{vanilla_block}"
             icon.save(icon_dir / f"{block_name}.png", "PNG")
+            # Also override the VANILLA block's icon so when a player presses
+            # E to pick up a vanilla painting in a POI, the inventory icon
+            # shows the user's art instead of the vanilla bird/etc. 7DTD
+            # merges modlet icons over vanilla by filename. Closes issue #2.
+            icon.save(icon_dir / f"{vanilla_block}.png", "PNG")
             block_rows.append(render_block_entry(block_name, vanilla_block, enable_pickup))
 
             if kind == "portrait":

@@ -88,6 +88,13 @@ export async function buildModlet(
     for (const vanillaBlock of slot.vanillaBlocks) {
       const blockName = `kp_${packId}_${vanillaBlock}`
       root.file(`UIAtlases/ItemIconAtlas/${blockName}.png`, iconBlob)
+      // Also override the VANILLA block's icon so when a player presses E
+      // to pick up a vanilla painting in a POI, the inventory icon shows
+      // the user's art (not the vanilla bird/etc). 7DTD merges modlet icons
+      // over vanilla by filename, so writing <vanillaBlock>.png to our
+      // ItemIconAtlas folder takes precedence everywhere the icon is
+      // displayed (inventory, creative menu, traders). Closes issue #2.
+      root.file(`UIAtlases/ItemIconAtlas/${vanillaBlock}.png`, iconBlob)
       blocksRows.push(renderBlockEntry(blockName, vanillaBlock, meta.enablePickup))
 
       // Recipe + display label depend on slot kind / block size suffix.
