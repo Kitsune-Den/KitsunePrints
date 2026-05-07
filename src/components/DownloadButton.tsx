@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { SLOTS, isDefaultPackMeta, type SlotState, type PackMeta } from '../types/slots'
 import { buildModlet } from '../utils/buildModlet'
+import { BuildingModal } from './BuildingModal'
 
 interface Props {
   slots: Record<string, SlotState>
@@ -72,6 +73,7 @@ export function DownloadButton({ slots, meta, onRequestPackInfo }: Props) {
         <p className="text-xs text-orange-400">Set your pack name + author first ~ check the Pack Info tab.</p>
       )}
       {error && <p className="text-sm text-red-400">{error}</p>}
+      {busy && <BuildingModal />}
     </div>
   )
 }
