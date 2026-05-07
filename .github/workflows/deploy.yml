@@ -16,6 +16,19 @@ jobs:
           node-version: 22
           cache: 'npm'
 
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Pillow (for DIY kit builder)
+        run: pip install Pillow
+
+      - name: Rebuild DIY kit zip
+        # Generates public/KitsunePrints-DIY-Kit.zip from sources, so Vite's
+        # public/ → dist/ copy ships the latest version. Avoids committing a
+        # 47 MB binary blob to git on every kit change.
+        run: python scripts/build_diy_kit.py
+
       - run: npm ci
       - run: npm run build
 
