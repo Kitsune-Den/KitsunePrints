@@ -110,7 +110,7 @@ export function SlotCard({ slot, state, onChange }: Props) {
       <div className="border border-zinc-800 rounded-lg p-4 bg-zinc-900/40">
         <div className="flex items-center gap-3 mb-3">
           <img
-            src={`/vanilla/${slot.slotId}.jpg`}
+            src={`/vanilla/${slot.slotId}.webp`}
             alt={`Vanilla ${slot.label}`}
             loading="lazy"
             className={`${pickThumbClass(slot)} object-cover rounded border border-zinc-700/60 flex-shrink-0 bg-zinc-950/60`}
