@@ -1,4 +1,4 @@
-name: Deploy
+name: Deploy KitsunePrints to kitsuneden VPS
 
 on:
   push:
@@ -26,9 +26,26 @@ jobs:
           chmod 600 ~/.ssh/id_ed25519
           ssh-keyscan -H "${{ secrets.VPS_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null
 
-      - name: Deploy dist/ to VPS
+      - name: Deploy static dist/ to /var/www/prints.kitsuneden.net
         run: |
           rsync -avz --delete \
             -e "ssh -i ~/.ssh/id_ed25519" \
             ./dist/ \
-            ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:${{ secrets.VPS_REMOTE_PATH }}
+            ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/var/www/prints.kitsuneden.net/
+
+      - name: Deploy server.cjs to /srv/kitsuneprints
+        run: |
+          rsync -avz \
+            -e "ssh -i ~/.ssh/id_ed25519" \
+            server.cjs package.json package-lock.json \
+            ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/srv/kitsuneprints/
+
+      - name: Install production deps and restart service
+        run: |
+          ssh -i ~/.ssh/id_ed25519 ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
+            'cd /srv/kitsuneprints && npm ci --omit=dev && sudo /usr/bin/systemctl restart kitsuneprints'
+
+      - name: Health check
+        run: |
+          sleep 3
+          curl -fsS https://prints.kitsuneden.net/api/stats || (echo "Health check failed"; exit 1)
