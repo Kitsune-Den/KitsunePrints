@@ -134,7 +134,7 @@ export default function IntroPage() {
           style={{ filter: 'drop-shadow(0 0 60px rgba(251,146,60,0.35))' }}
         >
           <img
-            src="/kitsuneprints-hero.png"
+            src="/kitsuneprints-hero.webp"
             alt="KitsunePrints"
             className="w-64 h-64 md:w-80 md:h-80 object-contain"
           />
@@ -191,7 +191,7 @@ export default function IntroPage() {
           <p className="text-center text-xs tracking-[0.3em] uppercase text-zinc-500 font-medium">In a real V2.6 POI</p>
           <div className="rounded-xl overflow-hidden border border-zinc-800 shadow-[0_0_60px_rgba(251,146,60,0.15)]">
             <img
-              src="/screenshots/hero_kitsune_paintings.jpg"
+              src="/screenshots/hero_kitsune_paintings.webp"
               alt="Two custom Kitsune paintings rendered on a wall in a 7 Days to Die V2.6 POI"
               className="w-full object-cover"
             />
@@ -209,13 +209,13 @@ export default function IntroPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="flex flex-col gap-2">
               <div className="rounded-xl overflow-hidden border border-zinc-800 shadow-[0_0_40px_rgba(0,0,0,0.6)]">
-                <img src="/screenshots/screenshot_slots.jpg" alt="Builder page with three of six portrait slots filled with Kitsune art, tab bar showing Portraits 3/6, sticky download bar at the bottom" className="w-full object-cover" />
+                <img src="/screenshots/screenshot_slots.webp" alt="Builder page with three of six portrait slots filled with Kitsune art, tab bar showing Portraits 3/6, sticky download bar at the bottom" className="w-full object-cover" loading="lazy" />
               </div>
               <p className="text-xs text-zinc-600 text-center">Tabbed slot grid, vanilla refs in the headers, sticky progress bar</p>
             </div>
             <div className="flex flex-col gap-2">
               <div className="rounded-xl overflow-hidden border border-zinc-800 shadow-[0_0_40px_rgba(0,0,0,0.6)]">
-                <img src="/screenshots/screenshot_cropper.png" alt="Cropper dialog locked to 3:4 portrait aspect" className="w-full object-cover" />
+                <img src="/screenshots/screenshot_cropper.webp" alt="Cropper dialog locked to 3:4 portrait aspect" className="w-full object-cover" loading="lazy" />
               </div>
               <p className="text-xs text-zinc-600 text-center">Cropper locks to 3:4 portrait or 1:1 square per slot</p>
             </div>
@@ -353,7 +353,7 @@ export default function IntroPage() {
             title="Join the Kitsune Den Discord"
           >
             <img
-              src="/discord.png"
+              src="/discord.webp"
               alt="Join the Kitsune Den Discord ~ get support, stay updated, share your builds, and meet other modders"
               className="w-full object-cover group-hover:scale-[1.01] transition-transform duration-500"
             />
