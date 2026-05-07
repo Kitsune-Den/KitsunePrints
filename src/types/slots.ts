@@ -60,17 +60,17 @@ export interface AtlasSource {
 }
 
 export const ATLAS_SOURCES: Record<string, AtlasSource> = {
-  posterMovie:    { vanillaPath: '/vanilla/_posterMovie_atlas.png',    size: 1024 },
-  pictureCanvas1: { vanillaPath: '/vanilla/_pictureCanvas1_atlas.png', size: 2048 },
-  pictureCanvas2: { vanillaPath: '/vanilla/_pictureCanvas2_atlas.png', size: 2048 },
-  pictureFramed:  { vanillaPath: '/vanilla/_pictureFramed_atlas.png',  size: 2048, frameTintHeightPct: 0.55 },
-  pictureFramed2: { vanillaPath: '/vanilla/_pictureFramed2_atlas.png', size: 2048, frameTintHeightPct: 0.55 },
-  pictureFramed3: { vanillaPath: '/vanilla/_pictureFramed3_atlas.png', size: 2048, frameTintHeightPct: 0.55 },
-  pictureFramed4: { vanillaPath: '/vanilla/_pictureFramed4_atlas.png', size: 2048, frameTintHeightPct: 0.55 },
-  pictureFramed5: { vanillaPath: '/vanilla/_pictureFramed5_atlas.png', size: 2048, frameTintHeightPct: 0.55 },
-  pictureFramed6: { vanillaPath: '/vanilla/_pictureFramed6_atlas.png', size: 2048, frameTintHeightPct: 0.55 },
-  pictureFramed7: { vanillaPath: '/vanilla/_pictureFramed7_atlas.png', size: 2048, frameTintHeightPct: 0.55 },
-  pictureFramed8: { vanillaPath: '/vanilla/_pictureFramed8_atlas.png', size: 2048, frameTintHeightPct: 0.55 },
+  posterMovie:    { vanillaPath: '/vanilla/_posterMovie_atlas.webp',    size: 1024 },
+  pictureCanvas1: { vanillaPath: '/vanilla/_pictureCanvas1_atlas.webp', size: 2048 },
+  pictureCanvas2: { vanillaPath: '/vanilla/_pictureCanvas2_atlas.webp', size: 2048 },
+  pictureFramed:  { vanillaPath: '/vanilla/_pictureFramed_atlas.webp',  size: 2048, frameTintHeightPct: 0.55 },
+  pictureFramed2: { vanillaPath: '/vanilla/_pictureFramed2_atlas.webp', size: 2048, frameTintHeightPct: 0.55 },
+  pictureFramed3: { vanillaPath: '/vanilla/_pictureFramed3_atlas.webp', size: 2048, frameTintHeightPct: 0.55 },
+  pictureFramed4: { vanillaPath: '/vanilla/_pictureFramed4_atlas.webp', size: 2048, frameTintHeightPct: 0.55 },
+  pictureFramed5: { vanillaPath: '/vanilla/_pictureFramed5_atlas.webp', size: 2048, frameTintHeightPct: 0.55 },
+  pictureFramed6: { vanillaPath: '/vanilla/_pictureFramed6_atlas.webp', size: 2048, frameTintHeightPct: 0.55 },
+  pictureFramed7: { vanillaPath: '/vanilla/_pictureFramed7_atlas.webp', size: 2048, frameTintHeightPct: 0.55 },
+  pictureFramed8: { vanillaPath: '/vanilla/_pictureFramed8_atlas.webp', size: 2048, frameTintHeightPct: 0.55 },
 }
 
 /** Legacy aliases ~ kept for any external callers. */
