@@ -7,7 +7,7 @@
 <p align="center">
   <a href="https://prints.kitsuneden.net"><img src="https://img.shields.io/badge/Live-prints.kitsuneden.net-fb923c?style=for-the-badge" alt="Live site" /></a>
   <a href="https://prints.kitsuneden.net/app"><img src="https://img.shields.io/badge/Build_a_Pack-Web_Tool-zinc?style=for-the-badge&color=18181b" alt="Web tool" /></a>
-  <a href="https://prints.kitsuneden.net/KitsunePrints-DIY-Kit.zip"><img src="https://img.shields.io/badge/DIY_Kit-Offline-zinc?style=for-the-badge&color=27272a" alt="DIY kit download" /></a>
+  <a href="https://github.com/Kitsune-Den/KitsunePrints/releases/latest/download/KitsunePrints-DIY-Kit.zip"><img src="https://img.shields.io/badge/DIY_Kit-Offline-zinc?style=for-the-badge&color=27272a" alt="DIY kit download" /></a>
   <a href="https://paint.kitsuneden.net"><img src="https://img.shields.io/badge/Sister_Tool-KitsunePaint-zinc?style=for-the-badge&color=27272a" alt="KitsunePaint" /></a>
 </p>
 
@@ -80,7 +80,7 @@ Result: one composite texture file per shared material, with each prefab automat
 
 ## DIY / offline
 
-If you'd rather skip the web tool, grab [`KitsunePrints-DIY-Kit.zip`](https://prints.kitsuneden.net/KitsunePrints-DIY-Kit.zip) ~ Python script + DLL + frame textures + 11 vanilla atlases (~46 MB unzipped) + example config. `pip install Pillow`, edit a JSON, drop your images, run `python make_pack.py example_pack/`, get a modlet out. The DIY kit ships every category the web tool ships ~ same 69 slots, same atlas-tile compositing, same press-E pickup.
+If you'd rather skip the web tool, grab [`KitsunePrints-DIY-Kit.zip`](https://github.com/Kitsune-Den/KitsunePrints/releases/latest/download/KitsunePrints-DIY-Kit.zip) from GitHub Releases ~ Python script + DLL + frame textures + 11 vanilla atlases (~46 MB unzipped) + example config. `pip install Pillow`, edit a JSON, drop your images, run `python make_pack.py example_pack/`, get a modlet out. The DIY kit ships every category the web tool ships ~ same 69 slots, same atlas-tile compositing, same press-E pickup.
 
 ## Dependencies
 

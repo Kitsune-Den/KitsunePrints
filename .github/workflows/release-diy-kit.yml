@@ -1,0 +1,63 @@
+name: Attach DIY kit to release
+
+# Fires when a GitHub Release is published (e.g. via `gh release create vX.Y.Z`).
+# Builds the DIY kit zip from the tagged source and uploads it as a release
+# asset. The landing page's "DIY Kit (offline)" button points at the
+# /releases/latest/download/KitsunePrints-DIY-Kit.zip pattern, which GitHub
+# auto-redirects to whichever the latest release is ~ so as soon as this
+# workflow finishes, the new release's kit is what users get.
+
+on:
+  release:
+    types: [published]
+  # Manual fallback: re-upload to a specific release if the release-time run
+  # failed or if you cut a release before adding this workflow.
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag to attach to (e.g. v1.0.4)'
+        required: true
+        type: string
+
+jobs:
+  attach-kit:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # required for gh release upload to write back to the release
+    steps:
+      - name: Determine tag
+        id: tag
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "tag=${{ inputs.tag }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=${{ github.event.release.tag_name }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.tag.outputs.tag }}
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Pillow (for DIY kit builder)
+        run: pip install Pillow
+
+      - name: Build DIY kit zip
+        # Reads sources from the checked-out tag and writes
+        # public/KitsunePrints-DIY-Kit.zip ~ same script the live deploy
+        # uses, just running here against the tagged tree.
+        run: python scripts/build_diy_kit.py
+
+      - name: Upload kit to release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # `--clobber` so re-running this workflow against an existing release
+        # replaces the asset rather than failing on duplicate.
+        run: |
+          gh release upload "${{ steps.tag.outputs.tag }}" \
+            public/KitsunePrints-DIY-Kit.zip \
+            --clobber \
+            --repo "${{ github.repository }}"
