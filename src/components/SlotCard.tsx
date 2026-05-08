@@ -55,22 +55,33 @@ function pickPreviewAspectClass(slot: SlotDef): string {
  * what the user's image will get composited into.
  */
 function describeSlotDimensions(slot: SlotDef): string {
-  if (slot.kind === 'portrait') return '3:4 portrait · 1024×1024'
-  if (slot.kind === 'abstract') return '1:1 square · 1024×1024'
-  if (slot.kind === 'decor') return '1:1 square · 1024×1024'
-  if ((slot.kind === 'moviePoster' || slot.kind === 'canvasTile') && slot.atlasTile) {
+  // atlasTile is the most specific source of truth ~ it's the actual pixel
+  // region the user's image will composite into (or, for decor slots that
+  // share a vanilla atlas, the block aspect their image will stretch to
+  // fill at runtime). Check it first regardless of kind.
+  //
+  // Important callout: snack-poster decor slots have atlasTile data even
+  // though they're kind:'decor' ~ Health Bar (wide) is 1638×512 (~3:1),
+  // most others are 410×512 (~4:5). Without this branch, all decor slots
+  // showed "1:1 square · 1024×1024" which was wrong for ~all 17.
+  if (slot.atlasTile) {
     const { w, h } = slot.atlasTile
     return `${aspectName(w, h)} · ${w}×${h}`
   }
+  if (slot.kind === 'portrait') return '3:4 portrait · 1024×1024'
+  if (slot.kind === 'abstract') return '1:1 square · 1024×1024'
+  if (slot.kind === 'decor') return '1:1 square · 1024×1024'
   return ''
 }
 
 function aspectName(w: number, h: number): string {
   const r = w / h
   if (Math.abs(r - 0.75) < 0.05) return '3:4 portrait'
+  if (Math.abs(r - 0.8) < 0.05) return '4:5 tall'
   if (Math.abs(r - 1) < 0.05) return '1:1 square'
   if (Math.abs(r - 4 / 3) < 0.05) return '4:3'
   if (Math.abs(r - 16 / 9) < 0.05) return '16:9 wide'
+  if (r >= 2.5) return `~${Math.round(r)}:1 wide`
   return r < 1 ? `${(Math.round((1 / r) * 100) / 100)}:1 tall` : `${(Math.round(r * 100) / 100)}:1 wide`
 }
 
