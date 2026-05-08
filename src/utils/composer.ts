@@ -23,6 +23,29 @@ import {
   type MeshUvBbox,
 } from '../types/slots'
 
+/** Rotate an HTMLImageElement-or-canvas-source 90° in the named direction.
+ *  Returns a fresh HTMLCanvasElement (drop-in for drawImage). */
+function rotate90(
+  source: HTMLImageElement | HTMLCanvasElement,
+  direction: 'cw' | 'ccw',
+): HTMLCanvasElement {
+  const sw = (source as HTMLImageElement).naturalWidth || (source as HTMLCanvasElement).width
+  const sh = (source as HTMLImageElement).naturalHeight || (source as HTMLCanvasElement).height
+  const out = document.createElement('canvas')
+  // Rotation swaps width and height ~ portrait becomes landscape and vice versa.
+  out.width = sh
+  out.height = sw
+  const ctx = out.getContext('2d')
+  if (!ctx) throw new Error('Canvas 2d context unavailable')
+  // Translate to the new center, rotate, then draw the source centered.
+  ctx.save()
+  ctx.translate(out.width / 2, out.height / 2)
+  ctx.rotate(direction === 'cw' ? Math.PI / 2 : -Math.PI / 2)
+  ctx.drawImage(source as CanvasImageSource, -sw / 2, -sh / 2, sw, sh)
+  ctx.restore()
+  return out
+}
+
 const PORTRAIT_W = 1024
 const PORTRAIT_H = 1024
 const FRAME_PCT = 0.25 // left 25% is the frame UV zone
@@ -203,7 +226,7 @@ export async function composeUvBboxFitted(file: File, bbox: MeshUvBbox): Promise
  */
 export async function composeAtlas(
   materialName: string,
-  entries: { tile: AtlasTile; file: File }[],
+  entries: { tile: AtlasTile; file: File; rotation?: 'cw' | 'ccw' }[],
   frameTint?: string,
 ): Promise<Blob> {
   const source = ATLAS_SOURCES[materialName]
@@ -236,13 +259,21 @@ export async function composeAtlas(
   //    bleed absorbs in-game mesh UV overshoot at the tile boundary so the
   //    mesh never samples vanilla wood-zone content (which otherwise shows
   //    as gray strips at the print's edges).
-  for (const { tile, file } of entries) {
+  //
+  //    If the entry has a rotation directive, we rotate the user's image
+  //    90° (in the indicated direction) BEFORE the cover-fit. That's how
+  //    a user-uploaded landscape image gets tilted to fit a portrait
+  //    atlasTile (or vice versa) when the slot's effective orientation
+  //    differs from the atlasTile's native aspect.
+  for (const { tile, file, rotation } of entries) {
     const img = await loadImage(file)
+    const sourceForPaint: HTMLImageElement | HTMLCanvasElement =
+      rotation ? rotate90(img, rotation) : img
     const bx = Math.max(0, tile.x - TILE_BLEED_PX)
     const by = Math.max(0, tile.y - TILE_BLEED_PX)
     const br = Math.min(source.size, tile.x + tile.w + TILE_BLEED_PX)
     const bb = Math.min(source.size, tile.y + tile.h + TILE_BLEED_PX)
-    drawCover(ctx, img, bx, by, br - bx, bb - by)
+    drawCover(ctx, sourceForPaint, bx, by, br - bx, bb - by)
   }
 
   return canvasToBlob(canvas)
@@ -267,26 +298,31 @@ export async function composeIcon(
 }
 
 // Object-fit: cover semantics. Scales the source image to entirely fill the
-// destination rect, cropping from center on the over-extending axis.
+// destination rect, cropping from center on the over-extending axis. Accepts
+// HTMLImageElement OR HTMLCanvasElement (both expose width/height + are
+// drawImage-compatible) so callers can hand us a rotated canvas without
+// having to round-trip through an intermediate image element.
 function drawCover(
   ctx: CanvasRenderingContext2D,
-  img: HTMLImageElement,
+  img: HTMLImageElement | HTMLCanvasElement,
   dx: number,
   dy: number,
   dw: number,
   dh: number,
 ) {
-  const srcRatio = img.width / img.height
+  const srcW = (img as HTMLImageElement).naturalWidth || (img as HTMLCanvasElement).width
+  const srcH = (img as HTMLImageElement).naturalHeight || (img as HTMLCanvasElement).height
+  const srcRatio = srcW / srcH
   const dstRatio = dw / dh
-  let sx = 0, sy = 0, sw = img.width, sh = img.height
+  let sx = 0, sy = 0, sw = srcW, sh = srcH
   if (srcRatio > dstRatio) {
     // src wider ~ crop sides
-    sw = img.height * dstRatio
-    sx = (img.width - sw) / 2
+    sw = srcH * dstRatio
+    sx = (srcW - sw) / 2
   } else if (srcRatio < dstRatio) {
     // src taller ~ crop top/bottom
-    sh = img.width / dstRatio
-    sy = (img.height - sh) / 2
+    sh = srcW / dstRatio
+    sy = (srcH - sh) / 2
   }
   ctx.drawImage(img, sx, sy, sw, sh, dx, dy, dw, dh)
 }

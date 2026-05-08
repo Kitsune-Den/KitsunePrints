@@ -4,6 +4,7 @@ import {
   DEFAULT_FRAME_PRESET_ID,
   ATLAS_SOURCES,
   FRAME_PRESETS,
+  getCompositeRotation,
   type SlotState,
   type PackMeta,
   type SlotDef,
@@ -125,6 +126,10 @@ export async function buildModlet(
     const atlasBlob = await composeAtlas(materialName, group.map(p => ({
       tile: p.slot.atlasTile!,
       file: p.state.file!,
+      // If the slot's effective orientation is opposite the atlasTile's
+      // native aspect, rotate the user image 90° before painting so the
+      // composition matches the user's chosen orientation in-game.
+      rotation: getCompositeRotation(p.slot, p.state),
     })), frameTint)
     const filename = `${materialName}.png`
     root.file(`Resources/Textures/${filename}`, atlasBlob)
