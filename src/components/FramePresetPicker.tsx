@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { FRAME_PRESETS, type SlotDef } from '../types/slots'
 import { drawSwatchInto } from '../utils/livePreview'
 
@@ -53,16 +53,23 @@ const SWATCH_PX = 160
 
 function SwatchButton({ slot, presetId, label, selected, onClick }: SwatchButtonProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  // While drawSwatchInto is in flight, show a small spinner overlaid on
+  // the swatch. Mostly visible the very first time any picture-frame
+  // swatch in the session renders, since subsequent swatches share the
+  // tinted-atlas cache in livePreview.ts.
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
     let cancelled = false
+    setLoading(true)
     drawSwatchInto(canvas, slot, presetId).catch(() => {
       // Swallow ~ a failed swatch draw shows a blank canvas, which is a
       // mild degradation, not a crash. The preset still functions on click.
-    }).then(() => {
+    }).finally(() => {
       if (cancelled) return
+      setLoading(false)
     })
     return () => { cancelled = true }
   }, [slot, presetId])
@@ -87,6 +94,11 @@ function SwatchButton({ slot, presetId, label, selected, onClick }: SwatchButton
         className="block w-full h-12 object-cover"
         aria-label={label}
       />
+      {loading && (
+        <div className="absolute inset-0 flex items-center justify-center bg-zinc-950/60 pointer-events-none">
+          <span className="inline-block w-3 h-3 rounded-full border-2 border-zinc-700 border-t-zinc-300 animate-spin" />
+        </div>
+      )}
       <div className="absolute inset-x-0 bottom-0 bg-black/70 text-[10px] text-zinc-300 px-1 py-0.5 truncate">
         {label}
       </div>
