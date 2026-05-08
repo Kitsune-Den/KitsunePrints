@@ -36,3 +36,4 @@ scripts/_debug_*
 # (the scripts themselves are committed; their PNG output is not)
 scripts/_test_*/
 scripts/_cleaned_wood_pngs/
+scripts/_audit_orientations/
