@@ -16,6 +16,32 @@ export interface AtlasTile {
   h: number
 }
 
+/**
+ * Normalized UV bounding box of the front face of a block's LOD0 mesh.
+ * Coordinates are in [0,1] with (0,0) at the top-left of the texture and
+ * (1,1) at the bottom-right ~ matching how UnityPy's read_*_uvs scripts
+ * report them after Y-flipping from OpenGL UV space (0,0 bottom-left) to
+ * PIL/atlas pixel space (0,0 top-left).
+ *
+ * For decor slots whose vanilla mesh samples a sub-region of the texture
+ * (e.g. snack posters that look at only the left half or center quarter),
+ * the composer paints the user's image into exactly this bbox of the
+ * output texture so the mesh sees their full image, undistorted.
+ *
+ * Slots without a meshUvBbox are assumed to sample the full (0,0)-(1,1)
+ * UV range ~ which is what composer's existing fallback behavior assumes.
+ */
+export interface MeshUvBbox {
+  /** Left edge in normalized UV (0..1). */
+  l: number
+  /** Top edge in normalized UV (0..1). */
+  t: number
+  /** Right edge in normalized UV (0..1). */
+  r: number
+  /** Bottom edge in normalized UV (0..1). */
+  b: number
+}
+
 export interface SlotDef {
   /** Unique slot identifier ~ used as the React key and the state Record key. */
   slotId: string
@@ -45,6 +71,23 @@ export interface SlotDef {
    * to (1,1)/(0,0), so the user's image fills the whole canvas. Composer
    * just normalizes the image to a square ~1024×1024.
    */
+  /**
+   * For decor slots whose vanilla mesh samples a sub-region of the texture,
+   * the normalized UV bbox the LOD0 mesh's front face actually reads.
+   * Composer paints the user's image into exactly this bbox of the output
+   * texture so the in-game mesh sees their full image, not a cropped slice.
+   *
+   * Derived empirically via scripts/read_snack_poster_uvs.py. Slots without
+   * this field default to (0,0)-(1,1) ~ image fills full output texture.
+   */
+  meshUvBbox?: MeshUvBbox
+  /**
+   * Optional caveat shown to users in the slot card header. Use for slots
+   * where the vanilla art is misleading ~ e.g. a snack poster tile that
+   * actually contains multiple stacked product designs in one block. Keep
+   * it short; this surfaces as a one-liner above the drop zone.
+   */
+  note?: string
 }
 
 /** Map a shared-atlas materialName to its base atlas image + dimensions. */
@@ -173,23 +216,23 @@ export const SLOTS: SlotDef[] = [
   // material name, each slot gets its own composed texture file (DLL resets
   // UV scale/offset on swap so the user's full image fills each canvas).
   // The atlasTile field is purely for the reference thumb crop.
-  { slotId: 'signSnackPosterJerky',        materialName: 'snackPosterJerky',        label: 'Snack ~ Thick Nick\'s Jerky', vanillaBlocks: ['signSnackPosterJerky'],        kind: 'decor', atlasTile: { x: 0,    y: 0,    w: 410,  h: 512 } },
-  { slotId: 'signSnackPosterGoblinO',      materialName: 'snackPosterGoblinO',      label: "Snack ~ Goblin-O's",          vanillaBlocks: ['signSnackPosterGoblinO'],      kind: 'decor', atlasTile: { x: 410,  y: 0,    w: 410,  h: 512 } },
-  { slotId: 'signSnackPosterOops',         materialName: 'snackPosterOops',         label: 'Snack ~ Oops Country',        vanillaBlocks: ['signSnackPosterOops'],         kind: 'decor', atlasTile: { x: 820,  y: 0,    w: 410,  h: 512 } },
-  { slotId: 'signSnackPosterOopsClassic',  materialName: 'snackPosterOopsClassic',  label: 'Snack ~ Oops Classic',        vanillaBlocks: ['signSnackPosterOopsClassic'],  kind: 'decor', atlasTile: { x: 1230, y: 0,    w: 410,  h: 512 } },
-  { slotId: 'signSnackPosterBretzels',     materialName: 'snackPosterBretzels',     label: 'Snack ~ Bretzels',            vanillaBlocks: ['signSnackPosterBretzels'],     kind: 'decor', atlasTile: { x: 1640, y: 0,    w: 408,  h: 512 } },
-  { slotId: 'signSnackPosterJailBreakers', materialName: 'snackPosterJailBreakers', label: 'Snack ~ Jail Breakers',       vanillaBlocks: ['signSnackPosterJailBreakers'], kind: 'decor', atlasTile: { x: 0,    y: 512,  w: 410,  h: 512 } },
-  { slotId: 'signSnackPosterEyeCandy',     materialName: 'snackPosterEyeCandy',     label: 'Snack ~ Eye Candy',           vanillaBlocks: ['signSnackPosterEyeCandy'],     kind: 'decor', atlasTile: { x: 410,  y: 512,  w: 410,  h: 512 } },
-  { slotId: 'signSnackPosterSkullCrusher', materialName: 'snackPosterSkullCrusher', label: 'Snack ~ Skull Crushers',      vanillaBlocks: ['signSnackPosterSkullCrusher'], kind: 'decor', atlasTile: { x: 820,  y: 512,  w: 410,  h: 512 } },
-  { slotId: 'signSnackPosterNachos',       materialName: 'snackPosterNachos',       label: 'Snack ~ Nachios Beef',        vanillaBlocks: ['signSnackPosterNachos'],       kind: 'decor', atlasTile: { x: 1230, y: 512,  w: 410,  h: 512 } },
-  { slotId: 'signSnackPosterNachosRanch',  materialName: 'snackPosterNachosRanch',  label: 'Snack ~ Nachios Ranch',       vanillaBlocks: ['signSnackPosterNachosRanch'],  kind: 'decor', atlasTile: { x: 1640, y: 512,  w: 408,  h: 512 } },
-  { slotId: 'signSnackPosterFortBites',    materialName: 'snackPosterFortBites',    label: 'Snack ~ Fort Bites',          vanillaBlocks: ['signSnackPosterFortBites'],    kind: 'decor', atlasTile: { x: 0,    y: 1024, w: 410,  h: 512 } },
-  { slotId: 'signSnackPosterHealth',       materialName: 'snackPosterHealth',       label: 'Snack ~ Health Bar (wide)',   vanillaBlocks: ['signSnackPosterHealth'],       kind: 'decor', atlasTile: { x: 410,  y: 1024, w: 1638, h: 512 } },
-  { slotId: 'signSnackPosterHackers',      materialName: 'snackPosterHackers',      label: 'Snack ~ Hackers',             vanillaBlocks: ['signSnackPosterHackers'],      kind: 'decor', atlasTile: { x: 0,    y: 1536, w: 410,  h: 512 } },
-  { slotId: 'signSnackPosterPrime',        materialName: 'snackPosterPrime',        label: 'Snack ~ Prime Bars',          vanillaBlocks: ['signSnackPosterPrime'],        kind: 'decor', atlasTile: { x: 410,  y: 1536, w: 410,  h: 512 } },
-  { slotId: 'signSnackPosterAtom',         materialName: 'snackPosterAtom',         label: 'Snack ~ Atom Junkies',        vanillaBlocks: ['signSnackPosterAtom'],         kind: 'decor', atlasTile: { x: 820,  y: 1536, w: 410,  h: 512 } },
-  { slotId: 'signSnackPosterNerd',         materialName: 'snackPosterNerd',         label: 'Snack ~ Nerd Tats',           vanillaBlocks: ['signSnackPosterNerd'],         kind: 'decor', atlasTile: { x: 1230, y: 1536, w: 410,  h: 512 } },
-  { slotId: 'signSnackPosterRamen',        materialName: 'snackPosterRamen',        label: 'Snack ~ Ramen',               vanillaBlocks: ['signSnackPosterRamen'],        kind: 'decor', atlasTile: { x: 1640, y: 1536, w: 408,  h: 512 } },
+  { slotId: 'signSnackPosterJerky',        materialName: 'snackPosterJerky',        label: 'Snack ~ Thick Nick\'s Jerky', vanillaBlocks: ['signSnackPosterJerky'],        kind: 'decor', atlasTile: { x: 0,    y: 0,    w: 410,  h: 512 }, meshUvBbox: { l: 0, t: 0, r: 0.4985, b: 1 } },
+  { slotId: 'signSnackPosterGoblinO',      materialName: 'snackPosterGoblinO',      label: "Snack ~ Goblin-O's",          vanillaBlocks: ['signSnackPosterGoblinO'],      kind: 'decor', atlasTile: { x: 410,  y: 0,    w: 410,  h: 512 }, meshUvBbox: { l: 0, t: 0, r: 0.4985, b: 1 } },
+  { slotId: 'signSnackPosterOops',         materialName: 'snackPosterOops',         label: 'Snack ~ Oops Country',        vanillaBlocks: ['signSnackPosterOops'],         kind: 'decor', atlasTile: { x: 820,  y: 0,    w: 410,  h: 512 }, meshUvBbox: { l: 0, t: 0, r: 0.4985, b: 1 } },
+  { slotId: 'signSnackPosterOopsClassic',  materialName: 'snackPosterOopsClassic',  label: 'Snack ~ Oops Classic',        vanillaBlocks: ['signSnackPosterOopsClassic'],  kind: 'decor', atlasTile: { x: 1230, y: 0,    w: 410,  h: 512 }, meshUvBbox: { l: 0, t: 0, r: 0.4985, b: 1 } },
+  { slotId: 'signSnackPosterBretzels',     materialName: 'snackPosterBretzels',     label: 'Snack ~ Bretzels',            vanillaBlocks: ['signSnackPosterBretzels'],     kind: 'decor', atlasTile: { x: 1640, y: 0,    w: 408,  h: 512 }, meshUvBbox: { l: 0, t: 0, r: 0.4985, b: 1 } },
+  { slotId: 'signSnackPosterJailBreakers', materialName: 'snackPosterJailBreakers', label: 'Snack ~ Jail Breakers',       vanillaBlocks: ['signSnackPosterJailBreakers'], kind: 'decor', atlasTile: { x: 0,    y: 512,  w: 410,  h: 512 }, meshUvBbox: { l: 0.3799, t: 0.2783, r: 0.5835, b: 0.5562 } },
+  { slotId: 'signSnackPosterEyeCandy',     materialName: 'snackPosterEyeCandy',     label: 'Snack ~ Eye Candy',           vanillaBlocks: ['signSnackPosterEyeCandy'],     kind: 'decor', atlasTile: { x: 410,  y: 512,  w: 410,  h: 512 }, meshUvBbox: { l: 0, t: 0, r: 0.4985, b: 1 } },
+  { slotId: 'signSnackPosterSkullCrusher', materialName: 'snackPosterSkullCrusher', label: 'Snack ~ Skull Crushers',      vanillaBlocks: ['signSnackPosterSkullCrusher'], kind: 'decor', atlasTile: { x: 820,  y: 512,  w: 410,  h: 512 }, meshUvBbox: { l: 0.3799, t: 0.2783, r: 0.5835, b: 0.5562 } },
+  { slotId: 'signSnackPosterNachos',       materialName: 'snackPosterNachos',       label: 'Snack ~ Nachios Beef',        vanillaBlocks: ['signSnackPosterNachos'],       kind: 'decor', atlasTile: { x: 1230, y: 512,  w: 410,  h: 512 }, meshUvBbox: { l: 0, t: 0, r: 0.4985, b: 1 } },
+  { slotId: 'signSnackPosterNachosRanch',  materialName: 'snackPosterNachosRanch',  label: 'Snack ~ Nachios Ranch',       vanillaBlocks: ['signSnackPosterNachosRanch'],  kind: 'decor', atlasTile: { x: 1640, y: 512,  w: 408,  h: 512 }, meshUvBbox: { l: 0, t: 0, r: 0.4985, b: 1 } },
+  { slotId: 'signSnackPosterFortBites',    materialName: 'snackPosterFortBites',    label: 'Snack ~ Fort Bites',          vanillaBlocks: ['signSnackPosterFortBites'],    kind: 'decor', atlasTile: { x: 0,    y: 1024, w: 410,  h: 512 }, meshUvBbox: { l: 0, t: 0.5566, r: 0.2808, b: 0.7197 } },
+  { slotId: 'signSnackPosterHealth',       materialName: 'snackPosterHealth',       label: 'Snack ~ Health Bar (wide)',   vanillaBlocks: ['signSnackPosterHealth'],       kind: 'decor', atlasTile: { x: 410,  y: 1024, w: 1638, h: 512 }, meshUvBbox: { l: 0.0015, t: 0.0044, r: 0.9985, b: 0.499 } },
+  { slotId: 'signSnackPosterHackers',      materialName: 'snackPosterHackers',      label: 'Snack ~ Hackers',             vanillaBlocks: ['signSnackPosterHackers'],      kind: 'decor', atlasTile: { x: 0,    y: 1536, w: 410,  h: 512 }, meshUvBbox: { l: 0.3799, t: 0.2783, r: 0.5835, b: 0.5562 } },
+  { slotId: 'signSnackPosterPrime',        materialName: 'snackPosterPrime',        label: 'Snack ~ Prime Bars',          vanillaBlocks: ['signSnackPosterPrime'],        kind: 'decor', atlasTile: { x: 410,  y: 1536, w: 410,  h: 512 }, meshUvBbox: { l: 0.3799, t: 0.2783, r: 0.5835, b: 0.5562 }, note: 'Vanilla art on this block is a multi-panel design - your image replaces the whole tile.' },
+  { slotId: 'signSnackPosterAtom',         materialName: 'snackPosterAtom',         label: 'Snack ~ Atom Junkies',        vanillaBlocks: ['signSnackPosterAtom'],         kind: 'decor', atlasTile: { x: 820,  y: 1536, w: 410,  h: 512 }, meshUvBbox: { l: 0.3799, t: 0.2783, r: 0.5835, b: 0.5562 }, note: 'Vanilla art on this block is a multi-panel design - your image replaces the whole tile.' },
+  { slotId: 'signSnackPosterNerd',         materialName: 'snackPosterNerd',         label: 'Snack ~ Nerd Tats',           vanillaBlocks: ['signSnackPosterNerd'],         kind: 'decor', atlasTile: { x: 1230, y: 1536, w: 410,  h: 512 }, meshUvBbox: { l: 0, t: 0, r: 0.4985, b: 1 }, note: 'Vanilla art on this block is a multi-panel design - your image replaces the whole tile.' },
+  { slotId: 'signSnackPosterRamen',        materialName: 'snackPosterRamen',        label: 'Snack ~ Ramen',               vanillaBlocks: ['signSnackPosterRamen'],        kind: 'decor', atlasTile: { x: 1640, y: 1536, w: 408,  h: 512 }, meshUvBbox: { l: 0.0015, t: 0.0044, r: 0.9985, b: 0.499 }, note: 'Vanilla art on this block is a multi-panel design - your image replaces the whole tile.' },
 
   // Picture frames ~ 23 individual slots (one per pictureFrame_01<letter>
   // block) across 8 shared atlases. Each letter samples its own tile of the

@@ -1,8 +1,9 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { SlotDef, SlotState } from '../types/slots'
-import { DEFAULT_FRAME_PRESET_ID } from '../types/slots'
+import { ATLAS_SOURCES, DEFAULT_FRAME_PRESET_ID } from '../types/slots'
 import { CropDialog } from './CropDialog'
 import { FramePresetPicker } from './FramePresetPicker'
+import { drawSlotPreviewInto } from '../utils/livePreview'
 
 interface Props {
   slot: SlotDef
@@ -18,6 +19,33 @@ interface Props {
  *   - 0.85..1.2       -> 1:1 square   (w-12 h-12)
  *   - > 1.2           -> 16:9 wide    (w-16 h-9)
  */
+/**
+ * Compute the slot's "visible" aspect ratio + pixel dimensions ~ what the
+ * user actually sees in-game.
+ *
+ * For decor slots with a meshUvBbox, the mesh samples only a sub-region of
+ * the output texture (e.g. Bretzels samples UV 0,0->0.5,1, so visible is
+ * 1021x2048 not the 410x512 atlasTile). For those slots the bbox is the
+ * source of truth ~ atlasTile is just where the vanilla art lived in the
+ * shared atlas, which has nothing to do with the in-game block aspect.
+ *
+ * For everything else, fall back to atlasTile dimensions, or kind-based
+ * defaults for portrait/abstract.
+ */
+const UV_BBOX_OUTPUT_SIZE = 2048
+
+function getVisibleDims(slot: SlotDef): { w: number; h: number } | null {
+  if (slot.meshUvBbox) {
+    const { l, t, r, b } = slot.meshUvBbox
+    const w = Math.round((r - l) * UV_BBOX_OUTPUT_SIZE)
+    const h = Math.round((b - t) * UV_BBOX_OUTPUT_SIZE)
+    return { w, h }
+  }
+  if (slot.atlasTile) return { w: slot.atlasTile.w, h: slot.atlasTile.h }
+  if (slot.kind === 'portrait') return { w: 3, h: 4 } // ratio only
+  return null // abstract / standalone decor: square fallback
+}
+
 function pickThumbClass(slot: SlotDef): string {
   if (slot.kind === 'portrait' || slot.kind === 'moviePoster') return 'w-9 h-12'
   if (slot.kind === 'decor') return 'w-10 h-12 object-contain'
@@ -41,10 +69,11 @@ function pickThumbClass(slot: SlotDef): string {
  * the crop frame shape stay in sync per slot.
  */
 function getSlotAspectRatio(slot: SlotDef): string {
+  // Drop zone uses the actually-visible aspect (meshUvBbox if present,
+  // else atlasTile, else portrait/square defaults).
   if (slot.kind === 'portrait') return '3 / 4'
-  if (slot.atlasTile) {
-    return `${slot.atlasTile.w} / ${slot.atlasTile.h}`
-  }
+  const dims = getVisibleDims(slot)
+  if (dims) return `${dims.w} / ${dims.h}`
   return '1 / 1'
 }
 
@@ -58,20 +87,16 @@ function getSlotAspectRatio(slot: SlotDef): string {
  * what the user's image will get composited into.
  */
 function describeSlotDimensions(slot: SlotDef): string {
-  // atlasTile is the most specific source of truth ~ it's the actual pixel
-  // region the user's image will composite into (or, for decor slots that
-  // share a vanilla atlas, the block aspect their image will stretch to
-  // fill at runtime). Check it first regardless of kind.
-  //
-  // Important callout: snack-poster decor slots have atlasTile data even
-  // though they're kind:'decor' ~ Health Bar (wide) is 1638×512 (~3:1),
-  // most others are 410×512 (~4:5). Without this branch, all decor slots
-  // showed "1:1 square · 1024×1024" which was wrong for ~all 17.
-  if (slot.atlasTile) {
-    const { w, h } = slot.atlasTile
-    return `${aspectName(w, h)} · ${w}×${h}`
+  // Visible region is the source of truth for what to crop to. For snack
+  // posters and other meshUvBbox slots, that's the bbox-derived dimensions;
+  // for everything else, atlasTile or kind-based defaults.
+  const dims = getVisibleDims(slot)
+  if (dims) {
+    // Portrait kind uses ratio-only dims (3:4) ~ format with the canonical
+    // 1024×1024 source size since that's what the composer outputs for portraits.
+    if (slot.kind === 'portrait') return '3:4 portrait · 1024×1024'
+    return `${aspectName(dims.w, dims.h)} · ${dims.w}×${dims.h}`
   }
-  if (slot.kind === 'portrait') return '3:4 portrait · 1024×1024'
   if (slot.kind === 'abstract') return '1:1 square · 1024×1024'
   if (slot.kind === 'decor') return '1:1 square · 1024×1024'
   return ''
@@ -88,6 +113,35 @@ function aspectName(w: number, h: number): string {
   return r < 1 ? `${(Math.round((1 / r) * 100) / 100)}:1 tall` : `${(Math.round(r * 100) / 100)}:1 wide`
 }
 
+/**
+ * True if this slot should render the live atlas-composited preview in its
+ * drop zone. Picture frames (and any other shared-atlas tile slot with a
+ * frame tint zone) qualify ~ for those, the user picks a tint and we can
+ * show what the wood will actually look like. Other slots fall back to the
+ * straight image preview.
+ *
+ * The check needs ATLAS_SOURCES + atlasTile so the live preview helper has
+ * something to crop, AND a frame tint capability so picking presets means
+ * something here. Slots without frameTintHeightPct (e.g. movie posters,
+ * picture canvases) just show the image.
+ */
+function slotHasLiveFramePreview(slot: SlotDef): boolean {
+  if (!slot.atlasTile) return false
+  const source = ATLAS_SOURCES[slot.materialName]
+  return Boolean(source?.frameTintHeightPct)
+}
+
+/**
+ * Frame-tint slots that show the picker. Currently the pictureFrame_01<letter>
+ * family ~ those samples on a wood-frame atlas with a real tint zone. Kept
+ * as a function so the rule can grow without re-touching the JSX.
+ */
+function slotShowsFramePicker(slot: SlotDef): boolean {
+  if (slot.kind === 'portrait') return true
+  if (slot.kind === 'canvasTile' && slot.slotId.startsWith('pictureFrame_01')) return true
+  return false
+}
+
 export function SlotCard({ slot, state, onChange }: Props) {
   const fileRef = useRef<HTMLInputElement>(null)
   // When non-null, we're showing the crop dialog for this URL.
@@ -101,10 +155,15 @@ export function SlotCard({ slot, state, onChange }: Props) {
   //     Health Bar an outlier at 1638×512 (~3:1 wide).
   //   - everything else (abstracts, standalone decor): square. The DLL
   //     resets UV scale to fill the canvas so square-cropped works.
-  const aspect =
-    slot.kind === 'portrait' ? 3 / 4
-    : slot.atlasTile ? slot.atlasTile.w / slot.atlasTile.h
-    : 1
+  // Cropper aspect: same source as the drop-zone shape, so cropping
+  // matches the shape of the in-game visible region. snack posters get
+  // their meshUvBbox aspect; other slots fall back to atlasTile/portrait.
+  const aspect = (() => {
+    if (slot.kind === 'portrait') return 3 / 4
+    const dims = getVisibleDims(slot)
+    if (dims) return dims.w / dims.h
+    return 1
+  })()
 
   function handleFile(file: File) {
     // Stash the original as an object URL and open the cropper.
@@ -193,7 +252,14 @@ export function SlotCard({ slot, state, onChange }: Props) {
           className="bg-zinc-950 border-2 border-dashed border-zinc-700 rounded cursor-pointer flex items-center justify-center overflow-hidden hover:border-zinc-500 transition-colors"
           style={{ aspectRatio: getSlotAspectRatio(slot) }}
         >
-          {state.preview ? (
+          {slotHasLiveFramePreview(slot) ? (
+            <LiveSlotPreview
+              slot={slot}
+              file={state.file}
+              framePresetId={state.framePresetId || DEFAULT_FRAME_PRESET_ID}
+              hasImage={Boolean(state.preview)}
+            />
+          ) : state.preview ? (
             <img src={state.preview} alt={slot.label} className="w-full h-full object-cover" />
           ) : (
             <div className="text-center text-zinc-600 px-4">
@@ -216,26 +282,20 @@ export function SlotCard({ slot, state, onChange }: Props) {
           }}
         />
 
-        {slot.kind === 'portrait' && (
+        {slotShowsFramePicker(slot) && (
           <div className="mt-3">
             <FramePresetPicker
+              slot={slot}
               selectedId={state.framePresetId || DEFAULT_FRAME_PRESET_ID}
               onChange={(id) => onChange({ ...state, framePresetId: id })}
             />
-          </div>
-        )}
-
-        {slot.kind === 'canvasTile' && slot.slotId.startsWith('pictureFrame_01') && (
-          <div className="mt-3">
-            <FramePresetPicker
-              selectedId={state.framePresetId || DEFAULT_FRAME_PRESET_ID}
-              onChange={(id) => onChange({ ...state, framePresetId: id })}
-            />
-            <p className="mt-1 text-[10px] text-zinc-600 leading-tight">
-              Wood frame tint ~ shared with sibling frames in this style group
-              (vanilla atlas means letters in the same atlas all share the
-              wood region).
-            </p>
+            {slot.kind === 'canvasTile' && (
+              <p className="mt-1 text-[10px] text-zinc-600 leading-tight">
+                Wood frame tint ~ shared with sibling frames in this style group
+                (vanilla atlas means letters in the same atlas all share the
+                wood region).
+              </p>
+            )}
           </div>
         )}
 
@@ -293,5 +353,66 @@ export function SlotCard({ slot, state, onChange }: Props) {
         />
       )}
     </>
+  )
+}
+
+interface LiveSlotPreviewProps {
+  slot: SlotDef
+  file: File | undefined
+  framePresetId: string
+  hasImage: boolean
+}
+
+// Backing-store resolution. Tile is up to 735×898 in atlas pixels; we render
+// at native tile resolution for crispness, and CSS scales it to fit the
+// drop zone.
+function previewBackingSize(slot: SlotDef): { w: number; h: number } {
+  if (slot.atlasTile) return { w: slot.atlasTile.w, h: slot.atlasTile.h }
+  return { w: 512, h: 512 }
+}
+
+/**
+ * Live atlas-composited preview rendered into a canvas. Re-runs whenever
+ * the file or frame tint changes. While re-rendering or when no image has
+ * been uploaded yet, shows the empty-state hint over the canvas.
+ *
+ * Calls drawSlotPreviewInto, which routes through composeAtlas ~ the same
+ * function the modlet build uses. So this preview is byte-identical to
+ * what ships in the zip, just shrunk to drop-zone size.
+ */
+function LiveSlotPreview({ slot, file, framePresetId, hasImage }: LiveSlotPreviewProps) {
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const { w, h } = previewBackingSize(slot)
+
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    let cancelled = false
+    drawSlotPreviewInto(canvas, slot, framePresetId, file).catch(() => {
+      // A failed preview shouldn't break the upload affordance ~ the canvas
+      // just stays blank and the empty-state hint above takes over visually.
+    }).then(() => {
+      if (cancelled) return
+    })
+    return () => { cancelled = true }
+  }, [slot, framePresetId, file])
+
+  return (
+    <div className="relative w-full h-full">
+      <canvas
+        ref={canvasRef}
+        width={w}
+        height={h}
+        className="w-full h-full block"
+      />
+      {!hasImage && (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="text-center text-zinc-300 px-4 bg-black/40 rounded py-2">
+            <div className="text-3xl mb-1 leading-none">+</div>
+            <div className="text-xs">drop image or click</div>
+          </div>
+        </div>
+      )}
+    </div>
   )
 }

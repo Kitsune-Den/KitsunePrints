@@ -20,6 +20,7 @@ import {
   DEFAULT_FRAME_PRESET_ID,
   ATLAS_SOURCES,
   type AtlasTile,
+  type MeshUvBbox,
 } from '../types/slots'
 
 const PORTRAIT_W = 1024
@@ -85,6 +86,91 @@ export async function composeAbstract(file: File): Promise<Blob> {
   if (!ctx) throw new Error('Canvas 2d context unavailable')
 
   drawCover(ctx, img, 0, 0, ABSTRACT_SIZE, ABSTRACT_SIZE)
+  return canvasToBlob(canvas)
+}
+
+// Output texture size for UV-bbox-fitted decor textures. 2048 matches the
+// original snackPosters_d atlas dimensions ~ keeps the user's image at full
+// resolution within whatever sub-region the mesh actually samples.
+const UV_BBOX_OUTPUT_SIZE = 2048
+
+/**
+ * Compose a decor texture where the in-game mesh samples only a sub-region
+ * of the texture's UV space. Paints the user's image cover-fitted into
+ * exactly that bbox region (plus a small bleed margin) of an otherwise-
+ * transparent UV_BBOX_OUTPUT_SIZE square so the mesh sees their full image
+ * undistorted, with no edge clipping from sub-pixel rounding.
+ *
+ * Why this exists: snack posters (and likely a handful of other decor
+ * blocks) have meshes whose front-face UVs were authored against the
+ * vanilla shared atlas. e.g. a Bretzels block's mesh samples UV (0,0)-(0.5,1)
+ * because in vanilla that was where the Bretzels artwork lived in the
+ * 2048x2048 snackPosters_d atlas. When we swap in a fresh user texture
+ * AND the runtime DLL resets the material's UV scale/offset to identity,
+ * the mesh STILL asks for (0,0)-(0.5,1) of the new texture ~ which means
+ * the user only sees the left half of their image on the wall.
+ *
+ * Fix: pre-distort. Render a 2048x2048 texture where the user's image
+ * occupies the bbox region (plus BLEED_PX of overflow on each side) and
+ * the rest is transparent. Mesh samples its bbox -> sees full image. The
+ * bleed compensates for fractional UV bboxes (e.g. Bretzels is 0.4985, not
+ * exactly 0.5) so no edge content is lost to round-down. Bleed pixels
+ * extend INTO unsampled territory, so they're cosmetically invisible.
+ * Other materials sharing the shader don't sample the transparent regions,
+ * so no visual leak.
+ */
+// Bleed: how many pixels to extend the destination rect OUTSIDE the bbox.
+// Compensates for fractional UV bboxes (e.g. Bretzels 0.4985, not 0.5)
+// rounding down. Bleed pixels land in unsampled territory, invisible.
+const BBOX_BLEED_PX = 4
+
+// Inset: how many pixels of transparent margin to leave INSIDE the bbox
+// before the user's image starts. Compensates for the in-game mesh's edge
+// sampling (mesh samples ~ 5px in from the bbox edge in practice, depending
+// on texture filtering + mipmap selection). Inset pushes user content
+// safely away from that boundary so edge text isn't clipped.
+//
+// Tradeoff: thin transparent border around the image in-game. At 12 px on
+// a 2048 output, that's ~0.6% of texture per side ~ visually it just looks
+// like a bit of vanilla material framing the print. Bump up if you still
+// see edge clipping; bump down if the framing feels too pronounced.
+const BBOX_INSET_PX = 12
+export async function composeUvBboxFitted(file: File, bbox: MeshUvBbox): Promise<Blob> {
+  const img = await loadImage(file)
+  const canvas = document.createElement('canvas')
+  canvas.width = UV_BBOX_OUTPUT_SIZE
+  canvas.height = UV_BBOX_OUTPUT_SIZE
+  const ctx = canvas.getContext('2d')
+  if (!ctx) throw new Error('Canvas 2d context unavailable')
+
+  // Convert normalized UV bbox to pixel rect on the output texture.
+  const px = Math.round(bbox.l * UV_BBOX_OUTPUT_SIZE)
+  const py = Math.round(bbox.t * UV_BBOX_OUTPUT_SIZE)
+  const pw = Math.round((bbox.r - bbox.l) * UV_BBOX_OUTPUT_SIZE)
+  const ph = Math.round((bbox.b - bbox.t) * UV_BBOX_OUTPUT_SIZE)
+
+  // Step 1: bleed OUT past the bbox edges to absorb fractional-UV rounding.
+  // Clamped to [0, OUTPUT_SIZE] so a bbox already at the texture edge
+  // doesn't try to draw outside the canvas.
+  const bx = Math.max(0, px - BBOX_BLEED_PX)
+  const by = Math.max(0, py - BBOX_BLEED_PX)
+  const br = Math.min(UV_BBOX_OUTPUT_SIZE, px + pw + BBOX_BLEED_PX)
+  const bb = Math.min(UV_BBOX_OUTPUT_SIZE, py + ph + BBOX_BLEED_PX)
+
+  // Step 2: inset BACK IN past the inner edge so the user's image sits
+  // inside the safety margin. The inset fights mesh-edge sampling which
+  // tends to nibble a few pixels off rendered content at the bbox boundary.
+  // The annular gap between bled rect and inset rect stays transparent ~
+  // visible as a thin border in-game.
+  const ix = bx + BBOX_INSET_PX
+  const iy = by + BBOX_INSET_PX
+  const iw = Math.max(0, (br - bx) - BBOX_INSET_PX * 2)
+  const ih = Math.max(0, (bb - by) - BBOX_INSET_PX * 2)
+
+  // Cover-fit into the inset rect. Same drawCover semantics as everywhere
+  // else in this file ~ aspect-correct, center-cropped.
+  drawCover(ctx, img, ix, iy, iw, ih)
+
   return canvasToBlob(canvas)
 }
 
