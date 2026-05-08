@@ -34,6 +34,7 @@ import {
   DEFAULT_FRAME_PRESET_ID,
   type SlotDef,
   type FramePreset,
+  type SlotOrientation,
 } from '../types/slots'
 import { composeAtlas } from './composer'
 
@@ -199,7 +200,15 @@ export async function drawSlotPreviewInto(
   slot: SlotDef,
   framePresetId: string | undefined,
   file: File | undefined,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _orientation?: SlotOrientation,
 ): Promise<HTMLCanvasElement> {
+  // The orientation argument is currently informational ~ the canvas's
+  // backing-store dimensions are sized by the caller (see SlotCard's
+  // previewBackingSize), so the wood-frame border + cover-fit math here
+  // already shape themselves to whatever aspect the canvas has. We accept
+  // the param so the caller can drive useEffect dependencies cleanly,
+  // and so future preview-side rotation tricks have a place to land.
   const ctx = canvas.getContext('2d')
   if (!ctx) return canvas
 

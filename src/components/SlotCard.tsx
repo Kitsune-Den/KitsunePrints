@@ -1,6 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
-import type { SlotDef, SlotState } from '../types/slots'
-import { ATLAS_SOURCES, DEFAULT_FRAME_PRESET_ID } from '../types/slots'
+import type { SlotDef, SlotState, SlotOrientation } from '../types/slots'
+import {
+  ATLAS_SOURCES,
+  DEFAULT_FRAME_PRESET_ID,
+  getEffectiveOrientation,
+  getSlotDefaultOrientation,
+  slotSupportsOrientationFlip,
+} from '../types/slots'
 import { CropDialog } from './CropDialog'
 import { FramePresetPicker } from './FramePresetPicker'
 import { drawSlotPreviewInto } from '../utils/livePreview'
@@ -47,6 +53,24 @@ function getVisibleDims(slot: SlotDef): { w: number; h: number } | null {
   return null // abstract / standalone decor: square fallback
 }
 
+/**
+ * Visible dims for the slot at the user's CHOSEN orientation. For slots
+ * that support flip, this swaps w/h when the user's effective orientation
+ * differs from the atlasTile's native aspect. Used to drive the cropper
+ * frame, drop-zone aspect, and live-preview backing-store dimensions ~
+ * everything that visualizes the user's image at their picked orientation.
+ */
+function getOrientedDims(slot: SlotDef, state: SlotState): { w: number; h: number } | null {
+  const dims = getVisibleDims(slot)
+  if (!dims) return null
+  if (!slotSupportsOrientationFlip(slot)) return dims
+  const orient = getEffectiveOrientation(slot, state)
+  const dimsArePortrait = dims.h > dims.w
+  const userPortrait = orient === 'portrait'
+  if (dimsArePortrait === userPortrait) return dims
+  return { w: dims.h, h: dims.w }
+}
+
 function pickThumbClass(slot: SlotDef): string {
   if (slot.kind === 'portrait' || slot.kind === 'moviePoster') return 'w-9 h-12'
   if (slot.kind === 'decor') return 'w-10 h-12 object-contain'
@@ -69,11 +93,12 @@ function pickThumbClass(slot: SlotDef): string {
  * Mirrors what the cropper enforces below so the drop zone shape and
  * the crop frame shape stay in sync per slot.
  */
-function getSlotAspectRatio(slot: SlotDef): string {
-  // Drop zone uses the actually-visible aspect (meshUvBbox if present,
-  // else atlasTile, else portrait/square defaults).
+function getSlotAspectRatio(slot: SlotDef, state: SlotState): string {
+  // Drop zone uses the actually-visible aspect, swapped when the user has
+  // toggled orientation on a flippable slot. Portrait slots are fixed 3:4
+  // ~ no flip available there.
   if (slot.kind === 'portrait') return '3 / 4'
-  const dims = getVisibleDims(slot)
+  const dims = getOrientedDims(slot, state)
   if (dims) return `${dims.w} / ${dims.h}`
   return '1 / 1'
 }
@@ -156,19 +181,17 @@ export function SlotCard({ slot, state, onChange }: Props) {
   const [cardRef, isVisible] = useInViewport('300px')
 
   // Aspect for the crop frame:
-  //   - portraits: 3:4 canvas zone
-  //   - any slot with atlasTile (moviePoster, canvasTile, AND decor with
-  //     a shared atlas like snack posters): derived from the tile size.
-  //     Snack posters are decor + atlasTile, mostly 410×512 (4:5) with
-  //     Health Bar an outlier at 1638×512 (~3:1 wide).
-  //   - everything else (abstracts, standalone decor): square. The DLL
-  //     resets UV scale to fill the canvas so square-cropped works.
-  // Cropper aspect: same source as the drop-zone shape, so cropping
-  // matches the shape of the in-game visible region. snack posters get
-  // their meshUvBbox aspect; other slots fall back to atlasTile/portrait.
+  //   - portraits: 3:4 canvas zone (no flip available here)
+  //   - any slot with atlasTile (moviePoster, canvasTile, decor with a
+  //     shared atlas): derived from the tile size, swapped when the
+  //     user's effective orientation differs from the atlasTile's
+  //     native aspect (only happens on flippable slots).
+  //   - everything else (abstracts, standalone decor): square.
+  // Crop aspect tracks the drop-zone aspect 1:1 so the cropping frame
+  // shape matches what the user just dropped onto.
   const aspect = (() => {
     if (slot.kind === 'portrait') return 3 / 4
-    const dims = getVisibleDims(slot)
+    const dims = getOrientedDims(slot, state)
     if (dims) return dims.w / dims.h
     return 1
   })()
@@ -215,7 +238,18 @@ export function SlotCard({ slot, state, onChange }: Props) {
 
   function clearImage(e: React.MouseEvent) {
     e.stopPropagation()
-    onChange(slot.kind === 'portrait' ? { framePresetId: state.framePresetId } : {})
+    // Preserve the user's framePresetId + orientation across a clear so a
+    // re-upload remembers the picker state they had set up.
+    const preserved: SlotState = {}
+    if (state.framePresetId) preserved.framePresetId = state.framePresetId
+    if (state.orientation) preserved.orientation = state.orientation
+    onChange(preserved)
+  }
+
+  function setOrientation(next: SlotOrientation) {
+    // Persist explicit choice even when it matches the slot's default ~
+    // signals "user picked this, don't auto-flip if defaults change."
+    onChange({ ...state, orientation: next })
   }
 
   return (
@@ -253,18 +287,26 @@ export function SlotCard({ slot, state, onChange }: Props) {
           />
         </div>
 
+        {slotSupportsOrientationFlip(slot) && (
+          <OrientationToggle
+            slot={slot}
+            state={state}
+            onChange={setOrientation}
+          />
+        )}
+
         <div
           onDragOver={(e) => e.preventDefault()}
           onDrop={handleDrop}
           onClick={() => fileRef.current?.click()}
           className="bg-zinc-950 border-2 border-dashed border-zinc-700 rounded cursor-pointer flex items-center justify-center overflow-hidden hover:border-zinc-500 transition-colors"
-          style={{ aspectRatio: getSlotAspectRatio(slot) }}
+          style={{ aspectRatio: getSlotAspectRatio(slot, state) }}
         >
           {slotHasLiveFramePreview(slot) ? (
             isVisible ? (
               <LiveSlotPreview
                 slot={slot}
-                file={state.file}
+                state={state}
                 framePresetId={state.framePresetId || DEFAULT_FRAME_PRESET_ID}
                 hasImage={Boolean(state.preview)}
               />
@@ -381,15 +423,21 @@ export function SlotCard({ slot, state, onChange }: Props) {
 
 interface LiveSlotPreviewProps {
   slot: SlotDef
-  file: File | undefined
+  state: SlotState
   framePresetId: string
   hasImage: boolean
 }
 
 // Backing-store resolution. Tile is up to 735×898 in atlas pixels; we render
 // at native tile resolution for crispness, and CSS scales it to fit the
-// drop zone.
-function previewBackingSize(slot: SlotDef): { w: number; h: number } {
+// drop zone. Backing dimensions follow the user's effective orientation so
+// the wood-frame border draws at the same aspect the drop zone displays.
+function previewBackingSize(slot: SlotDef, state: SlotState): { w: number; h: number } {
+  const dims = getOrientedDims(slot, state)
+  if (dims) {
+    if (slot.atlasTile) return dims  // already pixel-sized from atlasTile
+    return { w: 512, h: 512 }
+  }
   if (slot.atlasTile) return { w: slot.atlasTile.w, h: slot.atlasTile.h }
   return { w: 512, h: 512 }
 }
@@ -410,9 +458,11 @@ function previewBackingSize(slot: SlotDef): { w: number; h: number } {
  * in-memory cache and finish quickly enough that the indicator barely
  * flashes ~ that's the desired UX.
  */
-function LiveSlotPreview({ slot, file, framePresetId, hasImage }: LiveSlotPreviewProps) {
+function LiveSlotPreview({ slot, state, framePresetId, hasImage }: LiveSlotPreviewProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const { w, h } = previewBackingSize(slot)
+  const { w, h } = previewBackingSize(slot, state)
+  const file = state.file
+  const orientation = getEffectiveOrientation(slot, state)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -420,7 +470,12 @@ function LiveSlotPreview({ slot, file, framePresetId, hasImage }: LiveSlotPrevie
     if (!canvas) return
     let cancelled = false
     setLoading(true)
-    drawSlotPreviewInto(canvas, slot, framePresetId, file).catch(() => {
+    // Pass the chosen orientation so drawSlotPreviewInto knows how to
+    // shape the wood-border + image fit. The user's file is already
+    // cropped to the chosen aspect by CropDialog, so no rotation is
+    // applied IN the preview ~ the modlet build path applies rotation
+    // separately when painting into the (still portrait) atlasTile.
+    drawSlotPreviewInto(canvas, slot, framePresetId, file, orientation).catch(() => {
       // A failed preview shouldn't break the upload affordance ~ the canvas
       // just stays blank and the empty-state hint above takes over visually.
     }).finally(() => {
@@ -428,7 +483,7 @@ function LiveSlotPreview({ slot, file, framePresetId, hasImage }: LiveSlotPrevie
       setLoading(false)
     })
     return () => { cancelled = true }
-  }, [slot, framePresetId, file])
+  }, [slot, framePresetId, file, orientation])
 
   return (
     <div className="relative w-full h-full">
@@ -468,6 +523,62 @@ function SwatchSkeleton({ label }: { label: string }) {
       <div className="text-center text-zinc-500 px-4 flex items-center gap-2">
         <span className="inline-block w-3 h-3 rounded-full border-2 border-zinc-700 border-t-zinc-400 animate-spin" />
         <span className="text-xs">{label}</span>
+      </div>
+    </div>
+  )
+}
+
+/**
+ * Two-state Vertical/Horizontal toggle for slots that support orientation
+ * flip. Default highlight follows the slot's vanillaContentRotation
+ * (rotated-landscape vanilla → defaults to Horizontal; everything else →
+ * defaults to Vertical or whichever matches the atlasTile aspect). User's
+ * explicit choice persists in state.orientation and overrides the default.
+ */
+interface OrientationToggleProps {
+  slot: SlotDef
+  state: SlotState
+  onChange: (next: SlotOrientation) => void
+}
+
+function OrientationToggle({ slot, state, onChange }: OrientationToggleProps) {
+  const current = getEffectiveOrientation(slot, state)
+  const def = getSlotDefaultOrientation(slot)
+  return (
+    <div className="mb-2">
+      <div className="flex items-center gap-2">
+        <span className="text-xs text-zinc-500">Orientation</span>
+        <div className="inline-flex rounded border border-zinc-700 overflow-hidden text-xs">
+          <button
+            type="button"
+            onClick={() => onChange('portrait')}
+            className={`px-2.5 py-1 transition-colors ${
+              current === 'portrait'
+                ? 'bg-amber-600/30 text-amber-200'
+                : 'bg-zinc-900 text-zinc-400 hover:bg-zinc-800'
+            }`}
+            title={def === 'portrait' ? 'Vertical (matches vanilla)' : 'Vertical'}
+          >
+            ▯ Vertical
+          </button>
+          <button
+            type="button"
+            onClick={() => onChange('landscape')}
+            className={`px-2.5 py-1 transition-colors border-l border-zinc-700 ${
+              current === 'landscape'
+                ? 'bg-amber-600/30 text-amber-200'
+                : 'bg-zinc-900 text-zinc-400 hover:bg-zinc-800'
+            }`}
+            title={def === 'landscape' ? 'Horizontal (matches vanilla)' : 'Horizontal'}
+          >
+            ▭ Horizontal
+          </button>
+        </div>
+        {state.orientation && state.orientation !== def && (
+          <span className="text-[10px] text-zinc-600 italic">
+            (vanilla is {def})
+          </span>
+        )}
       </div>
     </div>
   )

@@ -82,6 +82,25 @@ export interface SlotDef {
    */
   meshUvBbox?: MeshUvBbox
   /**
+   * Direction the VANILLA art was rotated 90° to fit the atlasTile rect.
+   *
+   * Some 7DTD picture-frame blocks have a portrait atlasTile but the
+   * vanilla artwork inside is landscape photography that the artist
+   * rotated 90° to fit. Users uploading landscape source content want
+   * the same visual outcome ~ the upload UI should default to a
+   * landscape drop zone, and the composer should rotate the user's
+   * cropped image the same direction the vanilla was rotated, before
+   * painting into the (still portrait) atlasTile.
+   *
+   * Undefined means the vanilla content reads correctly oriented
+   * relative to the atlasTile aspect ~ no rotation involved.
+   *
+   * Source of truth: scripts/fix_rotated_frame_thumbs.py (the ROTATIONS
+   * dict). When that script grows new entries, mirror them here so the
+   * runtime behavior stays in sync with the visual thumb fix.
+   */
+  vanillaContentRotation?: 'cw' | 'ccw'
+  /**
    * Optional caveat shown to users in the slot card header. Use for slots
    * where the vanilla art is misleading ~ e.g. a snack poster tile that
    * actually contains multiple stacked product designs in one block. Keep
@@ -89,6 +108,9 @@ export interface SlotDef {
    */
   note?: string
 }
+
+/** User's chosen upload orientation for a slot. */
+export type SlotOrientation = 'portrait' | 'landscape'
 
 /** Map a shared-atlas materialName to its base atlas image + dimensions. */
 export interface AtlasSource {
@@ -250,21 +272,21 @@ export const SLOTS: SlotDef[] = [
   { slotId: 'pictureFrame_01a', materialName: 'pictureFramed',  label: 'Frame A', vanillaBlocks: ['pictureFrame_01a'], kind: 'canvasTile', atlasTile: { x: 1288, y: 1138, w: 735, h: 898 } },
   { slotId: 'pictureFrame_01b', materialName: 'pictureFramed',  label: 'Frame B', vanillaBlocks: ['pictureFrame_01b'], kind: 'canvasTile', atlasTile: { x: 373,  y: 1533, w: 350, h: 502 } },
   { slotId: 'pictureFrame_01c', materialName: 'pictureFramed',  label: 'Frame C', vanillaBlocks: ['pictureFrame_01c'], kind: 'canvasTile', atlasTile: { x: 741,  y: 1361, w: 532, h: 674 } },
-  { slotId: 'pictureFrame_01d', materialName: 'pictureFramed2', label: 'Frame D', vanillaBlocks: ['pictureFrame_01d'], kind: 'canvasTile', atlasTile: { x: 1288, y: 1138, w: 735, h: 898 } },
-  { slotId: 'pictureFrame_01e', materialName: 'pictureFramed2', label: 'Frame E', vanillaBlocks: ['pictureFrame_01e'], kind: 'canvasTile', atlasTile: { x: 373,  y: 1533, w: 350, h: 502 } },
-  { slotId: 'pictureFrame_01f', materialName: 'pictureFramed2', label: 'Frame F', vanillaBlocks: ['pictureFrame_01f'], kind: 'canvasTile', atlasTile: { x: 741,  y: 1361, w: 532, h: 674 } },
-  { slotId: 'pictureFrame_01g', materialName: 'pictureFramed3', label: 'Frame G', vanillaBlocks: ['pictureFrame_01g'], kind: 'canvasTile', atlasTile: { x: 741,  y: 1361, w: 532, h: 674 } },
-  { slotId: 'pictureFrame_01h', materialName: 'pictureFramed3', label: 'Frame H', vanillaBlocks: ['pictureFrame_01h'], kind: 'canvasTile', atlasTile: { x: 373,  y: 1533, w: 350, h: 502 } },
-  { slotId: 'pictureFrame_01i', materialName: 'pictureFramed3', label: 'Frame I', vanillaBlocks: ['pictureFrame_01i'], kind: 'canvasTile', atlasTile: { x: 1288, y: 1138, w: 735, h: 898 } },
-  { slotId: 'pictureFrame_01j', materialName: 'pictureFramed4', label: 'Frame J', vanillaBlocks: ['pictureFrame_01j'], kind: 'canvasTile', atlasTile: { x: 741,  y: 1361, w: 532, h: 674 } },
+  { slotId: 'pictureFrame_01d', materialName: 'pictureFramed2', label: 'Frame D', vanillaBlocks: ['pictureFrame_01d'], kind: 'canvasTile', atlasTile: { x: 1288, y: 1138, w: 735, h: 898 }, vanillaContentRotation: 'cw' },
+  { slotId: 'pictureFrame_01e', materialName: 'pictureFramed2', label: 'Frame E', vanillaBlocks: ['pictureFrame_01e'], kind: 'canvasTile', atlasTile: { x: 373,  y: 1533, w: 350, h: 502 }, vanillaContentRotation: 'ccw' },
+  { slotId: 'pictureFrame_01f', materialName: 'pictureFramed2', label: 'Frame F', vanillaBlocks: ['pictureFrame_01f'], kind: 'canvasTile', atlasTile: { x: 741,  y: 1361, w: 532, h: 674 }, vanillaContentRotation: 'ccw' },
+  { slotId: 'pictureFrame_01g', materialName: 'pictureFramed3', label: 'Frame G', vanillaBlocks: ['pictureFrame_01g'], kind: 'canvasTile', atlasTile: { x: 741,  y: 1361, w: 532, h: 674 }, vanillaContentRotation: 'ccw' },
+  { slotId: 'pictureFrame_01h', materialName: 'pictureFramed3', label: 'Frame H', vanillaBlocks: ['pictureFrame_01h'], kind: 'canvasTile', atlasTile: { x: 373,  y: 1533, w: 350, h: 502 }, vanillaContentRotation: 'ccw' },
+  { slotId: 'pictureFrame_01i', materialName: 'pictureFramed3', label: 'Frame I', vanillaBlocks: ['pictureFrame_01i'], kind: 'canvasTile', atlasTile: { x: 1288, y: 1138, w: 735, h: 898 }, vanillaContentRotation: 'ccw' },
+  { slotId: 'pictureFrame_01j', materialName: 'pictureFramed4', label: 'Frame J', vanillaBlocks: ['pictureFrame_01j'], kind: 'canvasTile', atlasTile: { x: 741,  y: 1361, w: 532, h: 674 }, vanillaContentRotation: 'ccw' },
   { slotId: 'pictureFrame_01k', materialName: 'pictureFramed4', label: 'Frame K', vanillaBlocks: ['pictureFrame_01k'], kind: 'canvasTile', atlasTile: { x: 373,  y: 1533, w: 350, h: 502 } },
   { slotId: 'pictureFrame_01l', materialName: 'pictureFramed4', label: 'Frame L', vanillaBlocks: ['pictureFrame_01l'], kind: 'canvasTile', atlasTile: { x: 1288, y: 1138, w: 735, h: 898 } },
   { slotId: 'pictureFrame_01m', materialName: 'pictureFramed5', label: 'Frame M', vanillaBlocks: ['pictureFrame_01m'], kind: 'canvasTile', atlasTile: { x: 1288, y: 1138, w: 735, h: 898 } },
-  { slotId: 'pictureFrame_01n', materialName: 'pictureFramed5', label: 'Frame N', vanillaBlocks: ['pictureFrame_01n'], kind: 'canvasTile', atlasTile: { x: 373,  y: 1533, w: 350, h: 502 } },
+  { slotId: 'pictureFrame_01n', materialName: 'pictureFramed5', label: 'Frame N', vanillaBlocks: ['pictureFrame_01n'], kind: 'canvasTile', atlasTile: { x: 373,  y: 1533, w: 350, h: 502 }, vanillaContentRotation: 'ccw' },
   { slotId: 'pictureFrame_01o', materialName: 'pictureFramed5', label: 'Frame O', vanillaBlocks: ['pictureFrame_01o'], kind: 'canvasTile', atlasTile: { x: 741,  y: 1361, w: 532, h: 674 } },
   { slotId: 'pictureFrame_01p', materialName: 'pictureFramed6', label: 'Frame P', vanillaBlocks: ['pictureFrame_01p'], kind: 'canvasTile', atlasTile: { x: 1288, y: 1138, w: 735, h: 898 } },
-  { slotId: 'pictureFrame_01q', materialName: 'pictureFramed6', label: 'Frame Q', vanillaBlocks: ['pictureFrame_01q'], kind: 'canvasTile', atlasTile: { x: 373,  y: 1533, w: 350, h: 502 } },
-  { slotId: 'pictureFrame_01r', materialName: 'pictureFramed6', label: 'Frame R', vanillaBlocks: ['pictureFrame_01r'], kind: 'canvasTile', atlasTile: { x: 741,  y: 1361, w: 532, h: 674 } },
+  { slotId: 'pictureFrame_01q', materialName: 'pictureFramed6', label: 'Frame Q', vanillaBlocks: ['pictureFrame_01q'], kind: 'canvasTile', atlasTile: { x: 373,  y: 1533, w: 350, h: 502 }, vanillaContentRotation: 'ccw' },
+  { slotId: 'pictureFrame_01r', materialName: 'pictureFramed6', label: 'Frame R', vanillaBlocks: ['pictureFrame_01r'], kind: 'canvasTile', atlasTile: { x: 741,  y: 1361, w: 532, h: 674 }, vanillaContentRotation: 'ccw' },
   { slotId: 'pictureFrame_01s', materialName: 'pictureFramed7', label: 'Frame S', vanillaBlocks: ['pictureFrame_01s'], kind: 'canvasTile', atlasTile: { x: 1288, y: 1138, w: 735, h: 898 } },
   { slotId: 'pictureFrame_01t', materialName: 'pictureFramed7', label: 'Frame T', vanillaBlocks: ['pictureFrame_01t'], kind: 'canvasTile', atlasTile: { x: 373,  y: 1533, w: 350, h: 502 } },
   { slotId: 'pictureFrame_01u', materialName: 'pictureFramed7', label: 'Frame U', vanillaBlocks: ['pictureFrame_01u'], kind: 'canvasTile', atlasTile: { x: 741,  y: 1361, w: 532, h: 674 } },
@@ -312,6 +334,70 @@ export interface SlotState {
    * title are both searchable in the in-game creative search.
    */
   title?: string
+  /**
+   * User's chosen upload orientation. Only meaningful for slots whose
+   * effective shape can flip (currently canvasTile + moviePoster).
+   * Undefined falls back to the slot's default orientation (derived from
+   * atlasTile aspect + vanillaContentRotation).
+   */
+  orientation?: SlotOrientation
+}
+
+/**
+ * The slot's "natural" upload orientation ~ what the user would intuitively
+ * upload BEFORE any flip. For un-rotated vanilla content, that's the
+ * atlasTile's native aspect. For rotated vanilla content, it's the OPPOSITE
+ * (the artist's source orientation, before they tilted to fit the frame).
+ */
+export function getSlotDefaultOrientation(slot: SlotDef): SlotOrientation {
+  if (!slot.atlasTile) {
+    // Slots without atlasTile (portrait, abstract) ~ stick to portrait by
+    // convention; toggle isn't currently exposed for these kinds anyway.
+    return 'portrait'
+  }
+  const tileIsPortrait = slot.atlasTile.h > slot.atlasTile.w
+  if (slot.vanillaContentRotation) {
+    return tileIsPortrait ? 'landscape' : 'portrait'
+  }
+  return tileIsPortrait ? 'portrait' : 'landscape'
+}
+
+/** Whether this slot kind exposes the orientation flip toggle. */
+export function slotSupportsOrientationFlip(slot: SlotDef): boolean {
+  // canvasTile (picture frames + picture canvases) and moviePoster slots
+  // route through composeAtlas, where rotation can be applied cleanly
+  // before painting into the atlasTile rect. Portrait slots have a
+  // baked-in left-25%-wood / right-75%-canvas UV split that doesn't
+  // survive a 90° rotation, so they're excluded for now. Abstract and
+  // decor (snack posters etc.) have other constraints (UV bbox
+  // semantics, square defaults) that aren't worth flipping by default.
+  return slot.kind === 'canvasTile' || slot.kind === 'moviePoster'
+}
+
+/** Effective orientation = user's choice if set, else slot default. */
+export function getEffectiveOrientation(slot: SlotDef, state: SlotState): SlotOrientation {
+  if (state.orientation && slotSupportsOrientationFlip(slot)) return state.orientation
+  return getSlotDefaultOrientation(slot)
+}
+
+/**
+ * If the user's chosen orientation differs from the atlasTile's native
+ * aspect, the composer needs to rotate the input image 90° before
+ * painting it into the atlasTile rect. Direction matches the slot's
+ * vanillaContentRotation when present (so a flipped upload looks visually
+ * consistent with vanilla); CCW as the default for slots with no recorded
+ * vanilla rotation but whose user just toggled to the opposite aspect.
+ */
+export function getCompositeRotation(
+  slot: SlotDef,
+  state: SlotState,
+): 'cw' | 'ccw' | undefined {
+  if (!slot.atlasTile) return undefined
+  const orient = getEffectiveOrientation(slot, state)
+  const tileIsPortrait = slot.atlasTile.h > slot.atlasTile.w
+  const userIsPortrait = orient === 'portrait'
+  if (tileIsPortrait === userIsPortrait) return undefined
+  return slot.vanillaContentRotation ?? 'ccw'
 }
 
 export interface FramePreset {
