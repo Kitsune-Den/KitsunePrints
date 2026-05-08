@@ -185,20 +185,64 @@ export default function IntroPage() {
         </p>
       </main>
 
-      {/* Hero in-game screenshot */}
+      {/* Hero in-game screenshot ~ wall covered in custom pet portraits, the
+          most representative "this is what the mod actually does" shot. */}
       <section className={`relative z-10 py-16 px-6 transition-all duration-1000 delay-600 ${mounted ? 'opacity-100' : 'opacity-0'}`}>
         <div className="max-w-5xl mx-auto flex flex-col gap-4">
           <p className="text-center text-xs tracking-[0.3em] uppercase text-zinc-500 font-medium">In a real V2.6 POI</p>
           <div className="rounded-xl overflow-hidden border border-zinc-800 shadow-[0_0_60px_rgba(251,146,60,0.15)]">
             <img
-              src="/screenshots/hero_kitsune_paintings.webp"
-              alt="Two custom Kitsune paintings rendered on a wall in a 7 Days to Die V2.6 POI"
+              src="/screenshots/ingame_pet_portrait_wall.webp"
+              alt="A 7 Days to Die V2.6 wall lined with custom pet-portrait paintings ~ Professional Snack Tester, Master of Snorkles, etc. ~ rendered through KitsunePrints"
               className="w-full object-cover"
+              width={1920}
+              height={1080}
             />
           </div>
           <p className="text-xs text-zinc-600 text-center">
-            1×1 portrait + 3×2 wide abstract, both with vanilla&apos;s 3D wooden frame mesh wrapping the user art.
+            Every vanilla painting slot, swapped for your art. 14 categories, 69 individual block variants, all hung in vanilla POIs.
           </p>
+        </div>
+      </section>
+
+      {/* In-game gallery ~ two more shots showing press-E pickup + frame
+          variety, side by side. Built around the same 16:9 1920x1080 source
+          shots so the responsive grid keeps both consistent. */}
+      <section className={`relative z-10 pb-12 px-6 transition-all duration-1000 delay-700 ${mounted ? 'opacity-100' : 'opacity-0'}`}>
+        <div className="max-w-5xl mx-auto flex flex-col gap-6">
+          <p className="text-center text-xs tracking-[0.3em] uppercase text-zinc-500 font-medium">More in-game</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="flex flex-col gap-2">
+              <div className="rounded-xl overflow-hidden border border-zinc-800 shadow-[0_0_40px_rgba(0,0,0,0.6)]">
+                <img
+                  src="/screenshots/ingame_press_e_pickup.webp"
+                  alt="A custom 'Inventory Control' painting on the wall with the 7 Days to Die press-E-to-pick-up prompt visible"
+                  className="w-full object-cover"
+                  loading="lazy"
+                  width={1920}
+                  height={1080}
+                />
+              </div>
+              <p className="text-xs text-zinc-600 text-center">
+                Press E to pick up ~ every painting becomes survival inventory, vanilla and custom alike.
+              </p>
+            </div>
+            <div className="flex flex-col gap-2">
+              <div className="rounded-xl overflow-hidden border border-zinc-800 shadow-[0_0_40px_rgba(0,0,0,0.6)]">
+                <img
+                  src="/screenshots/ingame_frame_variety.webp"
+                  alt="A wall display mixing dark wood, ornate gold, silver, and white frame styles, all rendered with custom KitsunePrints art"
+                  className="w-full object-cover"
+                  loading="lazy"
+                  width={1920}
+                  height={1080}
+                />
+              </div>
+              <p className="text-xs text-zinc-600 text-center">
+                Six frame styles per slot, atlas-shared so siblings stay in sync.
+              </p>
+            </div>
+          </div>
         </div>
       </section>
 
