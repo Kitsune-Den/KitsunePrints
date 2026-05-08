@@ -45,6 +45,35 @@ function pickPreviewAspectClass(slot: SlotDef): string {
   return 'aspect-square'
 }
 
+/**
+ * Describe a slot's expected image dimensions in human-friendly form. Shown
+ * as a tiny caption in the slot header so users know what aspect to crop /
+ * what pixel size makes sense before uploading.
+ *
+ * Returns text like "3:4 portrait · 1024×1024" or "1:1 square · 1024×1024".
+ * For atlas-tile slots, includes the actual tile pixel dimensions ~ that's
+ * what the user's image will get composited into.
+ */
+function describeSlotDimensions(slot: SlotDef): string {
+  if (slot.kind === 'portrait') return '3:4 portrait · 1024×1024'
+  if (slot.kind === 'abstract') return '1:1 square · 1024×1024'
+  if (slot.kind === 'decor') return '1:1 square · 1024×1024'
+  if ((slot.kind === 'moviePoster' || slot.kind === 'canvasTile') && slot.atlasTile) {
+    const { w, h } = slot.atlasTile
+    return `${aspectName(w, h)} · ${w}×${h}`
+  }
+  return ''
+}
+
+function aspectName(w: number, h: number): string {
+  const r = w / h
+  if (Math.abs(r - 0.75) < 0.05) return '3:4 portrait'
+  if (Math.abs(r - 1) < 0.05) return '1:1 square'
+  if (Math.abs(r - 4 / 3) < 0.05) return '4:3'
+  if (Math.abs(r - 16 / 9) < 0.05) return '16:9 wide'
+  return r < 1 ? `${(Math.round((1 / r) * 100) / 100)}:1 tall` : `${(Math.round(r * 100) / 100)}:1 wide`
+}
+
 export function SlotCard({ slot, state, onChange }: Props) {
   const fileRef = useRef<HTMLInputElement>(null)
   // When non-null, we're showing the crop dialog for this URL.
@@ -120,6 +149,9 @@ export function SlotCard({ slot, state, onChange }: Props) {
             <h3 className="font-medium truncate">{slot.label}</h3>
             <div className="text-xs text-zinc-500 truncate">
               replacing <code className="text-zinc-400">{slot.slotId}</code>
+            </div>
+            <div className="text-[11px] text-zinc-600 mt-0.5 truncate">
+              {describeSlotDimensions(slot)}
             </div>
           </div>
         </div>
