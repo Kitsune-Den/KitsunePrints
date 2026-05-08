@@ -31,18 +31,21 @@ function pickThumbClass(slot: SlotDef): string {
 }
 
 /**
- * Pick the upload preview drop-zone aspect class. Mirrors pickThumbClass
- * logic so the upload area matches the slot's actual content shape.
+ * Compute the CSS aspect-ratio value for the upload drop zone. Returned
+ * as a string ("w / h") for inline style use because the aspect can be
+ * arbitrary ~ snack tiles are 410/512, Health Bar is 1638/512, picture
+ * frame atlases vary per-letter ~ and Tailwind can only ship classes it
+ * sees at build time. Inline style is the right tool for dynamic ratios.
+ *
+ * Mirrors what the cropper enforces below so the drop zone shape and
+ * the crop frame shape stay in sync per slot.
  */
-function pickPreviewAspectClass(slot: SlotDef): string {
-  if (slot.kind === 'portrait' || slot.kind === 'moviePoster') return 'aspect-[3/4]'
-  if (slot.kind === 'canvasTile' && slot.atlasTile) {
-    const ratio = slot.atlasTile.w / slot.atlasTile.h
-    if (ratio < 0.85) return 'aspect-[3/4]'
-    if (ratio < 1.2) return 'aspect-square'
-    return 'aspect-[16/9]'
+function getSlotAspectRatio(slot: SlotDef): string {
+  if (slot.kind === 'portrait') return '3 / 4'
+  if (slot.atlasTile) {
+    return `${slot.atlasTile.w} / ${slot.atlasTile.h}`
   }
-  return 'aspect-square'
+  return '1 / 1'
 }
 
 /**
@@ -81,12 +84,15 @@ export function SlotCard({ slot, state, onChange }: Props) {
 
   // Aspect for the crop frame:
   //   - portraits: 3:4 canvas zone
-  //   - abstracts: square (DLL resets UV scale to fill canvas)
-  //   - moviePoster / canvasTile: derived from the atlas tile dimensions
+  //   - any slot with atlasTile (moviePoster, canvasTile, AND decor with
+  //     a shared atlas like snack posters): derived from the tile size.
+  //     Snack posters are decor + atlasTile, mostly 410×512 (4:5) with
+  //     Health Bar an outlier at 1638×512 (~3:1 wide).
+  //   - everything else (abstracts, standalone decor): square. The DLL
+  //     resets UV scale to fill the canvas so square-cropped works.
   const aspect =
     slot.kind === 'portrait' ? 3 / 4
-    : (slot.kind === 'moviePoster' || slot.kind === 'canvasTile') && slot.atlasTile
-      ? slot.atlasTile.w / slot.atlasTile.h
+    : slot.atlasTile ? slot.atlasTile.w / slot.atlasTile.h
     : 1
 
   function handleFile(file: File) {
@@ -173,7 +179,8 @@ export function SlotCard({ slot, state, onChange }: Props) {
           onDragOver={(e) => e.preventDefault()}
           onDrop={handleDrop}
           onClick={() => fileRef.current?.click()}
-          className={`${pickPreviewAspectClass(slot)} bg-zinc-950 border-2 border-dashed border-zinc-700 rounded cursor-pointer flex items-center justify-center overflow-hidden hover:border-zinc-500 transition-colors`}
+          className="bg-zinc-950 border-2 border-dashed border-zinc-700 rounded cursor-pointer flex items-center justify-center overflow-hidden hover:border-zinc-500 transition-colors"
+          style={{ aspectRatio: getSlotAspectRatio(slot) }}
         >
           {state.preview ? (
             <img src={state.preview} alt={slot.label} className="w-full h-full object-cover" />
