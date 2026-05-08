@@ -232,16 +232,24 @@ export const SLOTS: SlotDef[] = [
   // Per-prefab slots so users can replace each canvas independently. Composer
   // batches by materialName and writes a single composite atlas per material;
   // mesh UVs do the per-block tile selection.
-  { slotId: 'pictureCanvas_01a', materialName: 'pictureCanvas1', label: 'Canvas A (atlas 1)', vanillaBlocks: ['pictureCanvas_01a'], kind: 'canvasTile', atlasTile: { x: 1024, y: 273,  w: 1024, h: 590 } },
+  //
+  // Coords corrected after a real-world bug report: a user uploaded to all
+  // 10 canvases and got back a deterministic permutation (A→D→F 3-cycle,
+  // E↔I swap, G↔J swap; B/C/H landed correctly). The label-to-coord
+  // mapping in this file had been assigned visually from the vanilla atlas
+  // image and didn't match what each pictureCanvas_01<letter> block actually
+  // samples in-game. Coords below are reverse-derived from that bug report
+  // and reflect each block's true UV region.
+  { slotId: 'pictureCanvas_01a', materialName: 'pictureCanvas1', label: 'Canvas A (atlas 1)', vanillaBlocks: ['pictureCanvas_01a'], kind: 'canvasTile', atlasTile: { x: 1024, y: 1456, w: 1024, h: 592 } },
   { slotId: 'pictureCanvas_01b', materialName: 'pictureCanvas1', label: 'Canvas B (atlas 1)', vanillaBlocks: ['pictureCanvas_01b'], kind: 'canvasTile', atlasTile: { x: 0,    y: 863,  w: 1024, h: 593 } },
   { slotId: 'pictureCanvas_01c', materialName: 'pictureCanvas1', label: 'Canvas C (atlas 1)', vanillaBlocks: ['pictureCanvas_01c'], kind: 'canvasTile', atlasTile: { x: 1024, y: 863,  w: 1024, h: 593 } },
-  { slotId: 'pictureCanvas_01d', materialName: 'pictureCanvas1', label: 'Canvas D (atlas 1)', vanillaBlocks: ['pictureCanvas_01d'], kind: 'canvasTile', atlasTile: { x: 0,    y: 1456, w: 1024, h: 592 } },
-  { slotId: 'pictureCanvas_01f', materialName: 'pictureCanvas1', label: 'Canvas F (atlas 1)', vanillaBlocks: ['pictureCanvas_01f'], kind: 'canvasTile', atlasTile: { x: 1024, y: 1456, w: 1024, h: 592 } },
-  { slotId: 'pictureCanvas_01e', materialName: 'pictureCanvas2', label: 'Canvas E (atlas 2)', vanillaBlocks: ['pictureCanvas_01e'], kind: 'canvasTile', atlasTile: { x: 1024, y: 273,  w: 1024, h: 590 } },
-  { slotId: 'pictureCanvas_01g', materialName: 'pictureCanvas2', label: 'Canvas G (atlas 2)', vanillaBlocks: ['pictureCanvas_01g'], kind: 'canvasTile', atlasTile: { x: 0,    y: 863,  w: 1024, h: 593 } },
+  { slotId: 'pictureCanvas_01d', materialName: 'pictureCanvas1', label: 'Canvas D (atlas 1)', vanillaBlocks: ['pictureCanvas_01d'], kind: 'canvasTile', atlasTile: { x: 1024, y: 273,  w: 1024, h: 590 } },
+  { slotId: 'pictureCanvas_01f', materialName: 'pictureCanvas1', label: 'Canvas F (atlas 1)', vanillaBlocks: ['pictureCanvas_01f'], kind: 'canvasTile', atlasTile: { x: 0,    y: 1456, w: 1024, h: 592 } },
+  { slotId: 'pictureCanvas_01e', materialName: 'pictureCanvas2', label: 'Canvas E (atlas 2)', vanillaBlocks: ['pictureCanvas_01e'], kind: 'canvasTile', atlasTile: { x: 0,    y: 1456, w: 1024, h: 592 } },
+  { slotId: 'pictureCanvas_01g', materialName: 'pictureCanvas2', label: 'Canvas G (atlas 2)', vanillaBlocks: ['pictureCanvas_01g'], kind: 'canvasTile', atlasTile: { x: 1024, y: 1456, w: 1024, h: 592 } },
   { slotId: 'pictureCanvas_01h', materialName: 'pictureCanvas2', label: 'Canvas H (atlas 2)', vanillaBlocks: ['pictureCanvas_01h'], kind: 'canvasTile', atlasTile: { x: 1024, y: 863,  w: 1024, h: 593 } },
-  { slotId: 'pictureCanvas_01i', materialName: 'pictureCanvas2', label: 'Canvas I (atlas 2)', vanillaBlocks: ['pictureCanvas_01i'], kind: 'canvasTile', atlasTile: { x: 0,    y: 1456, w: 1024, h: 592 } },
-  { slotId: 'pictureCanvas_01j', materialName: 'pictureCanvas2', label: 'Canvas J (atlas 2)', vanillaBlocks: ['pictureCanvas_01j'], kind: 'canvasTile', atlasTile: { x: 1024, y: 1456, w: 1024, h: 592 } },
+  { slotId: 'pictureCanvas_01i', materialName: 'pictureCanvas2', label: 'Canvas I (atlas 2)', vanillaBlocks: ['pictureCanvas_01i'], kind: 'canvasTile', atlasTile: { x: 1024, y: 273,  w: 1024, h: 590 } },
+  { slotId: 'pictureCanvas_01j', materialName: 'pictureCanvas2', label: 'Canvas J (atlas 2)', vanillaBlocks: ['pictureCanvas_01j'], kind: 'canvasTile', atlasTile: { x: 0,    y: 863,  w: 1024, h: 593 } },
 ]
 
 export interface SlotState {
