@@ -31,3 +31,8 @@ npm-debug.log*
 
 # One-off debug artifacts produced by extraction scripts
 scripts/_debug_*
+
+# Visual diagnostic outputs from scripts/test_*.py and clean_wood_pngs.py
+# (the scripts themselves are committed; their PNG output is not)
+scripts/_test_*/
+scripts/_cleaned_wood_pngs/

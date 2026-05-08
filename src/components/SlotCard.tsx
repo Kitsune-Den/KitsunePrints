@@ -4,6 +4,7 @@ import { ATLAS_SOURCES, DEFAULT_FRAME_PRESET_ID } from '../types/slots'
 import { CropDialog } from './CropDialog'
 import { FramePresetPicker } from './FramePresetPicker'
 import { drawSlotPreviewInto } from '../utils/livePreview'
+import { useInViewport } from '../utils/useInViewport'
 
 interface Props {
   slot: SlotDef
@@ -147,6 +148,13 @@ export function SlotCard({ slot, state, onChange }: Props) {
   // When non-null, we're showing the crop dialog for this URL.
   const [pendingCropUrl, setPendingCropUrl] = useState<string | null>(null)
 
+  // Lazy-render the expensive bits (LiveSlotPreview + FramePresetPicker
+  // swatches both compose 2048×2048 atlases) until the card is near the
+  // viewport. Cards above the fold render immediately ~ cards below
+  // render as the user scrolls. Big win on the picture-frames tab where
+  // we have 23 cards mounting at once.
+  const [cardRef, isVisible] = useInViewport('300px')
+
   // Aspect for the crop frame:
   //   - portraits: 3:4 canvas zone
   //   - any slot with atlasTile (moviePoster, canvasTile, AND decor with
@@ -212,7 +220,7 @@ export function SlotCard({ slot, state, onChange }: Props) {
 
   return (
     <>
-      <div className="border border-zinc-800 rounded-lg p-4 bg-zinc-900/40">
+      <div ref={cardRef} className="border border-zinc-800 rounded-lg p-4 bg-zinc-900/40">
         <div className="flex items-center gap-3 mb-3">
           <img
             src={`/vanilla/${slot.slotId}.webp`}
@@ -253,12 +261,19 @@ export function SlotCard({ slot, state, onChange }: Props) {
           style={{ aspectRatio: getSlotAspectRatio(slot) }}
         >
           {slotHasLiveFramePreview(slot) ? (
-            <LiveSlotPreview
-              slot={slot}
-              file={state.file}
-              framePresetId={state.framePresetId || DEFAULT_FRAME_PRESET_ID}
-              hasImage={Boolean(state.preview)}
-            />
+            isVisible ? (
+              <LiveSlotPreview
+                slot={slot}
+                file={state.file}
+                framePresetId={state.framePresetId || DEFAULT_FRAME_PRESET_ID}
+                hasImage={Boolean(state.preview)}
+              />
+            ) : (
+              // Pre-visibility placeholder. Same drop-zone shape; quiet
+              // "loading textures…" so the card doesn't read as broken
+              // while the user scrolls into view.
+              <SwatchSkeleton label="Loading textures…" />
+            )
           ) : state.preview ? (
             <img src={state.preview} alt={slot.label} className="w-full h-full object-cover" />
           ) : (
@@ -284,11 +299,19 @@ export function SlotCard({ slot, state, onChange }: Props) {
 
         {slotShowsFramePicker(slot) && (
           <div className="mt-3">
-            <FramePresetPicker
-              slot={slot}
-              selectedId={state.framePresetId || DEFAULT_FRAME_PRESET_ID}
-              onChange={(id) => onChange({ ...state, framePresetId: id })}
-            />
+            {isVisible ? (
+              <FramePresetPicker
+                slot={slot}
+                selectedId={state.framePresetId || DEFAULT_FRAME_PRESET_ID}
+                onChange={(id) => onChange({ ...state, framePresetId: id })}
+              />
+            ) : (
+              // Six greybox swatches matching the picker's grid layout.
+              // Visible long enough that the user senses "swatches coming"
+              // rather than "swatches missing." Replaced with the real
+              // picker as soon as the card scrolls into view.
+              <FramePickerSkeleton />
+            )}
             {slot.kind === 'canvasTile' && (
               <p className="mt-1 text-[10px] text-zinc-600 leading-tight">
                 Wood frame tint ~ shared with sibling frames in this style group
@@ -379,20 +402,30 @@ function previewBackingSize(slot: SlotDef): { w: number; h: number } {
  * Calls drawSlotPreviewInto, which routes through composeAtlas ~ the same
  * function the modlet build uses. So this preview is byte-identical to
  * what ships in the zip, just shrunk to drop-zone size.
+ *
+ * Loading state: while drawSlotPreviewInto is in flight (most expensive
+ * the first time per atlas/tint combo when the 1.5 MB vanilla webp must
+ * fetch + composite), shows "Loading textures…" instead of the empty-
+ * state hint. Repeat tints in the same session hit livePreview's
+ * in-memory cache and finish quickly enough that the indicator barely
+ * flashes ~ that's the desired UX.
  */
 function LiveSlotPreview({ slot, file, framePresetId, hasImage }: LiveSlotPreviewProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const { w, h } = previewBackingSize(slot)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
     let cancelled = false
+    setLoading(true)
     drawSlotPreviewInto(canvas, slot, framePresetId, file).catch(() => {
       // A failed preview shouldn't break the upload affordance ~ the canvas
       // just stays blank and the empty-state hint above takes over visually.
-    }).then(() => {
+    }).finally(() => {
       if (cancelled) return
+      setLoading(false)
     })
     return () => { cancelled = true }
   }, [slot, framePresetId, file])
@@ -405,14 +438,59 @@ function LiveSlotPreview({ slot, file, framePresetId, hasImage }: LiveSlotPrevie
         height={h}
         className="w-full h-full block"
       />
-      {!hasImage && (
+      {loading ? (
+        <div className="absolute inset-0 flex items-center justify-center bg-zinc-950/40 backdrop-blur-[1px] pointer-events-none">
+          <div className="text-center text-zinc-300 px-4 bg-black/50 rounded py-2 flex items-center gap-2">
+            <span className="inline-block w-3 h-3 rounded-full border-2 border-zinc-600 border-t-zinc-300 animate-spin" />
+            <span className="text-xs">Loading textures…</span>
+          </div>
+        </div>
+      ) : !hasImage ? (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <div className="text-center text-zinc-300 px-4 bg-black/40 rounded py-2">
             <div className="text-3xl mb-1 leading-none">+</div>
             <div className="text-xs">drop image or click</div>
           </div>
         </div>
-      )}
+      ) : null}
+    </div>
+  )
+}
+
+/**
+ * Pre-visibility placeholder for a slot whose live preview hasn't been
+ * mounted yet (lazy-render via IntersectionObserver). Same dimensions as
+ * the drop zone so the card doesn't reflow when the real preview swaps in.
+ */
+function SwatchSkeleton({ label }: { label: string }) {
+  return (
+    <div className="relative w-full h-full bg-zinc-950 flex items-center justify-center">
+      <div className="text-center text-zinc-500 px-4 flex items-center gap-2">
+        <span className="inline-block w-3 h-3 rounded-full border-2 border-zinc-700 border-t-zinc-400 animate-spin" />
+        <span className="text-xs">{label}</span>
+      </div>
+    </div>
+  )
+}
+
+/**
+ * Pre-visibility placeholder for the 6-swatch frame picker. Mirrors the
+ * picker's 3-column grid so the card doesn't change height when the real
+ * picker mounts in.
+ */
+function FramePickerSkeleton() {
+  return (
+    <div>
+      <div className="text-xs text-zinc-500 mb-2">Frame</div>
+      <div className="grid grid-cols-3 gap-2">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div
+            key={i}
+            className="rounded border border-zinc-800 bg-zinc-900/40 h-12 animate-pulse"
+            aria-hidden="true"
+          />
+        ))}
+      </div>
     </div>
   )
 }

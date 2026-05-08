@@ -94,6 +94,20 @@ export async function composeAbstract(file: File): Promise<Blob> {
 // resolution within whatever sub-region the mesh actually samples.
 const UV_BBOX_OUTPUT_SIZE = 2048
 
+// Bleed for shared-atlas tile paints (composeAtlas). Same idea as
+// BBOX_BLEED_PX below: extend the painted rect a few pixels past its
+// bounds in every direction, so when the in-game mesh's UV samples
+// rounding-overshoot the tile boundary by 1-N pixels they pick up the
+// extended user image instead of vanilla atlas content from the wood-zone
+// above each tile (which under a multiply tint reads as gray strips).
+//
+// Set to 8 px after diagnosing HakurouHayate's V2.6 b14 frame strip
+// report ~ the visible strips were ~3-5 px wide; 8 gives generous margin
+// without straying into other tiles. Bleed pixels land in atlas dead-zones
+// the mesh doesn't sample for OTHER tiles, so no visual leak. See
+// scripts/test_frame_bleed.py for the mechanism diagnostic.
+const TILE_BLEED_PX = 8
+
 /**
  * Compose a decor texture where the in-game mesh samples only a sub-region
  * of the texture's UV space. Paints the user's image cover-fitted into
@@ -217,10 +231,18 @@ export async function composeAtlas(
     ctx.restore()
   }
 
-  // 3. Paint each user image into its assigned tile, cover-fitted.
+  // 3. Paint each user image into its assigned tile, cover-fitted, with a
+  //    TILE_BLEED_PX margin extending past the rect on every side. The
+  //    bleed absorbs in-game mesh UV overshoot at the tile boundary so the
+  //    mesh never samples vanilla wood-zone content (which otherwise shows
+  //    as gray strips at the print's edges).
   for (const { tile, file } of entries) {
     const img = await loadImage(file)
-    drawCover(ctx, img, tile.x, tile.y, tile.w, tile.h)
+    const bx = Math.max(0, tile.x - TILE_BLEED_PX)
+    const by = Math.max(0, tile.y - TILE_BLEED_PX)
+    const br = Math.min(source.size, tile.x + tile.w + TILE_BLEED_PX)
+    const bb = Math.min(source.size, tile.y + tile.h + TILE_BLEED_PX)
+    drawCover(ctx, img, bx, by, br - bx, bb - by)
   }
 
   return canvasToBlob(canvas)
