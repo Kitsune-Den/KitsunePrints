@@ -13,6 +13,7 @@ import {
   composeAbstract,
   composeAtlas,
   composeIcon,
+  composeUvBboxFitted,
 } from './composer'
 import { PICKUP_BLOCKS, EXTENDED_DECOR_PICKUP_BLOCKS } from './pickupBlocks'
 
@@ -157,9 +158,15 @@ async function composeForSlot(slot: SlotDef, state: SlotState): Promise<Blob> {
     return composePortrait(state.file, state.framePresetId || DEFAULT_FRAME_PRESET_ID)
   }
   if (slot.kind === 'abstract' || slot.kind === 'decor') {
-    // Both kinds normalize to a square 1024x1024 ~ DLL resets UV scale/offset
-    // on swap so the user's full image fills the canvas regardless of the
-    // material's vanilla atlas-half offset.
+    // Slots with meshUvBbox: paint into the bbox region of a 2048×2048
+    // transparent texture so the in-game mesh's sub-region UV samples the
+    // user's full image. Snack posters use this; other decor slots fall
+    // through to the original cover-fit path.
+    if (slot.meshUvBbox) {
+      return composeUvBboxFitted(state.file, slot.meshUvBbox)
+    }
+    // Otherwise: 1024×1024 cover-fit. Runtime DLL resets UV scale/offset so
+    // the full image fills the canvas regardless of vanilla atlas-half offset.
     return composeAbstract(state.file)
   }
   // moviePoster / canvasTile are handled in batch by composeAtlas, not here.
