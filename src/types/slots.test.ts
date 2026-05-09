@@ -58,10 +58,13 @@ describe('orientation helpers', () => {
       expect(getSlotDefaultOrientation(slotById('pictureFrame_01e'))).toBe('landscape')
     })
 
-    it('returns landscape for the CW outlier (pictureFrame_01d, bear)', () => {
-      // 01d's vanilla was rotated CW (the lone outlier among rotated frames).
-      // Default is still landscape ~ direction doesn't change which orientation
-      // the user starts from, only the eventual rotation when compositing.
+    it('returns landscape for the bear frame (pictureFrame_01d)', () => {
+      // v1.0.3 originally classified 01d as the CW outlier; v1.0.6 corrected
+      // that to CCW after a user-reported upside-down render in-game (Frame
+      // D was the only one visibly affected, confirming D's vanilla rotation
+      // matches the other rotated slots, not the opposite). The default
+      // orientation is still landscape ~ direction never affected which
+      // orientation the user starts from, only the eventual composite rotation.
       expect(getSlotDefaultOrientation(slotById('pictureFrame_01d'))).toBe('landscape')
     })
 
@@ -116,9 +119,9 @@ describe('orientation helpers', () => {
       expect(getCompositeRotation(s, {})).toBe('ccw')
     })
 
-    it('returns the slot vanillaContentRotation for the CW outlier (pictureFrame_01d)', () => {
+    it('returns CCW for the bear frame (pictureFrame_01d) ~ same as the other 9 rotated slots post-v1.0.6', () => {
       const s = slotById('pictureFrame_01d')
-      expect(getCompositeRotation(s, {})).toBe('cw')
+      expect(getCompositeRotation(s, {})).toBe('ccw')
     })
 
     it('returns undefined when user toggles back to portrait on a rotated-default slot', () => {
@@ -158,22 +161,16 @@ describe('orientation helpers', () => {
   })
 
   describe('vanillaContentRotation classification (smoke check)', () => {
-    it('marks the 10 known-rotated picture frames with the right direction', () => {
-      const expected: Record<string, 'cw' | 'ccw'> = {
-        pictureFrame_01d: 'cw',
-        pictureFrame_01e: 'ccw',
-        pictureFrame_01f: 'ccw',
-        pictureFrame_01g: 'ccw',
-        pictureFrame_01h: 'ccw',
-        pictureFrame_01i: 'ccw',
-        pictureFrame_01j: 'ccw',
-        pictureFrame_01n: 'ccw',
-        pictureFrame_01q: 'ccw',
-        pictureFrame_01r: 'ccw',
-      }
-      for (const [slotId, direction] of Object.entries(expected)) {
+    it('marks all 10 known-rotated picture frames as CCW', () => {
+      // v1.0.3 originally split D off as a CW outlier based on a thumb-fix
+      // direction that turned out to mean something different than the
+      // composite rotation direction. v1.0.6 brought D in line with the
+      // other 9 after user-confirmed in-game upside-down render on D only.
+      const rotated = ['d', 'e', 'f', 'g', 'h', 'i', 'j', 'n', 'q', 'r']
+      for (const letter of rotated) {
+        const slotId = `pictureFrame_01${letter}`
         expect(slotById(slotId).vanillaContentRotation,
-          `expected ${slotId} to be ${direction}`).toBe(direction)
+          `expected ${slotId} to be ccw`).toBe('ccw')
       }
     })
 
