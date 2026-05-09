@@ -272,7 +272,7 @@ export const SLOTS: SlotDef[] = [
   { slotId: 'pictureFrame_01a', materialName: 'pictureFramed',  label: 'Frame A', vanillaBlocks: ['pictureFrame_01a'], kind: 'canvasTile', atlasTile: { x: 1288, y: 1138, w: 735, h: 898 } },
   { slotId: 'pictureFrame_01b', materialName: 'pictureFramed',  label: 'Frame B', vanillaBlocks: ['pictureFrame_01b'], kind: 'canvasTile', atlasTile: { x: 373,  y: 1533, w: 350, h: 502 } },
   { slotId: 'pictureFrame_01c', materialName: 'pictureFramed',  label: 'Frame C', vanillaBlocks: ['pictureFrame_01c'], kind: 'canvasTile', atlasTile: { x: 741,  y: 1361, w: 532, h: 674 } },
-  { slotId: 'pictureFrame_01d', materialName: 'pictureFramed2', label: 'Frame D', vanillaBlocks: ['pictureFrame_01d'], kind: 'canvasTile', atlasTile: { x: 1288, y: 1138, w: 735, h: 898 }, vanillaContentRotation: 'cw' },
+  { slotId: 'pictureFrame_01d', materialName: 'pictureFramed2', label: 'Frame D', vanillaBlocks: ['pictureFrame_01d'], kind: 'canvasTile', atlasTile: { x: 1288, y: 1138, w: 735, h: 898 }, vanillaContentRotation: 'ccw' },
   { slotId: 'pictureFrame_01e', materialName: 'pictureFramed2', label: 'Frame E', vanillaBlocks: ['pictureFrame_01e'], kind: 'canvasTile', atlasTile: { x: 373,  y: 1533, w: 350, h: 502 }, vanillaContentRotation: 'ccw' },
   { slotId: 'pictureFrame_01f', materialName: 'pictureFramed2', label: 'Frame F', vanillaBlocks: ['pictureFrame_01f'], kind: 'canvasTile', atlasTile: { x: 741,  y: 1361, w: 532, h: 674 }, vanillaContentRotation: 'ccw' },
   { slotId: 'pictureFrame_01g', materialName: 'pictureFramed3', label: 'Frame G', vanillaBlocks: ['pictureFrame_01g'], kind: 'canvasTile', atlasTile: { x: 741,  y: 1361, w: 532, h: 674 }, vanillaContentRotation: 'ccw' },
