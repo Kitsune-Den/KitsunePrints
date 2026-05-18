@@ -29,7 +29,8 @@ export const PICKUP_BLOCKS: string[] = [
   'paintingAbstract04_2x2', 'paintingAbstract04_3x2',
 
   // --- Misc decor posters (12) ---
-  'posterCalendarPinupWorkingStiff',
+  'posterCalendarWorkingStiff', // V 2.6 b14 rename ~ was posterCalendarPinupWorkingStiff
+
   'posterBlueprintPistol',
   'posterBlueprintRifle',
   'posterCat',

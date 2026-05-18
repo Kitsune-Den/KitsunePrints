@@ -199,9 +199,18 @@ export const SLOTS: SlotDef[] = [
   // of the original atlas-half offset).
   {
     slotId: 'posterCalendarPinupWorkingStiff',
+    // materialName tracks the in-engine MATERIAL (which is bound to the
+    // prefab file `posterCalendarPinupWorkingStiffPrefab.prefab`); TFP
+    // kept the prefab/material name and only renamed the BLOCK declaration,
+    // so this stays under the old name to keep the DLL's material swap
+    // pointing at the right asset.
     materialName: 'posterCalendarPinupWorkingStiff',
     label: 'Working Stiff Calendar',
-    vanillaBlocks: ['posterCalendarPinupWorkingStiff'],
+    // BLOCK name was renamed in a V 2.6 b14 patch: TFP dropped "Pinup".
+    // Our XML pickup-append + extends reference must follow the new name
+    // or the patch silently no-ops (yellow warning) and the kp_* block
+    // never inherits properly.
+    vanillaBlocks: ['posterCalendarWorkingStiff'],
     kind: 'decor',
   },
   {

@@ -93,7 +93,7 @@ ALREADY_COVERED = {
     "paintingAbstract03_2x2", "paintingAbstract03_3x2",
     "paintingAbstract04_2x2", "paintingAbstract04_3x2",
     # decor posters
-    "posterCalendarPinupWorkingStiff", "posterBlueprintPistol",
+    "posterCalendarWorkingStiff", "posterBlueprintPistol",
     "posterBlueprintRifle", "posterCat", "posterCats", "posterSparky",
     "targetPoster1", "targetPoster2",
     "signPosterWantedMissing01", "signPosterWantedMissing02", "signPosterWantedMissing03",
