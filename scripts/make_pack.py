@@ -125,8 +125,11 @@ SLOTS: list[tuple[str, str, list[str], str, Optional[tuple[int, int, int, int]],
      "moviePoster", (351, 518, 696, 1000), "posterMovie"),
 
     # --- Misc decor (5 standalone slots ~ each material gets its own texture) ---
+    # slotId + materialName stay under the old name (matches the DIY kit's
+    # internal references and the in-engine prefab); only vanillaBlocks
+    # follows the V 2.6 b14 rename that dropped "Pinup".
     ("posterCalendarPinupWorkingStiff", "Working Stiff Calendar",
-     ["posterCalendarPinupWorkingStiff"], "decor", None, "posterCalendarPinupWorkingStiff"),
+     ["posterCalendarWorkingStiff"], "decor", None, "posterCalendarPinupWorkingStiff"),
     ("gunBlueprintPistol", "Pistol Blueprint",
      ["posterBlueprintPistol"], "decor", None, "gunBlueprintPistol"),
     ("gunBlueprintRifle", "Rifle Blueprint",
@@ -238,7 +241,7 @@ PICKUP_BLOCKS = [
     "paintingAbstract03_2x2", "paintingAbstract03_3x2",
     "paintingAbstract04_2x2", "paintingAbstract04_3x2",
     # Misc decor posters
-    "posterCalendarPinupWorkingStiff", "posterBlueprintPistol", "posterBlueprintRifle",
+    "posterCalendarWorkingStiff", "posterBlueprintPistol", "posterBlueprintRifle",
     "posterCat", "posterCats", "posterSparky", "targetPoster1", "targetPoster2",
     "signPosterWantedMissing01", "signPosterWantedMissing02", "signPosterWantedMissing03",
     # Snack posters
