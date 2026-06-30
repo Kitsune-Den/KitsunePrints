@@ -38,3 +38,15 @@ scripts/_test_*/
 scripts/_cleaned_wood_pngs/
 scripts/_audit_orientations/
 scripts/_unused_screenshots/
+
+# Local built-modlet test workspace (KitsunePrints/) ~ a dev/QA build of the
+# mod. Only the DLL source under Harmony/ is tracked; everything else here
+# (ModInfo, the built DLL, Config/Resources/ItemIcons/UIAtlases, .claude) is
+# generated build output and stays untracked.
+/KitsunePrints/*
+!/KitsunePrints/Harmony/
+/KitsunePrints/Harmony/obj/
+/KitsunePrints/Harmony/bin/
+
+# Unused/scratch image templates (not referenced by the build)
+/_templates/
