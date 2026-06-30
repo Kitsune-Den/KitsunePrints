@@ -48,7 +48,7 @@ export interface SlotDef {
   /** Friendly UI label. */
   label: string
   /**
-   * Vanilla Material.m_Name in 7DTD V2.6 ~ the key in picture_pack.json.
+   * Vanilla Material.m_Name in 7DTD V2.6/V3.0 (verified identical) ~ the key in picture_pack.json.
    * Multiple slots may share one materialName (atlas case): all of them
    * composite into a single output texture for that material.
    */
@@ -468,7 +468,7 @@ export interface PackMeta {
 export const DEFAULT_PACK_META: PackMeta = {
   name: 'My Picture Pack',
   author: '',
-  description: 'A custom picture pack for 7 Days to Die V2.6',
+  description: 'A custom picture pack for 7 Days to Die V2.6–V3.0',
   version: '0.1.0',
   enablePickup: true,
   enableExtendedDecorPickup: true,

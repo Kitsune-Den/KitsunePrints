@@ -2,7 +2,7 @@
 """
 KitsunePrints DIY Pack Builder
 ==============================
-Run this script to turn a folder of images into a 7 Days to Die V2.6
+Run this script to turn a folder of images into a 7 Days to Die V2.6–V3.0
 picture pack modlet. No web tool needed.
 
 Usage:

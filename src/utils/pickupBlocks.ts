@@ -1,4 +1,4 @@
-// Vanilla 7DTD V2.6 blocks that get the optional press-E pickup treatment.
+// Vanilla 7DTD V2.6/V3.0 blocks that get the optional press-E pickup treatment.
 //
 // Two opt-in tiers:
 //

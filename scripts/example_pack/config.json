@@ -2,7 +2,7 @@
   "name": "My Picture Pack",
   "author": "Your Name",
   "version": "0.1.0",
-  "description": "A custom picture pack for 7 Days to Die V2.6",
+  "description": "A custom picture pack for 7 Days to Die V2.6–V3.0",
 
   "enablePickup": true,
   "_comment_pickup": "true (default) inlines blocks.xml patches that add CanPickup=true to ~83 vanilla picture/poster/canvas/frame blocks. Press E in-game to pick up. Set false to skip.",
