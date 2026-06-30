@@ -463,15 +463,25 @@ export interface PackMeta {
    * lit signs risk electrical-init NREs. See src/utils/pickupBlocks.ts.
    */
   enableExtendedDecorPickup: boolean
+  /**
+   * Which 7DTD release line the user is building for. Purely informational ~
+   * the generated DLL + XML are version-agnostic and the same pack works on
+   * both V2.x and V3.x (verified: identical Unity runtime, Material names,
+   * block names, and mesh UVs across V2.6 and V3.0). Drives the compatibility
+   * note stamped into ModInfo's Description and the install hints in the UI.
+   * Optional for back-compat with older callers; absent ⇒ treated as '3.x'.
+   */
+  gameVersion?: '2.x' | '3.x'
 }
 
 export const DEFAULT_PACK_META: PackMeta = {
   name: 'My Picture Pack',
   author: '',
-  description: 'A custom picture pack for 7 Days to Die V2.6–V3.0',
+  description: 'A custom picture pack for 7 Days to Die',
   version: '0.1.0',
   enablePickup: true,
   enableExtendedDecorPickup: true,
+  gameVersion: '3.x',
 }
 
 /** True if the pack info still looks like our defaults ~ name unchanged

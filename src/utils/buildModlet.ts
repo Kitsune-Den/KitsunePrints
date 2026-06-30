@@ -197,15 +197,25 @@ export function sanitizeIdentifier(s: string): string {
 
 // ---- Renderers -----------------------------------------------------------
 
+// 7DTD ModInfo has no formal game-version field, so we surface the build
+// target as a sentence in the Description (visible in the in-game mod list).
+// The DLL + XML are version-agnostic, so we always note cross-version support.
+export function gameVersionCompatNote(gameVersion?: '2.x' | '3.x'): string {
+  const target = gameVersion === '2.x' ? 'V2.x' : 'V3.x'
+  return `Built for 7DTD ${target} ~ works on both V2.x and V3.x.`
+}
+
 export function renderModInfo(meta: PackMeta): string {
   // <Name> must be a sanitized identifier; <DisplayName> can keep spaces.
   const sanitizedName = sanitizeIdentifier(meta.name) || 'KitsunePicturePack'
+  const note = gameVersionCompatNote(meta.gameVersion)
+  const description = meta.description ? `${meta.description} ${note}` : note
   return `<?xml version="1.0" encoding="UTF-8"?>
 <xml>
     <Name value="${escapeXml(sanitizedName)}" />
     <DisplayName value="${escapeXml(meta.name)}" />
     <Version value="${escapeXml(meta.version)}" />
-    <Description value="${escapeXml(meta.description)}" />
+    <Description value="${escapeXml(description)}" />
     <Author value="${escapeXml(meta.author)}" />
 </xml>
 `

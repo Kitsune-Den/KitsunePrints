@@ -19,6 +19,31 @@ export function PackMetaForm({ meta, setMeta }: Props) {
         <Field label="Description" value={meta.description} onChange={(v) => updateText('description', v)} placeholder="What's in the pack" />
       </div>
 
+      <div className="max-w-2xl">
+        <span className="text-xs text-zinc-500 uppercase tracking-wider">Your game version</span>
+        <div className="mt-1.5 inline-flex rounded border border-zinc-800 overflow-hidden">
+          {(['3.x', '2.x'] as const).map((v) => (
+            <button
+              key={v}
+              type="button"
+              onClick={() => setMeta(prev => ({ ...prev, gameVersion: v }))}
+              className={`px-4 py-2 text-sm transition-colors ${
+                (meta.gameVersion ?? '3.x') === v
+                  ? 'bg-orange-500 text-zinc-950 font-medium'
+                  : 'bg-zinc-900 text-zinc-400 hover:text-zinc-200'
+              }`}
+            >
+              7DTD V{v}
+            </button>
+          ))}
+        </div>
+        <p className="text-xs text-zinc-500 mt-2 leading-relaxed">
+          The pack works on <span className="text-zinc-400">both V2.x and V3.x</span> ~ the
+          shared DLL and XML are version-agnostic. This just stamps the build target into
+          the pack's ModInfo so you (and anyone you share with) know what it was made for.
+        </p>
+      </div>
+
       <div className="border-t border-zinc-800 pt-6 max-w-2xl space-y-5">
         <h3 className="text-xs text-zinc-500 uppercase tracking-wider">Survival options</h3>
         <label className="flex items-start gap-3 cursor-pointer group">
