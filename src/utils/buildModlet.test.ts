@@ -9,6 +9,7 @@ import {
   renderPickupAppendRows,
   renderBlocksXml,
   renderModInfo,
+  gameVersionCompatNote,
   type RecipeKind,
 } from './buildModlet'
 import type { SlotDef, PackMeta } from '../types/slots'
@@ -329,5 +330,25 @@ describe('renderModInfo', () => {
     })
     expect(xml).toContain('<Author value="Ada &amp; Cats" />')
     expect(xml).toContain('Cats &lt;3 everywhere')
+  })
+
+  it('stamps the V3.x build target into the description by default', () => {
+    const xml = renderModInfo({ ...META, gameVersion: undefined })
+    expect(xml).toContain('Built for 7DTD V3.x ~ works on both V2.x and V3.x.')
+  })
+
+  it('stamps the V2.x build target when 2.x is selected', () => {
+    const xml = renderModInfo({ ...META, gameVersion: '2.x' })
+    expect(xml).toContain('Built for 7DTD V2.x ~ works on both V2.x and V3.x.')
+  })
+})
+
+describe('gameVersionCompatNote', () => {
+  it('defaults to V3.x when unset', () => {
+    expect(gameVersionCompatNote()).toBe('Built for 7DTD V3.x ~ works on both V2.x and V3.x.')
+  })
+
+  it('reports V2.x when selected', () => {
+    expect(gameVersionCompatNote('2.x')).toContain('Built for 7DTD V2.x')
   })
 })

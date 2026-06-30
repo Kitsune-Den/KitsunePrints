@@ -2,7 +2,10 @@
   "name": "My Picture Pack",
   "author": "Your Name",
   "version": "0.1.0",
-  "description": "A custom picture pack for 7 Days to Die V2.6–V3.0",
+  "description": "A custom picture pack for 7 Days to Die",
+
+  "gameVersion": "3.x",
+  "_comment_gameVersion": "Your 7DTD release line: \"3.x\" (default) or \"2.x\". Purely informational ~ the DLL + XML are version-agnostic and the same pack works on both. Just stamps a build-target note into ModInfo's Description.",
 
   "enablePickup": true,
   "_comment_pickup": "true (default) inlines blocks.xml patches that add CanPickup=true to ~83 vanilla picture/poster/canvas/frame blocks. Press E in-game to pick up. Set false to skip.",

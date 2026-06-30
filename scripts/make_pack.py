@@ -525,14 +525,26 @@ def escape_xml(s: str) -> str:
     )
 
 
+def game_version_compat_note(game_version: str) -> str:
+    # 7DTD ModInfo has no game-version field, so the build target is surfaced as
+    # a sentence in the Description. The DLL + XML are version-agnostic, so we
+    # always note cross-version support. Mirrors gameVersionCompatNote() in the
+    # web tool's src/utils/buildModlet.ts ~ keep the two in sync.
+    target = "V2.x" if game_version == "2.x" else "V3.x"
+    return f"Built for 7DTD {target} ~ works on both V2.x and V3.x."
+
+
 def render_modinfo(meta: dict, sanitized_name: str) -> str:
+    note = game_version_compat_note(meta.get("gameVersion", "3.x"))
+    desc = meta.get("description", "")
+    desc = f"{desc} {note}" if desc else note
     return (
         '<?xml version="1.0" encoding="UTF-8"?>\n'
         "<xml>\n"
         f'    <Name value="{escape_xml(sanitized_name)}" />\n'
         f'    <DisplayName value="{escape_xml(meta.get("name", "My Picture Pack"))}" />\n'
         f'    <Version value="{escape_xml(meta.get("version", "0.1.0"))}" />\n'
-        f'    <Description value="{escape_xml(meta.get("description", ""))}" />\n'
+        f'    <Description value="{escape_xml(desc)}" />\n'
         f'    <Author value="{escape_xml(meta.get("author", ""))}" />\n'
         "</xml>\n"
     )
