@@ -13,7 +13,7 @@ export default function TermsPage() {
             <h2 className="text-base font-semibold text-zinc-200 mb-2">What KitsunePrints Does</h2>
             <p>
               KitsunePrints is a free tool that lets you create custom picture/painting
-              modpacks for 7 Days to Die V2.6. You upload images, drop them into vanilla
+              modpacks for 7 Days to Die V2.6–V3.0. You upload images, drop them into vanilla
               painting slots, and download a ready-to-install modlet that re-skins every
               painting in every POI with your art. That&apos;s it.
             </p>

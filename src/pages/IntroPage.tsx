@@ -142,7 +142,7 @@ export default function IntroPage() {
 
         <div className={`transition-all duration-1000 delay-100 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
           <span className="text-xs tracking-[0.3em] uppercase text-orange-400 font-medium">
-            7 Days to Die V2.6 · Custom Picture Pack Tool
+            7 Days to Die V2.6–V3.0 · Custom Picture Pack Tool
           </span>
         </div>
 
@@ -181,7 +181,7 @@ export default function IntroPage() {
         </div>
 
         <p className={`mt-6 text-xs text-zinc-600 transition-all duration-1000 delay-700 ${mounted ? 'opacity-100' : 'opacity-0'}`}>
-          7DTD V2.6 · EAC must be off · ships with the Harmony patch baked in
+          7DTD V2.6–V3.0 · EAC must be off · ships with the Harmony patch baked in
         </p>
       </main>
 
@@ -347,7 +347,7 @@ export default function IntroPage() {
               },
               {
                 q: 'What 7DTD version does this need?',
-                a: 'V2.6. The vanilla painting material names and atlas layout we patch are V2.6-specific. Earlier versions had different conventions, and future versions may shift again.',
+                a: 'V2.6 and V3.0 ("Dead Hot Summer"). The vanilla painting material names and atlas mesh-UV layout we patch are identical across V2.6 and V3.0, so the same packs work on both. Earlier versions had different conventions, and future versions may shift again.',
               },
               {
                 q: 'Does this make every painting in the game pickup-able?',

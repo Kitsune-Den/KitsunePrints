@@ -3,7 +3,37 @@
 > Drafted as an addendum to **Kitsune-Den Mod Compatibility & Migration Plan v1.0**
 > (May 2, 2026). To be merged into the main living document under Part 3.
 >
-> Last updated: 2026-05-02 — KitsunePrints v0.8.2
+> Last updated: 2026-06-30 — KitsunePrints v1.1.0
+
+## §3.4.0 V3.0 ("Dead Hot Summer") verification result — VERIFIED COMPATIBLE
+
+Verified against a full V3.0 dedicated-server install (2026-06-30). Every risk
+flagged in §3.4.1 was checked against real V3.0 assets and came back clean —
+this landed in the **best-case scenario** of §3.4.4 (rebuild + ship):
+
+- **DLL builds clean** against the V3.0 game assemblies (0 warnings/errors). The
+  one Harmony target, `World.LoadWorld`, is patched via a **parameter-free
+  postfix**, so the V3.0 `_sWorldName`→`_levelName` first-parameter rename (which
+  broke KitsunePaintUnlocked's prefix) does **not** affect us.
+- **All 43 swap-target Material names** (`painting_ben` … `pictureFramed8`,
+  posters, canvases) are present in the V3.0 `decor.bundle`/bundles — exactly 10
+  `paint*` materials, no renames, no additions.
+- **All vanilla painting + decor + pickup block names** (PICKUP_BLOCKS +
+  EXTENDED_DECOR_PICKUP_BLOCKS) resolve in V3.0 `blocks.xml`. The `<append>` and
+  `kp_*` targets are intact.
+- **Picture-frame / canvas mesh-UV tile rects** read from V3.0 LOD0 prefab meshes
+  are **identical** to the V2.6-derived `atlasTile` values in `slots.ts`
+  (e.g. `pictureFrame_01a` = x1288 y1138 w735 h898). No atlas re-bake, no mesh
+  re-export.
+
+Conclusion: the V3.0 decor art pipeline is unchanged from V2.6. The same packs
+and the same DLL work on both. v1.1.0 ships the DLL rebuilt against V3.0 and
+relabels compatibility to V2.6–V3.0. **Still pending: a live in-game smoke test
+on a V3.0 client/server** (the one check that can't be made statically).
+
+> Last reviewed for: **V3.0** — see §3.4.0 above. Original draft below.
+
+> Original draft — Last updated: 2026-05-02 — KitsunePrints v0.8.2
 
 ## Current function
 

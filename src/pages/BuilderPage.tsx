@@ -160,7 +160,7 @@ export function BuilderPage({ slots, setSlots, meta, setMeta, appVersion }: Prop
             <h1 className="text-4xl font-bold tracking-tight">🐱 KitsunePrints</h1>
             <p className="mt-2 text-zinc-400 max-w-2xl">
               Upload images, drop them into vanilla painting slots, download a complete modlet
-              for 7 Days to Die V2.6. Every painting in every POI gets re-skinned with your art.
+              for 7 Days to Die V2.6–V3.0. Every painting in every POI gets re-skinned with your art.
             </p>
             <p className="mt-1 text-xs text-zinc-600">
               v{appVersion}
@@ -344,7 +344,7 @@ export function BuilderPage({ slots, setSlots, meta, setMeta, appVersion }: Prop
               paint.kitsuneden.net
             </a>
             . Modlet uses the shared <code className="font-mono">KitsunePrints.dll</code> Harmony
-            patch. Requires 7DTD V2.6 with EAC disabled.
+            patch. Requires 7DTD V2.6–V3.0 with EAC disabled.
           </p>
           <a href="/terms" className="hover:text-orange-400 transition-colors">
             Terms &amp; Privacy
