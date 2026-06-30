@@ -13,14 +13,14 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/slots-69_across_7_categories-fb923c?style=flat" alt="69 slots" />
-  <img src="https://img.shields.io/badge/7DTD-V2.6-8b0000?style=flat" alt="7DTD V2.6" />
+  <img src="https://img.shields.io/badge/7DTD-V2.6--V3.0-8b0000?style=flat" alt="7DTD V2.6–V3.0" />
   <img src="https://img.shields.io/badge/tests-35_passing-22c55e?style=flat" alt="35 tests" />
   <img src="https://img.shields.io/badge/EAC-must_be_off-78350f?style=flat" alt="EAC off" />
 </p>
 
 # 🐱 KitsunePrints
 
-A web-based custom picture pack creator for **7 Days to Die V2.6**. Upload your art, drop it into vanilla painting / poster / canvas / frame slots across **69 swap targets**, download a ready-to-install modlet. Every painting in every POI ~ plus snack posters, movie posters, picture frames, hidden-safe disguises ~ now wears your art. No Unity, no asset bundles, no prefab hacks. A Harmony runtime swap does the heavy lifting at world load.
+A web-based custom picture pack creator for **7 Days to Die V2.6–V3.0**. Upload your art, drop it into vanilla painting / poster / canvas / frame slots across **69 swap targets**, download a ready-to-install modlet. Every painting in every POI ~ plus snack posters, movie posters, picture frames, hidden-safe disguises ~ now wears your art. No Unity, no asset bundles, no prefab hacks. A Harmony runtime swap does the heavy lifting at world load.
 
 ## What it does
 
@@ -84,7 +84,7 @@ If you'd rather skip the web tool, grab [`KitsunePrints-DIY-Kit.zip`](https://gi
 
 ## Dependencies
 
-- 7 Days to Die V2.6 (vanilla material naming, atlas layout, and prefab mesh UVs are version-specific; see [migration plan](docs/migration-plan.md) for v3.x/v4.x outlook)
+- 7 Days to Die V2.6–V3.0 (verified: vanilla material naming, decor block names, atlas layout, and prefab mesh UVs are identical across V2.6 and V3.0, so the same pack + DLL work on both; see [migration plan](docs/migration-plan.md) for the V3.0 verification result and v4.x outlook)
 - EAC must be disabled (any DLL-shipping mod requires this)
 - No third-party mod dependencies ~ the Harmony patch is self-contained
 
