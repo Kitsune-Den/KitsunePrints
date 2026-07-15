@@ -122,11 +122,24 @@ export interface AtlasSource {
    *  using the chosen FRAME_PRESETS tint color. Used for picture-frame
    *  atlases where the top portion is the wood-frame border zone. */
   frameTintHeightPct?: number
+  /**
+   * When true, the composer vertically flips each user tile before painting
+   * it into this atlas. Set for atlases whose in-game block meshes sample the
+   * texture with inverted V ~ the vanilla PNG for such atlases is stored
+   * pre-flipped to compensate, so upright user content would render 180° off
+   * (upside down) without this. Only the painted user tiles are flipped; the
+   * vanilla base atlas is drawn untouched.
+   *
+   * pictureCanvas1 needs this: its 5 blocks (Canvas A/B/C/D/F) all rendered
+   * upside down in-game while pictureCanvas2's blocks (E/G/H/I/J), sharing the
+   * identical tile layout, rendered upright ~ confirmed via V2.6 b14 report.
+   */
+  flipTilesV?: boolean
 }
 
 export const ATLAS_SOURCES: Record<string, AtlasSource> = {
   posterMovie:    { vanillaPath: '/vanilla/_posterMovie_atlas.webp',    size: 1024 },
-  pictureCanvas1: { vanillaPath: '/vanilla/_pictureCanvas1_atlas.webp', size: 2048 },
+  pictureCanvas1: { vanillaPath: '/vanilla/_pictureCanvas1_atlas.webp', size: 2048, flipTilesV: true },
   pictureCanvas2: { vanillaPath: '/vanilla/_pictureCanvas2_atlas.webp', size: 2048 },
   pictureFramed:  { vanillaPath: '/vanilla/_pictureFramed_atlas.webp',  size: 2048, frameTintHeightPct: 0.55 },
   pictureFramed2: { vanillaPath: '/vanilla/_pictureFramed2_atlas.webp', size: 2048, frameTintHeightPct: 0.55 },
