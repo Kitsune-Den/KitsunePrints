@@ -46,6 +46,26 @@ function rotate90(
   return out
 }
 
+/** Vertically flip an HTMLImageElement-or-canvas-source (mirror top<->bottom).
+ *  Returns a fresh HTMLCanvasElement (drop-in for drawImage). Used to
+ *  pre-compensate atlases whose in-game meshes sample with inverted V. */
+function flipVertical(
+  source: HTMLImageElement | HTMLCanvasElement,
+): HTMLCanvasElement {
+  const sw = (source as HTMLImageElement).naturalWidth || (source as HTMLCanvasElement).width
+  const sh = (source as HTMLImageElement).naturalHeight || (source as HTMLCanvasElement).height
+  const out = document.createElement('canvas')
+  out.width = sw
+  out.height = sh
+  const ctx = out.getContext('2d')
+  if (!ctx) throw new Error('Canvas 2d context unavailable')
+  // Scale Y by -1 about the vertical center to mirror top<->bottom.
+  ctx.translate(0, sh)
+  ctx.scale(1, -1)
+  ctx.drawImage(source as CanvasImageSource, 0, 0, sw, sh)
+  return out
+}
+
 const PORTRAIT_W = 1024
 const PORTRAIT_H = 1024
 const FRAME_PCT = 0.25 // left 25% is the frame UV zone
@@ -267,8 +287,12 @@ export async function composeAtlas(
   //    differs from the atlasTile's native aspect.
   for (const { tile, file, rotation } of entries) {
     const img = await loadImage(file)
-    const sourceForPaint: HTMLImageElement | HTMLCanvasElement =
+    let sourceForPaint: HTMLImageElement | HTMLCanvasElement =
       rotation ? rotate90(img, rotation) : img
+    // Pre-flip for atlases whose meshes sample with inverted V (e.g.
+    // pictureCanvas1), so upright user content renders upright in-game
+    // instead of upside down. Applied after any rotation.
+    if (source.flipTilesV) sourceForPaint = flipVertical(sourceForPaint)
     const bx = Math.max(0, tile.x - TILE_BLEED_PX)
     const by = Math.max(0, tile.y - TILE_BLEED_PX)
     const br = Math.min(source.size, tile.x + tile.w + TILE_BLEED_PX)

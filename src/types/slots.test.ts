@@ -3,6 +3,7 @@ import {
   isDefaultPackMeta,
   DEFAULT_PACK_META,
   SLOTS,
+  ATLAS_SOURCES,
   getSlotDefaultOrientation,
   getEffectiveOrientation,
   getCompositeRotation,
@@ -10,6 +11,29 @@ import {
   type SlotDef,
   type SlotState,
 } from './slots'
+
+describe('picture-canvas atlas vertical flip', () => {
+  // pictureCanvas1's block meshes sample the atlas with inverted V, so its
+  // vanilla PNG is stored pre-flipped. Upright user tiles must be flipped to
+  // render upright in-game (Canvas A/B/C/D/F were upside down without this).
+  // pictureCanvas2 shares the identical tile layout but samples upright, so
+  // it must NOT be flipped.
+  it('flips pictureCanvas1 tiles', () => {
+    expect(ATLAS_SOURCES.pictureCanvas1.flipTilesV).toBe(true)
+  })
+
+  it('does not flip pictureCanvas2 tiles', () => {
+    expect(ATLAS_SOURCES.pictureCanvas2.flipTilesV).toBeFalsy()
+  })
+
+  it('every canvas slot on the flipped atlas is exactly A/B/C/D/F', () => {
+    const flippedCanvasLetters = SLOTS
+      .filter(s => s.materialName === 'pictureCanvas1')
+      .map(s => s.slotId.replace('pictureCanvas_01', '').toUpperCase())
+      .sort()
+    expect(flippedCanvasLetters).toEqual(['A', 'B', 'C', 'D', 'F'])
+  })
+})
 
 describe('isDefaultPackMeta', () => {
   it('returns true for the unmodified factory default', () => {
