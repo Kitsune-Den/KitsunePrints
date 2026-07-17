@@ -21,7 +21,35 @@ namespace KitsunePrints
     /// </summary>
     public static class PaintingTextureSwap
     {
-        public static string ModFolder;
+        /// <summary>
+        /// Every KitsunePrints pack folder that registered via InitMod.
+        ///
+        /// Multiple web-tool packs ship a byte-identical KitsunePrints.dll, so
+        /// Mono loads ONE assembly and the game calls InitMod once per pack —
+        /// all packs share these statics. Before this list existed, a single
+        /// ModFolder string got overwritten by each successive pack, so only
+        /// the last-loaded pack's picture_pack.json was ever read and every
+        /// other pack's blocks silently stayed vanilla (icons still worked,
+        /// since those are pure XML/UIAtlases merging).
+        /// </summary>
+        private static readonly List<string> PackFolders = new List<string>();
+
+        /// <summary>Legacy single-folder accessor ~ first registered pack.</summary>
+        public static string ModFolder
+        {
+            get { return PackFolders.Count > 0 ? PackFolders[0] : null; }
+            set { RegisterPackFolder(value); }
+        }
+
+        public static void RegisterPackFolder(string path)
+        {
+            if (string.IsNullOrEmpty(path) || PackFolders.Contains(path)) return;
+            PackFolders.Add(path);
+            // Invalidate any resolved map so a pack registering after another
+            // pack's first access still gets merged in (harmless in practice:
+            // all InitMods run before world load).
+            _texturePaths = null;
+        }
 
         // Adapter layer ~ swappable per game version. See IMaterialSwap.cs and
         // docs/migration-plan.md §3.4. Keep these as static fields so an
@@ -49,46 +77,68 @@ namespace KitsunePrints
             { "paintingsAbstract04", "butterfly.png" },
         };
 
-        // Resolved at first use:
-        //   - picture_pack.json present  -> use ONLY that file's entries.
-        //     Slots not listed in the JSON are intentionally left vanilla.
-        //   - picture_pack.json absent   -> fall back to bundled defaults
-        //     (the dev/test mod case where cat textures ship with the DLL).
-        private static Dictionary<string, string> _textureMap;
-        private static Dictionary<string, string> TextureMap
+        // Resolved at first use ~ merged across ALL registered pack folders:
+        //   - each pack with a Config/picture_pack.json contributes its
+        //     entries, resolved to absolute paths under that pack's own
+        //     Resources/Textures/. Slots not listed anywhere stay vanilla.
+        //   - if a material is mapped by more than one pack, the
+        //     later-loaded pack wins (mod load order) and we log a warning.
+        //   - no pack has a picture_pack.json -> fall back to bundled
+        //     defaults in the first pack folder (the dev/test cat-mod case).
+        private static Dictionary<string, string> _texturePaths;
+        private static Dictionary<string, string> TexturePaths
         {
             get
             {
-                if (_textureMap != null) return _textureMap;
+                if (_texturePaths != null) return _texturePaths;
 
-                if (!string.IsNullOrEmpty(ModFolder))
+                _texturePaths = new Dictionary<string, string>();
+                bool anyConfig = false;
+
+                foreach (var folder in PackFolders)
                 {
-                    var configPath = Path.Combine(ModFolder, "Config", "picture_pack.json");
-                    if (File.Exists(configPath))
+                    var configPath = Path.Combine(folder, "Config", "picture_pack.json");
+                    if (!File.Exists(configPath)) continue;
+
+                    var packName = Path.GetFileName(folder.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
+                    try
                     {
-                        try
+                        // Minimal JSON parser: { "painting_ben": "my-cat.png", ... }
+                        // No external dependency — Newtonsoft isn't in the 7DTD ref set.
+                        var raw = File.ReadAllText(configPath);
+                        int entries = 0;
+                        foreach (var pair in ParseFlatJsonObject(raw))
                         {
-                            // Minimal JSON parser: { "painting_ben": "my-cat.png", ... }
-                            // No external dependency — Newtonsoft isn't in the 7DTD ref set.
-                            var raw = File.ReadAllText(configPath);
-                            _textureMap = new Dictionary<string, string>();
-                            foreach (var pair in ParseFlatJsonObject(raw))
+                            if (_texturePaths.ContainsKey(pair.Key))
                             {
-                                _textureMap[pair.Key] = pair.Value;
+                                Log.Warning($"[KitsunePrints] Material '{pair.Key}' is mapped by more than one pack — using the one from '{packName}'");
                             }
-                            Log.Out($"[KitsunePrints] Loaded {_textureMap.Count}-entry texture map from picture_pack.json (unfilled slots stay vanilla)");
-                            return _textureMap;
+                            _texturePaths[pair.Key] = Path.Combine(folder, "Resources", "Textures", pair.Value);
+                            entries++;
                         }
-                        catch (System.Exception ex)
-                        {
-                            Log.Warning($"[KitsunePrints] Failed to parse picture_pack.json: {ex.Message} — falling back to defaults");
-                        }
+                        anyConfig = true;
+                        Log.Out($"[KitsunePrints] Pack '{packName}': loaded {entries} texture mappings (unfilled slots stay vanilla)");
+                    }
+                    catch (System.Exception ex)
+                    {
+                        Log.Warning($"[KitsunePrints] Failed to parse picture_pack.json in '{packName}': {ex.Message} — skipping that pack");
                     }
                 }
 
-                _textureMap = new Dictionary<string, string>(DefaultTextureMap);
-                Log.Out($"[KitsunePrints] No picture_pack.json found — using {_textureMap.Count}-entry default texture map");
-                return _textureMap;
+                if (!anyConfig)
+                {
+                    var folder = ModFolder;
+                    if (!string.IsNullOrEmpty(folder))
+                    {
+                        foreach (var pair in DefaultTextureMap)
+                        {
+                            _texturePaths[pair.Key] = Path.Combine(folder, "Resources", "Textures", pair.Value);
+                        }
+                    }
+                    Log.Out($"[KitsunePrints] No picture_pack.json found in any pack — using {_texturePaths.Count}-entry default texture map");
+                }
+
+                return _texturePaths;
             }
         }
 
@@ -147,9 +197,9 @@ namespace KitsunePrints
             if (_swapped) return;
             _swapped = true;
 
-            if (string.IsNullOrEmpty(ModFolder))
+            if (PackFolders.Count == 0)
             {
-                Log.Warning("[KitsunePrints] ModFolder not set — cannot resolve texture paths");
+                Log.Warning("[KitsunePrints] No pack folder registered — cannot resolve texture paths");
                 return;
             }
 
@@ -157,27 +207,27 @@ namespace KitsunePrints
             int swapped = 0;
             int missingFiles = 0;
 
-            // Cache loaded PNGs so we don't re-read for both the 2x2 and 3x2
-            // abstract Materials (they share names, but Unity may load them
-            // as separate Material instances — same PNG, swap each).
+            // Cache loaded PNGs (keyed by absolute path — two packs can both
+            // ship a file named posterMovie.png) so we don't re-read for both
+            // the 2x2 and 3x2 abstract Materials (they share names, but Unity
+            // may load them as separate Material instances — same PNG, swap each).
             var textureCache = new Dictionary<string, Texture2D>();
 
             foreach (var mat in Finder.FindAll())
             {
                 if (mat == null) continue;
                 var name = mat.name ?? "";
-                if (!TextureMap.TryGetValue(name, out var fileName)) continue;
+                if (!TexturePaths.TryGetValue(name, out var path)) continue;
 
                 matched++;
 
-                if (!textureCache.TryGetValue(fileName, out var tex))
+                if (!textureCache.TryGetValue(path, out var tex))
                 {
-                    var path = Path.Combine(ModFolder, "Resources", "Textures", fileName);
                     if (!File.Exists(path))
                     {
                         Log.Warning($"[KitsunePrints] Texture missing: {path}");
                         missingFiles++;
-                        textureCache[fileName] = null;
+                        textureCache[path] = null;
                         continue;
                     }
 
@@ -190,8 +240,8 @@ namespace KitsunePrints
                     tex.wrapMode = TextureWrapMode.Clamp;
                     tex.filterMode = FilterMode.Bilinear;
                     tex.Apply(updateMipmaps: true, makeNoLongerReadable: false);
-                    textureCache[fileName] = tex;
-                    Log.Out($"[KitsunePrints] Loaded {fileName} as Texture2D ({tex.width}x{tex.height})");
+                    textureCache[path] = tex;
+                    Log.Out($"[KitsunePrints] Loaded {Path.GetFileName(path)} as Texture2D ({tex.width}x{tex.height})");
                 }
 
                 if (tex == null) continue; // file was missing, already logged
