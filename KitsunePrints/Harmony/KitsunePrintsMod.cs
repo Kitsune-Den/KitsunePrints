@@ -27,9 +27,24 @@ namespace KitsunePrints
 {
     public class KitsunePrintsMod : IModApi
     {
+        // Multiple web-tool packs each ship a byte-identical KitsunePrints.dll.
+        // Mono resolves them to ONE loaded assembly, and the game calls
+        // InitMod once per pack against that shared assembly — so statics are
+        // shared and the Harmony patch must only be applied by the first pack.
+        // Every pack still registers its folder so all picture_pack.json
+        // configs get merged (see PaintingTextureSwap.PackFolders).
+        private static bool _patched;
+
         public void InitMod(Mod modInstance)
         {
-            PaintingTextureSwap.ModFolder = modInstance.Path;
+            PaintingTextureSwap.RegisterPackFolder(modInstance.Path);
+
+            if (_patched)
+            {
+                Log.Out($"[KitsunePrints] Additional pack registered: {modInstance.Path} (swap hook already installed)");
+                return;
+            }
+            _patched = true;
 
             var harmony = new Harmony("com.adainthelab.kitsuneprints");
 
