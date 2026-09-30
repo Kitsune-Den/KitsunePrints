@@ -27,7 +27,7 @@ import { PICKUP_BLOCKS, EXTENDED_DECOR_PICKUP_BLOCKS } from './pickupBlocks'
  *       picture_pack.json               (vanilla material -> filename map; runtime DLL reads this)
  *       blocks.xml                      (kp_<pack>_<slot> blocks extending vanilla paintings)
  *       recipes.xml                     (workbench crafting per block)
- *       Localization.txt                ("Print: <title>" display names)
+ *       Localization.txt + .csv         ("Print: <title>" display names; V2.x reads .txt, V3.x .csv)
  *     Resources/
  *       Textures/                       (composed textures, one per filled slot OR per atlas)
  *     UIAtlases/
@@ -152,7 +152,16 @@ export async function buildModlet(
     ),
   )
   root.file('Config/recipes.xml', renderRecipesXml(recipesRows))
-  root.file('Config/Localization.txt', renderLocalization(locRows))
+  // Ship the localization table under BOTH names. 7DTD renamed its own
+  // Data/Config/Localization.txt to Localization.csv in V3.x, and a modlet
+  // file only merges when its name matches the vanilla file ~ so a V3.x game
+  // silently ignores Localization.txt and every print falls back to showing
+  // its raw kp_ block key instead of "Print: <title>". V2.x is the mirror
+  // case, so both files ship to keep packs working on either version. The
+  // unmatched name is ignored without warning on both.
+  const localization = renderLocalization(locRows)
+  root.file('Config/Localization.txt', localization)
+  root.file('Config/Localization.csv', localization)
 
   return zip.generateAsync({ type: 'blob' })
 }

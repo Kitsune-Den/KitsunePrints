@@ -29,7 +29,7 @@ A web-based custom picture pack creator for **7 Days to Die V2.6-V3.0**. Upload 
 3. **Crop** ~ aspect-locked crop matched per slot kind (3:4 portraits, 1:1 abstracts, atlas-tile aspects for movie posters / canvases / picture frames).
 4. **Frame style** ~ portraits + picture frames each take a wood/metal preset (dark wood, light wood, gold gilt, silver, matte black, ornate gold). Portraits paint the preset into a UV strip wrapping the 3D frame mesh; picture frames apply it as a multiply-blend tint over the wood-frame zone of the atlas.
 5. **Title each slot** ~ shows up as `Print: <your title>` in the creative menu, searchable under "print" or any keyword.
-6. **Download** ~ a complete modlet zip with the shared `KitsunePrints.dll`, composed textures (per-slot for portraits/abstracts/decor; per-shared-atlas for movie posters / canvases / picture frames), generated `blocks.xml` (with optional inline `CanPickup` patches for ~100 vanilla decor blocks) / `recipes.xml` / `Localization.txt`, ItemIcons, and a `picture_pack.json` map. Drop into `<7DTD>/Mods/`, restart, done.
+6. **Download** ~ a complete modlet zip with the shared `KitsunePrints.dll`, composed textures (per-slot for portraits/abstracts/decor; per-shared-atlas for movie posters / canvases / picture frames), generated `blocks.xml` (with optional inline `CanPickup` patches for ~100 vanilla decor blocks) / `recipes.xml` / `Localization.txt` + `Localization.csv` (V2.x reads one, V3.x the other), ItemIcons, and a `picture_pack.json` map. Drop into `<7DTD>/Mods/`, restart, done.
 
 The full pack state (slot titles, frame choices, pack info) auto-saves to your browser's localStorage so you don't lose work on reload. Images are session-only ~ re-upload them when you come back.
 
