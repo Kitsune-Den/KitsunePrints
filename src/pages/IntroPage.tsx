@@ -403,7 +403,7 @@ export default function IntroPage() {
           >
             <img
               src="/discord.webp"
-              alt="Join the Kitsune Den Discord ~ get support, stay updated, share your builds, and meet other modders"
+              alt="Join our Discord ~ KitsuneDen @ Good Times. Come say hi, hang out in voice chat, and ask for modding help, tool tips, and community advice"
               className="w-full object-cover group-hover:scale-[1.01] transition-transform duration-500"
             />
           </a>

@@ -120,7 +120,7 @@ public/
   vanilla/               # extracted vanilla reference thumbnails + atlas base layers used by the composer
   screenshots/           # in-POI hero + tool screenshots
   social-print.png       # OG / Twitter card
-  discord.png            # Kitsune Den Discord callout banner
+  discord.webp           # Kitsune Den Discord callout banner
 docs/
   migration-plan.md      # §3.4 KitsunePrints addendum to the Kitsune-Den migration handbook
 scripts/
