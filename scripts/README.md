@@ -26,7 +26,7 @@ The script:
 2. For each filled slot, composes the texture (left-25%-frame for portraits,
    1024×1024 for abstracts) using your image from `example_pack/images/`
 3. Generates `picture_pack.json`, `blocks.xml`, `recipes.xml`,
-   `Localization.txt`, and 160×160 ItemIcons
+   `Localization.txt` + `Localization.csv` (V2.x reads one, V3.x the other), and 160×160 ItemIcons
 4. Bundles everything plus the shared `KitsunePrints.dll` into
    `example_pack/<sanitized_name>.zip`
 

@@ -831,7 +831,13 @@ def build_pack(pack_dir: Path) -> Path:
         render_blocks_xml(block_rows, pickup_rows), encoding="utf-8"
     )
     (config_out / "recipes.xml").write_text(render_recipes_xml(recipe_rows), encoding="utf-8")
-    (config_out / "Localization.txt").write_text(render_localization(loc_rows), encoding="utf-8")
+    # Localization ships under BOTH names: 7DTD V3.x renamed its table to
+    # Localization.csv and only merges a modlet file whose name matches, so
+    # V3.x ignores Localization.txt (prints show raw kp_ keys) and V2.x
+    # ignores Localization.csv. The unmatched one is skipped silently.
+    localization = render_localization(loc_rows)
+    (config_out / "Localization.txt").write_text(localization, encoding="utf-8")
+    (config_out / "Localization.csv").write_text(localization, encoding="utf-8")
 
     # Zip
     zip_path = pack_dir / f"{sanitized}.zip"
