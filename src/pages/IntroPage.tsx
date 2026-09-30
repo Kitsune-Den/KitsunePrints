@@ -395,7 +395,7 @@ export default function IntroPage() {
       <section className={`relative z-10 border-t border-zinc-800/60 transition-all duration-1000 delay-900 ${mounted ? 'opacity-100' : 'opacity-0'}`}>
         <div className="max-w-5xl mx-auto px-6 py-16">
           <a
-            href="https://kitsuneden.net/discord"
+            href="https://goodtimes.gg/discord"
             target="_blank"
             rel="noopener noreferrer"
             className="block group rounded-2xl overflow-hidden border border-purple-500/30 hover:border-purple-400/60 shadow-[0_0_60px_rgba(168,85,247,0.15)] hover:shadow-[0_0_80px_rgba(168,85,247,0.35)] transition-all duration-300"
@@ -408,7 +408,7 @@ export default function IntroPage() {
             />
           </a>
           <p className="mt-3 text-center text-xs text-zinc-600">
-            Got a pack you're proud of, or a slot we should add next? <a href="https://kitsuneden.net/discord" target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:text-purple-300 transition-colors">Drop into the Den</a>.
+            Got a pack you're proud of, or a slot we should add next? <a href="https://goodtimes.gg/discord" target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:text-purple-300 transition-colors">Drop into the Den</a>.
           </p>
         </div>
       </section>

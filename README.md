@@ -187,7 +187,7 @@ If a specific block or sign you'd love to skin isn't in the slot list, [open an 
 - [KitsuneDen](https://kitsuneden.net) ~ home server hub
 - [KitsunePaint](https://paint.kitsuneden.net) ~ custom paint pack creator
 - **KitsunePrints** ~ custom picture pack creator (you are here)
-- [Join the Discord](https://kitsuneden.net/discord) ~ get support, share builds, suggest new slots
+- [Join the Discord](https://goodtimes.gg/discord) ~ get support, share builds, suggest new slots
 
 ---
 
