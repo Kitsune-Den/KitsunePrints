@@ -651,18 +651,45 @@ def render_pickup_append_rows(extended_decor: bool = False) -> str:
     return "\n\n".join(rows)
 
 
+LOCALIZATION_LANGUAGES = [
+    "german", "spanish", "french", "italian", "japanese", "koreana", "polish",
+    "brazilian", "russian", "turkish", "schinese", "tchinese",
+]
+
+# "Print: <title>" in english and then each LOCALIZATION_LANGUAGES column. The
+# title is the player's own and stays as typed; only the label and the
+# "(Theater)" size note are translated. Same table as the web tool's buildModlet.ts.
+PRINT_NAME = [
+    "Print: {0}", "Druck: {0}", "Lámina: {0}", "Tirage : {0}", "Stampa: {0}", "プリント：{0}", "프린트: {0}",
+    "Wydruk: {0}", "Impressão: {0}", "Принт: {0}", "Baskı: {0}", "印刷画：{0}", "印刷畫：{0}",
+]
+THEATER_SUFFIX = [
+    " (Theater)", " (Kino)", " (Cine)", " (Cinéma)", " (Cinema)", "（シアター）", " (극장)",
+    " (Kino)", " (Cinema)", " (Кинотеатр)", " (Sinema)", "（影院）", "（影院）",
+]
+
+
 def render_localization(rows: list[str]) -> str:
     header = (
         "Key,File,Type,UsedInMainMenu,NoTranslate,english,Context / Alternate Text,"
-        "german,spanish,french,italian,japanese,koreana,polish,brazilian,russian,"
-        "turkish,schinese,tchinese"
+        + ",".join(LOCALIZATION_LANGUAGES)
     )
     return header + "\n" + "\n".join(rows) + "\n"
 
 
-def render_loc_row(block_name: str, display_name: str) -> str:
-    safe = f'"{display_name.replace(chr(34), chr(34)*2)}"' if "," in display_name else display_name
-    return f"{block_name},blocks,Block,,,{safe},,,,,,,,,,,,,"
+def csv_cell(text: str) -> str:
+    return f'"{text.replace(chr(34), chr(34) * 2)}"' if any(c in text for c in ',"\n') else text
+
+
+def render_loc_row(block_name: str, title: str, size: str = "") -> str:
+    """size: "" (none), "2x2", "3x2" or "theater"."""
+    names = [
+        pattern.replace("{0}", title)
+        + (THEATER_SUFFIX[i] if size == "theater" else f" {size}" if size else "")
+        for i, pattern in enumerate(PRINT_NAME)
+    ]
+    cells = [block_name, "blocks", "Block", "", "", names[0], "", *names[1:]]
+    return ",".join(csv_cell(c) for c in cells)
 
 
 # ---- Main builder ---------------------------------------------------------
@@ -732,7 +759,6 @@ def build_pack(pack_dir: Path) -> Path:
         print(f"  {slot_id:42s} <- {slot['image']}  ({kind})")
 
         title = (slot.get("title") or slot_label).strip() or slot_label
-        display_name = f"Print: {title}"
 
         # Texture handling depends on kind.
         if kind == "portrait":
@@ -783,14 +809,14 @@ def build_pack(pack_dir: Path) -> Path:
                 recipe_kind = "moviePoster"
             recipe_rows.append(render_recipe_entry(block_name, recipe_kind))
 
-            size_suffix = ""
+            size = ""
             if vanilla_block.endswith("_2x2"):
-                size_suffix = " 2x2"
+                size = "2x2"
             elif vanilla_block.endswith("_3x2"):
-                size_suffix = " 3x2"
+                size = "3x2"
             elif "Theater" in vanilla_block:
-                size_suffix = " (Theater)"
-            loc_rows.append(render_loc_row(block_name, f"{display_name}{size_suffix}"))
+                size = "theater"
+            loc_rows.append(render_loc_row(block_name, title, size))
 
     # Composite each atlas exactly once, with optional frame tint for picture frames.
     for material, entries in atlas_groups.items():

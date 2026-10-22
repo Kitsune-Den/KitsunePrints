@@ -10,6 +10,10 @@ import {
   renderBlocksXml,
   renderModInfo,
   gameVersionCompatNote,
+  renderLocalization,
+  renderLocalizationRow,
+  printSizeOf,
+  LOCALIZATION_LANGUAGES,
   type RecipeKind,
 } from './buildModlet'
 import type { SlotDef, PackMeta } from '../types/slots'
@@ -350,5 +354,68 @@ describe('gameVersionCompatNote', () => {
 
   it('reports V2.x when selected', () => {
     expect(gameVersionCompatNote('2.x')).toContain('Built for 7DTD V2.x')
+  })
+})
+
+// ---- localization ---------------------------------------------------------
+
+// Minimal RFC 4180 split, enough to check the rows the builder writes.
+function csvFields(line: string): string[] {
+  const out: string[] = []
+  let field = ''
+  let quoted = false
+  for (let i = 0; i < line.length; i++) {
+    const c = line[i]
+    if (quoted) {
+      if (c === '"' && line[i + 1] === '"') { field += '"'; i++ }
+      else if (c === '"') quoted = false
+      else field += c
+    } else if (c === '"') quoted = true
+    else if (c === ',') { out.push(field); field = '' }
+    else field += c
+  }
+  out.push(field)
+  return out
+}
+
+describe('renderLocalization', () => {
+  const table = renderLocalization([
+    renderLocalizationRow('kp_pack_paintingBen', 'Ben'),
+    renderLocalizationRow('kp_pack_abstract_2x2', 'Boss', '2×2'),
+    renderLocalizationRow('kp_pack_posterTheater', 'Cats, "Dogs" & $& more', 'theater'),
+  ])
+  const [header, ...rows] = table.trim().split('\n').map(csvFields)
+  const col = (row: string[], name: string) => row[header.indexOf(name)]
+
+  it('has a column for english and every game language', () => {
+    for (const lang of ['english', ...LOCALIZATION_LANGUAGES]) expect(header).toContain(lang)
+  })
+
+  it('gives every row exactly the header columns, even with commas and quotes in the title', () => {
+    for (const row of rows) expect(row).toHaveLength(header.length)
+  })
+
+  it('translates the Print label and keeps the title as typed', () => {
+    expect(col(rows[0], 'english')).toBe('Print: Ben')
+    expect(col(rows[0], 'german')).toBe('Druck: Ben')
+    expect(col(rows[0], 'japanese')).toBe('プリント：Ben')
+    for (const lang of LOCALIZATION_LANGUAGES) expect(col(rows[0], lang)).toContain('Ben')
+  })
+
+  it('keeps the 2×2 size note and translates (Theater)', () => {
+    expect(col(rows[1], 'french')).toBe('Tirage : Boss 2×2')
+    expect(col(rows[2], 'english')).toBe('Print: Cats, "Dogs" & $& more (Theater)')
+    expect(col(rows[2], 'german')).toBe('Druck: Cats, "Dogs" & $& more (Kino)')
+  })
+})
+
+describe('printSizeOf', () => {
+  it.each([
+    ['abstractPainting_2x2', '2×2'],
+    ['abstractPainting_3x2', '3×2'],
+    ['posterMovieTheaterA', 'theater'],
+    ['paintingBen', ''],
+  ])('%s -> %s', (block, size) => {
+    expect(printSizeOf(block)).toBe(size)
   })
 })

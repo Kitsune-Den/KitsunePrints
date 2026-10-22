@@ -83,7 +83,6 @@ export async function buildModlet(
     }
 
     const title = state.title?.trim() || slot.label
-    const displayName = `Print: ${title}`
     const iconBlob = await composeIcon(state.file, slot.kind)
 
     // Generate a kp_* block per vanilla block this slot re-skins.
@@ -103,12 +102,9 @@ export async function buildModlet(
       const recipeKind = pickRecipeKind(slot, vanillaBlock)
       recipesRows.push(renderRecipeEntry(blockName, recipeKind))
 
-      // For abstract sized variants, suffix the display name; otherwise plain.
-      const sizeSuffix =
-        vanillaBlock.endsWith('_2x2') ? ' 2×2' :
-        vanillaBlock.endsWith('_3x2') ? ' 3×2' :
-        vanillaBlock.toLowerCase().includes('theater') ? ' (Theater)' : ''
-      locRows.push(renderLocalizationRow(blockName, `${displayName}${sizeSuffix}`))
+      // "Print: <title>" in every language; abstract sized variants and
+      // theater posters get a size note after the title.
+      locRows.push(renderLocalizationRow(blockName, title, printSizeOf(vanillaBlock)))
     }
   }
 
@@ -345,17 +341,51 @@ ${rows.join('\n\n')}
 `
 }
 
-export function renderLocalizationRow(blockName: string, displayName: string): string {
-  // V2.6 columns: Key,File,Type,UsedInMainMenu,NoTranslate,english,Context,
-  //               german,spanish,french,italian,japanese,koreana,polish,
-  //               brazilian,russian,turkish,schinese,tchinese
-  // 13 trailing commas after english + Context (we leave Context empty too).
-  const safe = displayName.includes(',') ? `"${displayName.replace(/"/g, '""')}"` : displayName
-  return `${blockName},blocks,Block,,,${safe},,,,,,,,,,,,,`
+// "Print: <title>" in english and then each LOCALIZATION_LANGUAGES column. The
+// title is the player's own and stays as typed; only the label and the
+// "(Theater)" size note are translated.
+const PRINT_NAME = [
+  'Print: {0}', 'Druck: {0}', 'Lámina: {0}', 'Tirage : {0}', 'Stampa: {0}', 'プリント：{0}', '프린트: {0}',
+  'Wydruk: {0}', 'Impressão: {0}', 'Принт: {0}', 'Baskı: {0}', '印刷画：{0}', '印刷畫：{0}',
+]
+const THEATER_SUFFIX = [
+  ' (Theater)', ' (Kino)', ' (Cine)', ' (Cinéma)', ' (Cinema)', '（シアター）', ' (극장)',
+  ' (Kino)', ' (Cinema)', ' (Кинотеатр)', ' (Sinema)', '（影院）', '（影院）',
+]
+
+export const LOCALIZATION_LANGUAGES = [
+  'german', 'spanish', 'french', 'italian', 'japanese', 'koreana', 'polish',
+  'brazilian', 'russian', 'turkish', 'schinese', 'tchinese',
+]
+
+/** Size note after the title: abstract 2×2 / 3×2 variants and theater posters. */
+export type PrintSize = '' | '2×2' | '3×2' | 'theater'
+
+export function printSizeOf(vanillaBlock: string): PrintSize {
+  if (vanillaBlock.endsWith('_2x2')) return '2×2'
+  if (vanillaBlock.endsWith('_3x2')) return '3×2'
+  if (vanillaBlock.toLowerCase().includes('theater')) return 'theater'
+  return ''
+}
+
+function csvCell(s: string): string {
+  return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s
+}
+
+export function renderLocalizationRow(blockName: string, title: string, size: PrintSize = ''): string {
+  // Columns: Key,File,Type,UsedInMainMenu,NoTranslate,english,Context,
+  //          german,spanish,french,italian,japanese,koreana,polish,
+  //          brazilian,russian,turkish,schinese,tchinese (Context left empty).
+  const names = PRINT_NAME.map((pattern, i) => {
+    const suffix = size === 'theater' ? THEATER_SUFFIX[i] : size ? ` ${size}` : ''
+    // A function replacer, so a "$&" or "$1" in the title stays literal.
+    return pattern.replace('{0}', () => title) + suffix
+  })
+  return [blockName, 'blocks', 'Block', '', '', names[0], '', ...names.slice(1)].map(csvCell).join(',')
 }
 
 export function renderLocalization(rows: string[]): string {
-  const header = 'Key,File,Type,UsedInMainMenu,NoTranslate,english,Context / Alternate Text,german,spanish,french,italian,japanese,koreana,polish,brazilian,russian,turkish,schinese,tchinese'
+  const header = `Key,File,Type,UsedInMainMenu,NoTranslate,english,Context / Alternate Text,${LOCALIZATION_LANGUAGES.join(',')}`
   return `${header}\n${rows.join('\n')}\n`
 }
 
