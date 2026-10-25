@@ -24,7 +24,7 @@ const LOADING_MESSAGES: string[] = [
   'baking the wood-tint multiply blend',
   'aligning the picture frame UVs',
   'writing icon atlas entries',
-  'compiling 69 slots into a modlet',
+  'compiling 70 slots into a modlet',
   'packaging the zip (this part is genuinely fast lol)',
 
   // lightly chaotic lane

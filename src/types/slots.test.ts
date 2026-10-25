@@ -182,6 +182,36 @@ describe('orientation helpers', () => {
     it('is false for decor slots (snack posters use meshUvBbox semantics that fight rotation)', () => {
       expect(slotSupportsOrientationFlip(slotById('signSnackPosterJerky'))).toBe(false)
     })
+
+    it('is false for the billboard (the physical face is always 5:2 landscape)', () => {
+      expect(slotSupportsOrientationFlip(slotById('playerSignWood2x5'))).toBe(false)
+    })
+  })
+
+  describe('billboard slot (playerSignWood2x5)', () => {
+    const slot = slotById('playerSignWood2x5')
+
+    it('targets the shared sign_wood_2x5 material with a billboardBase', () => {
+      expect(slot.kind).toBe('billboard')
+      expect(slot.materialName).toBe('sign_wood_2x5')
+      expect(slot.billboardBase).toBeDefined()
+    })
+
+    it('face rect sits inside the 2048×1024 base texture', () => {
+      const base = slot.billboardBase!
+      expect(base.w).toBe(2048)
+      expect(base.h).toBe(1024)
+      expect(base.faceRect.x + base.faceRect.w).toBeLessThanOrEqual(base.w)
+      expect(base.faceRect.y + base.faceRect.h).toBeLessThanOrEqual(base.h)
+    })
+
+    it('display aspect is the physical 5:2 face, not the stored rect aspect', () => {
+      const base = slot.billboardBase!
+      expect(base.displayAspect).toBeCloseTo(2.5)
+      // The stored rect is squished (~4.8:1) ~ the mesh un-stretches it, so
+      // the two aspects must intentionally differ.
+      expect(base.faceRect.w / base.faceRect.h).toBeGreaterThan(4)
+    })
   })
 
   describe('vanillaContentRotation classification (smoke check)', () => {

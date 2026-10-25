@@ -6,7 +6,7 @@
 // For atlas slots (movie posters), multiple slot defs share one materialName
 // since each slot writes to a different tile of the same atlas.
 
-export type SlotKind = 'portrait' | 'abstract' | 'moviePoster' | 'decor' | 'canvasTile'
+export type SlotKind = 'portrait' | 'abstract' | 'moviePoster' | 'decor' | 'canvasTile' | 'billboard'
 
 /** Pixel rectangle inside an atlas texture. (x,y) is top-left in PIL coords. */
 export interface AtlasTile {
@@ -40,6 +40,31 @@ export interface MeshUvBbox {
   r: number
   /** Bottom edge in normalized UV (0..1). */
   b: number
+}
+
+/**
+ * For 'billboard' slots ~ a dedicated NON-SQUARE vanilla texture used as the
+ * base layer (preserves the wood plank edges/back the mesh also samples),
+ * plus the pixel rect of the mesh's front face within it.
+ *
+ * Unlike atlas slots, the face rect's pixel aspect does NOT match the
+ * physical face: the in-game mesh stretches the rect onto the block's face,
+ * so the composer stretch-fits (not cover-fits) the user's already-cropped
+ * image into the rect, and the crop frame uses `displayAspect` instead.
+ */
+export interface BillboardBase {
+  /** Public path to the vanilla base texture. */
+  vanillaPath: string
+  /** Base texture dimensions (billboards are non-square, e.g. 2048×1024). */
+  w: number
+  h: number
+  /** Pixel rect the LOD0 front face samples (PIL coords, top-left origin).
+   *  Derived from mesh UVs via the normal-filtered UV dump (see the
+   *  sign_wood_2x5 section of scripts/extract_vanilla_refs.py). */
+  faceRect: AtlasTile
+  /** Physical face aspect (width / height) in meters ~ drives the crop
+   *  frame + drop zone so WYSIWYG matches the in-game face. */
+  displayAspect: number
 }
 
 export interface SlotDef {
@@ -100,6 +125,11 @@ export interface SlotDef {
    * runtime behavior stays in sync with the visual thumb fix.
    */
   vanillaContentRotation?: 'cw' | 'ccw'
+  /**
+   * For 'billboard' slots only: the dedicated base texture + front-face
+   * rect the composer paints into. See BillboardBase.
+   */
+  billboardBase?: BillboardBase
   /**
    * Optional caveat shown to users in the slot card header. Use for slots
    * where the vanilla art is misleading ~ e.g. a snack poster tile that
@@ -205,6 +235,35 @@ export const SLOTS: SlotDef[] = [
     vanillaBlocks: ['signPosterMovie2159', 'signPosterMovieTheater2159'],
     kind: 'moviePoster',
     atlasTile: { x: 351, y: 518, w: 345, h: 482 },
+  },
+
+  // Billboard ~ the craftable 5m×2m player wooden sign (the biggest flat art
+  // surface in the game; requested by gaveitatry as a frameless "cover an
+  // outside wall" poster). All three craftable wood signs (1×1, 1×3, 2×5)
+  // share the single `sign_wood_2x5` material in crafting.bundle; their
+  // meshes stretch the same front-face texture rect onto each sign's face,
+  // so replacing it re-skins all three (squish on the smaller two). The back
+  // face samples a thin plank strip outside the face rect, so the art shows
+  // on the FRONT only ~ real billboard behavior. Players craft the sign in
+  // survival via the wood-sign variant helper; the kp_* block is a titled
+  // twin of the 2×5.
+  {
+    slotId: 'playerSignWood2x5',
+    materialName: 'sign_wood_2x5',
+    label: 'Billboard ~ Wood Sign 5×2',
+    vanillaBlocks: ['playerSignWood2x5'],
+    kind: 'billboard',
+    billboardBase: {
+      vanillaPath: '/vanilla/_sign_wood_2x5_atlas.webp',
+      w: 2048,
+      h: 1024,
+      // Front face (normal-filtered LOD0 mesh UVs): u 0.0048-0.9951,
+      // v 0.4897-0.9038 GL ⇒ PIL rect below. Stored squished (~4.8:1) and
+      // stretched by the mesh to the physical 5:2 face.
+      faceRect: { x: 10, y: 98, w: 2028, h: 425 },
+      displayAspect: 5 / 2,
+    },
+    note: 'The craftable 1×1 and 1×3 wood signs share this material and will show the same art squished to their shape. Art shows on the front face only.',
   },
 
   // Misc decor ~ standalone or material-pair atlas slots (DLL resets UV
@@ -468,10 +527,11 @@ export interface PackMeta {
    */
   enablePickup: boolean
   /**
-   * When true, ALSO adds CanPickup to ~224 additional vanilla wall decor
+   * When true, ALSO adds CanPickup to ~227 additional vanilla wall decor
    * blocks: flags, road signs, OPEN/CLOSED, gun store signs, shop signs (unlit
    * variants only), bathroom signs, wall clocks, mirrors, bulletin boards,
-   * planters, and assorted ad/diner/safety signs. Trader signage and
+   * planters, statement decor (wooden bear, bear rug, working wall clock),
+   * and assorted ad/diner/safety signs. Trader signage and
    * lit/electrical signs are deliberately excluded ~ traders stay nice and
    * lit signs risk electrical-init NREs. See src/utils/pickupBlocks.ts.
    */

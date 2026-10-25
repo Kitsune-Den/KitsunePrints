@@ -13,6 +13,7 @@ import {
   composePortrait,
   composeAbstract,
   composeAtlas,
+  composeBillboard,
   composeIcon,
   composeUvBboxFitted,
 } from './composer'
@@ -171,6 +172,10 @@ async function composeForSlot(slot: SlotDef, state: SlotState): Promise<Blob> {
   if (slot.kind === 'portrait') {
     return composePortrait(state.file, state.framePresetId || DEFAULT_FRAME_PRESET_ID)
   }
+  if (slot.kind === 'billboard') {
+    if (!slot.billboardBase) throw new Error(`Billboard slot ${slot.slotId} missing billboardBase`)
+    return composeBillboard(state.file, slot.billboardBase)
+  }
   if (slot.kind === 'abstract' || slot.kind === 'decor') {
     // Slots with meshUvBbox: paint into the bbox region of a 2048×2048
     // transparent texture so the in-game mesh's sub-region UV samples the
@@ -187,11 +192,12 @@ async function composeForSlot(slot: SlotDef, state: SlotState): Promise<Blob> {
   throw new Error(`Slot kind ${slot.kind} should be handled in atlas batch`)
 }
 
-export type RecipeKind = 'portrait' | 'abstract2x2' | 'abstract3x2' | 'moviePoster'
+export type RecipeKind = 'portrait' | 'abstract2x2' | 'abstract3x2' | 'moviePoster' | 'billboard'
 
 export function pickRecipeKind(slot: SlotDef, vanillaBlock: string): RecipeKind {
   if (slot.kind === 'portrait') return 'portrait'
   if (slot.kind === 'moviePoster') return 'moviePoster'
+  if (slot.kind === 'billboard') return 'billboard'
   if (slot.kind === 'decor' || slot.kind === 'canvasTile') return 'moviePoster' // small print cost
   // abstract: distinguish by size suffix on the vanilla block name
   return vanillaBlock.endsWith('_2x2') ? 'abstract2x2' : 'abstract3x2'
@@ -264,7 +270,7 @@ export function renderBlockEntry(
  *
  * Always includes PICKUP_BLOCKS (the picture/poster/canvas/frame core).
  * When `extendedDecor` is true, ALSO includes EXTENDED_DECOR_PICKUP_BLOCKS
- * (~224 vanilla flags, road signs, shop signs, mirrors, clocks, etc.)
+ * (~227 vanilla flags, road signs, shop signs, mirrors, clocks, etc.)
  * controlled by the separate "Extended decor pickup" checkbox on the pack.
  */
 export function renderPickupAppendRows(opts?: { extendedDecor?: boolean }): string {
@@ -318,6 +324,7 @@ export function renderRecipeEntry(blockName: string, kind: RecipeKind): string {
   //  - abstract 2×2:    paper 8 + wood 4 + iron 1
   //  - abstract 3×2:    paper 12 + wood 6 + iron 2 (1.5× the 2×2 cost)
   //  - movie poster:    paper 6 + wood 3 (no frame ~ it's a print)
+  //  - billboard (5×2): paper 20 + wood 12 (big plank board + big print)
   const ingredients =
     kind === 'portrait'
       ? '<ingredient name="resourcePaper" count="2"/>\n            <ingredient name="resourceWood" count="6"/>\n            <ingredient name="resourceForgedIron" count="1"/>'
@@ -325,7 +332,9 @@ export function renderRecipeEntry(blockName: string, kind: RecipeKind): string {
         ? '<ingredient name="resourcePaper" count="8"/>\n            <ingredient name="resourceWood" count="4"/>\n            <ingredient name="resourceForgedIron" count="1"/>'
         : kind === 'abstract3x2'
           ? '<ingredient name="resourcePaper" count="12"/>\n            <ingredient name="resourceWood" count="6"/>\n            <ingredient name="resourceForgedIron" count="2"/>'
-          : '<ingredient name="resourcePaper" count="6"/>\n            <ingredient name="resourceWood" count="3"/>'
+          : kind === 'billboard'
+            ? '<ingredient name="resourcePaper" count="20"/>\n            <ingredient name="resourceWood" count="12"/>'
+            : '<ingredient name="resourcePaper" count="6"/>\n            <ingredient name="resourceWood" count="3"/>'
   return `        <recipe name="${escapeXml(blockName)}" count="1" craft_area="workbench" tags="workbenchCrafting">
             ${ingredients}
         </recipe>`

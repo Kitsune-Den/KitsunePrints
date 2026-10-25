@@ -6,7 +6,8 @@
 //                                Toggled by PackMeta.enablePickup (default ON).
 //   EXTENDED_DECOR_PICKUP_BLOCKS ~ flags, road signs, shop signs, mirrors,
 //                                clocks, bulletin boards, planters, bathroom
-//                                signs, etc. (~224 blocks).
+//                                signs, statement decor (wooden bear, bear
+//                                rug), etc. (~227 blocks).
 //                                Toggled by PackMeta.enableExtendedDecorPickup
 //                                (default ON, separate checkbox).
 //
@@ -361,6 +362,16 @@ export const EXTENDED_DECOR_PICKUP_BLOCKS: string[] = [
   // --- Planters (2) ---
   'birdBathPlanter',
   'planter',
+
+  // --- Statement decor (3) ~ user request (gaveitatry + Ada, Oct 2026).
+  //     woodenBear / rugBear are plain ModelEntity blocks (Mwood / Mcloth, no
+  //     TileEntity, no loot lineage) ~ verified clean in V3.4 blocks.xml.
+  //     wallClockWorking is Class="Info" (shows game time) ~ not a Composite
+  //     TileEntity, so it doesn't hit the hidden-safe init NRE class; its
+  //     broken/static siblings were already in the Wall clocks group above. ---
+  'woodenBear',
+  'rugBear',
+  'wallClockWorking',
 ]
 
 /** XML harvest-tag the wrench/disassemble tool matches against to pick a block up. */

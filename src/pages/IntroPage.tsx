@@ -205,7 +205,7 @@ export default function IntroPage() {
             />
           </div>
           <p className="text-xs text-zinc-600 text-center">
-            Every vanilla painting slot, swapped for your art. 14 categories, 69 individual block variants, all hung in vanilla POIs.
+            Every vanilla painting slot, swapped for your art. 70 slots across 8 categories ~ including a craftable 5×2 billboard ~ all hung in vanilla POIs.
           </p>
         </div>
       </section>

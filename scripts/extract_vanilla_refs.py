@@ -158,6 +158,17 @@ MOVIE_POSTER_TILES = {
     "signPosterMovie2159":          (351, 518, 696, 1000),# bottom-middle
 }
 
+# Billboard base ~ the craftable 5×2 player wooden sign. One NON-SQUARE
+# (2048×1024) dedicated texture (`sign_wood_2x5` in crafting.bundle) shared
+# by all three craftable wood signs (1×1 / 1×3 / 2×5). The front face of the
+# 2×5 mesh samples u 0.0048-0.9951, v 0.4897-0.9038 (GL) ⇒ PIL rect below;
+# the mesh stretches that rect onto the physical 5:2 face, so the reference
+# thumb is rendered at 2.5:1. Face rect derived from a normal-filtered UV
+# dump of sign_wood_2x5_Prefab (same method as read_picture_frame_uvs.py).
+BILLBOARD_TEXTURE = "sign_wood_2x5"
+BILLBOARD_FACE_RECT = (10, 98, 2038, 523)  # PIL (left, top, right, bottom)
+BILLBOARD_THUMB_SIZE = (800, 320)          # 5:2, what the face shows in-game
+
 OUT_DIR = Path(__file__).resolve().parent.parent / "public" / "vanilla"
 THUMB_SIZE = 256
 
@@ -182,7 +193,7 @@ def collect_textures_and_materials(game_root: Path):
     targets = (
         set(PORTRAITS)
         | set(ABSTRACT_MATERIALS)
-        | {"signsMisc_d", "posterMovie", "snackPosters_d"}
+        | {"signsMisc_d", "posterMovie", "snackPosters_d", BILLBOARD_TEXTURE}
         | {tex for (tex, _side) in MISC_DECOR_TEXTURES.values()}
         | set(PICTURE_FRAME_ATLAS_SOURCES.values())
         | set(CANVAS_ATLAS_SOURCES.values())
@@ -440,6 +451,23 @@ def main():
         out = OUT_DIR / f"{slot_id}.jpg"
         thumb.convert("RGB").save(out, quality=88)
         print(f"  -> wrote {out.relative_to(OUT_DIR.parent.parent)}  ({material_name} tile {rect})")
+        written += 1
+
+    # Billboard: ship the full non-square base texture (the composer paints
+    # the user's art into the face rect and keeps the plank edges) + a 5:2
+    # reference thumb of the front face as the in-game mesh stretches it.
+    sign_tex = textures.get(BILLBOARD_TEXTURE)
+    if sign_tex is None:
+        print(f"  ! {BILLBOARD_TEXTURE} texture not found ~ skipping billboard")
+    else:
+        atlas_out = OUT_DIR / f"_{BILLBOARD_TEXTURE}_atlas.png"
+        sign_tex.convert("RGBA").save(atlas_out)
+        print(f"  -> wrote {atlas_out.relative_to(OUT_DIR.parent.parent)}  (full base, {sign_tex.width}x{sign_tex.height})")
+        written += 1
+        face = sign_tex.crop(BILLBOARD_FACE_RECT).resize(BILLBOARD_THUMB_SIZE, Image.LANCZOS)
+        thumb_out = OUT_DIR / "playerSignWood2x5.jpg"
+        face.convert("RGB").save(thumb_out, quality=88)
+        print(f"  -> wrote {thumb_out.relative_to(OUT_DIR.parent.parent)}  (face rect {BILLBOARD_FACE_RECT} at 5:2)")
         written += 1
 
     print(f"\nDone. {written} thumbnails written to {OUT_DIR}.")

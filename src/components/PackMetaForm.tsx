@@ -80,10 +80,11 @@ export function PackMetaForm({ meta, setMeta }: Props) {
               Extended decor pickup
             </div>
             <p className="text-xs text-zinc-500 mt-1 leading-relaxed">
-              Also adds press-E pickup to ~224 more vanilla wall decor blocks ~
+              Also adds press-E pickup to ~227 more vanilla wall decor blocks ~
               flags, road signs, OPEN/CLOSED, gun store + shop signs (unlit
-              variants), bathroom signs, wall clocks, mirrors, bulletin boards,
-              planters, ad signs, gas signs. Trader signage and lit/electrical
+              variants), bathroom signs, wall clocks (working one too), mirrors,
+              bulletin boards, planters, ad signs, gas signs, the wooden bear +
+              bear rug. Trader signage and lit/electrical
               signs are deliberately skipped (don't steal from traders, don't
               tangle with electrical TileEntities).
               {!meta.enablePickup && (

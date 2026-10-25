@@ -20,6 +20,7 @@ import {
   DEFAULT_FRAME_PRESET_ID,
   ATLAS_SOURCES,
   type AtlasTile,
+  type BillboardBase,
   type MeshUvBbox,
 } from '../types/slots'
 
@@ -303,10 +304,48 @@ export async function composeAtlas(
   return canvasToBlob(canvas)
 }
 
+/**
+ * Compose a billboard texture: vanilla base (non-square, e.g. the 2048×1024
+ * sign_wood_2x5 plank texture) with the user's image painted into the mesh's
+ * front-face rect. The base layer is kept because the sign's edge and back
+ * faces sample the strips OUTSIDE the face rect ~ a transparent texture
+ * there would render the board's trim as holes/black.
+ *
+ * Unlike every other composer here, the paint is a STRETCH fit, not a cover
+ * fit: CropDialog already cropped the user's image to the slot's physical
+ * displayAspect (5:2 for the 2×5 sign), while the face rect is stored at a
+ * different pixel aspect (~4.8:1) that the in-game mesh stretches back onto
+ * the physical face. Cover-fitting here would double-crop.
+ */
+export async function composeBillboard(file: File, base: BillboardBase): Promise<Blob> {
+  const img = await loadImage(file)
+  const baseImg = await loadImageFromUrl(base.vanillaPath)
+  const canvas = document.createElement('canvas')
+  canvas.width = base.w
+  canvas.height = base.h
+  const ctx = canvas.getContext('2d')
+  if (!ctx) throw new Error('Canvas 2d context unavailable')
+
+  // 1. Vanilla base ~ preserves plank edges + back-face strip.
+  ctx.drawImage(baseImg, 0, 0, base.w, base.h)
+
+  // 2. Stretch the (already aspect-cropped) user image into the face rect,
+  //    extended by the usual bleed so mesh-UV rounding at the face boundary
+  //    never samples vanilla plank pixels inside the art.
+  const { faceRect } = base
+  const bx = Math.max(0, faceRect.x - TILE_BLEED_PX)
+  const by = Math.max(0, faceRect.y - TILE_BLEED_PX)
+  const br = Math.min(base.w, faceRect.x + faceRect.w + TILE_BLEED_PX)
+  const bb = Math.min(base.h, faceRect.y + faceRect.h + TILE_BLEED_PX)
+  ctx.drawImage(img, 0, 0, img.naturalWidth, img.naturalHeight, bx, by, br - bx, bb - by)
+
+  return canvasToBlob(canvas)
+}
+
 export async function composeIcon(
   file: File,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  _kind: 'portrait' | 'abstract' | 'moviePoster' | 'decor' | 'canvasTile',
+  _kind: 'portrait' | 'abstract' | 'moviePoster' | 'decor' | 'canvasTile' | 'billboard',
 ): Promise<Blob> {
   const img = await loadImage(file)
   const canvas = document.createElement('canvas')
