@@ -78,6 +78,17 @@ Wide images look great on 3×2, get a mild horizontal squish on 2×2:
 - `paintingsAbstract01`, `paintingsAbstract02`, `paintingsAbstract03`,
   `paintingsAbstract04`
 
+**Billboard** ~ the craftable 5m×2m player wooden sign, the biggest flat art
+surface in the game. Crop your image at 5:2. The craftable 1×1 and 1×3 wood
+signs share the same material and show the same art squished to their shape;
+art shows on the front face only (the back stays plank wood):
+
+- `playerSignWood2x5`
+
+(Movie posters, snack posters, misc decor, picture frames, and canvases are
+also available ~ the full slot-key list with per-slot notes lives at the top
+of `make_pack.py`.)
+
 ### Frame options (portraits only)
 
 `wood_dark` (default), `wood_light`, `gold_gilt`, `silver`, `matte_black`,

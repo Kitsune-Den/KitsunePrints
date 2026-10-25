@@ -13,7 +13,7 @@ interface Props {
   appVersion: string
 }
 
-type SlotTabId = 'portraits' | 'abstracts' | 'movie-posters' | 'misc-decor' | 'snack-posters' | 'picture-frames' | 'canvases'
+type SlotTabId = 'portraits' | 'abstracts' | 'movie-posters' | 'billboards' | 'misc-decor' | 'snack-posters' | 'picture-frames' | 'canvases'
 type TabId = SlotTabId | 'pack-info'
 
 interface SlotTabDef {
@@ -48,6 +48,14 @@ const SLOT_TABS: SlotTabDef[] = [
       'Each movie poster slot writes to a tile of the shared posterMovie atlas. Crops at ~3:4 portrait. Replacing one also re-skins its theater-wall variant automatically.',
     filter: (s) => s.kind === 'moviePoster',
     gridCols: 'grid-cols-2 md:grid-cols-4',
+  },
+  {
+    id: 'billboards',
+    label: 'Billboard',
+    blurb:
+      'The craftable 5m × 2m player wooden sign ~ the biggest flat art surface in the game, frameless, placeable on any outside wall. Crops at 5:2. The 1×1 and 1×3 craftable wood signs share the same material and show the same art squished to their shape; art shows on the front face only.',
+    filter: (s) => s.kind === 'billboard',
+    gridCols: 'grid-cols-1',
   },
   {
     id: 'misc-decor',
@@ -95,6 +103,7 @@ export function BuilderPage({ slots, setSlots, meta, setMeta, appVersion }: Prop
       portraits: { filled: 0, total: 0 },
       abstracts: { filled: 0, total: 0 },
       'movie-posters': { filled: 0, total: 0 },
+      billboards: { filled: 0, total: 0 },
       'misc-decor': { filled: 0, total: 0 },
       'snack-posters': { filled: 0, total: 0 },
       'picture-frames': { filled: 0, total: 0 },
@@ -114,6 +123,7 @@ export function BuilderPage({ slots, setSlots, meta, setMeta, appVersion }: Prop
     counts.portraits.filled +
     counts.abstracts.filled +
     counts['movie-posters'].filled +
+    counts.billboards.filled +
     counts['misc-decor'].filled +
     counts['snack-posters'].filled +
     counts['picture-frames'].filled +
@@ -122,6 +132,7 @@ export function BuilderPage({ slots, setSlots, meta, setMeta, appVersion }: Prop
     counts.portraits.total +
     counts.abstracts.total +
     counts['movie-posters'].total +
+    counts.billboards.total +
     counts['misc-decor'].total +
     counts['snack-posters'].total +
     counts['picture-frames'].total +

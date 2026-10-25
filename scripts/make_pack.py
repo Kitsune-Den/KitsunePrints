@@ -30,7 +30,8 @@ config.json shape:
             "signPosterMovieLoneWolf": { "image": "movie01.png",  "title": "Cat Movie" },
             "signSnackPosterJerky":    { "image": "thick.png",    "title": "Cat Jerky" },
             "pictureCanvas_01a":       { "image": "scene.png",    "title": "Sunset" },
-            "pictureFrame_01a":        { "image": "kit.png",      "title": "Kitsune", "frame": "gold_gilt" }
+            "pictureFrame_01a":        { "image": "kit.png",      "title": "Kitsune", "frame": "gold_gilt" },
+            "playerSignWood2x5":       { "image": "mural.png",    "title": "Wall Mural" }
         }
     }
 
@@ -48,15 +49,20 @@ Slot kinds:
                 batches per material). Picture frames also accept `frame`
                 for a wood-tint multiply-blend on the atlas's top region;
                 siblings in the same atlas share the tint.
+  billboard   ~ the craftable 5m×2m player wooden sign (crop your image at
+                5:2). Composer pastes onto the vanilla plank base texture's
+                front-face rect; the 1×1 and 1×3 craftable wood signs share
+                the material and show the same art squished to their shape.
 
 `enablePickup` (default true) inlines `<append>` patches into Config/blocks.xml
 that add CanPickup="true" to ~83 vanilla picture / poster / canvas / frame
 blocks ~ press E to pick up, no tool, no recipe.
 
 `enableExtendedDecorPickup` (default true) extends the same press-E treatment
-to ~224 more wall decor blocks: flags, road signs, OPEN/CLOSED, gun store +
+to ~227 more wall decor blocks: flags, road signs, OPEN/CLOSED, gun store +
 shop signs (unlit only), bathroom signs, wall clocks, mirrors, bulletin
-boards, planters, ad signs, gas signs. Trader signage and lit/electrical
+boards, planters, ad signs, gas signs, the wooden bear + bear rug +
+working wall clock. Trader signage and lit/electrical
 signs are deliberately excluded. Requires enablePickup. Set either to false
 to opt out.
 
@@ -123,6 +129,16 @@ SLOTS: list[tuple[str, str, list[str], str, Optional[tuple[int, int, int, int]],
     ("signPosterMovie2159", "Movie Poster ~ 2159",
      ["signPosterMovie2159", "signPosterMovieTheater2159"],
      "moviePoster", (351, 518, 696, 1000), "posterMovie"),
+
+    # --- Billboard (the craftable 5m×2m player wooden sign). All three
+    #     craftable wood signs (1×1 / 1×3 / 2×5) share the one sign_wood_2x5
+    #     material; their meshes stretch the same front-face rect onto each
+    #     sign's face, so the smaller two show the same art squished. The
+    #     atlas_tile here is the front-face rect inside the NON-SQUARE
+    #     2048×1024 base texture (see BILLBOARD_BASES); art shows on the
+    #     front face only ~ the back samples a plank strip outside it. ---
+    ("playerSignWood2x5", "Billboard ~ Wood Sign 5x2",
+     ["playerSignWood2x5"], "billboard", (10, 98, 2038, 523), "sign_wood_2x5"),
 
     # --- Misc decor (5 standalone slots ~ each material gets its own texture) ---
     # slotId + materialName stay under the old name (matches the DIY kit's
@@ -216,6 +232,19 @@ ATLAS_SOURCES: dict[str, tuple[str, int, Optional[float]]] = {
     "pictureFramed7": ("pictureFramed7.png", 2048, 0.55),
     "pictureFramed8": ("pictureFramed8.png", 2048, 0.55),
 }
+
+
+# Billboard base textures. material -> (filename in atlases/, (width, height)).
+# Unlike ATLAS_SOURCES these are NON-SQUARE dedicated textures used as the
+# base layer; the slot's atlas_tile is the mesh front-face rect inside it.
+BILLBOARD_BASES: dict[str, tuple[str, tuple[int, int]]] = {
+    "sign_wood_2x5": ("sign_wood_2x5.png", (2048, 1024)),
+}
+
+# Bleed pixels painted past the face rect on every side so in-game mesh UV
+# rounding at the face boundary never samples vanilla plank pixels. Mirrors
+# TILE_BLEED_PX in the web tool's composer.ts.
+BILLBOARD_BLEED_PX = 8
 
 
 # Frame presets ~ used for both portraits (image strip painted into left 25%
@@ -367,6 +396,9 @@ EXTENDED_DECOR_PICKUP_BLOCKS = [
     "signBulletinBoard01", "signBulletinBoard02",
     # Planters (2)
     "birdBathPlanter", "planter",
+    # Statement decor (3) ~ plain ModelEntity / Info-class blocks, verified
+    # clean lineage in V3.4 blocks.xml (no TileEntity / loot / electrical).
+    "woodenBear", "rugBear", "wallClockWorking",
     # EXCLUDED: trader signage (15) ~ "we won't steal from traders"
     # EXCLUDED: lit / electrical signs (52) ~ "we won't take the lit signs due
     #   to risk to electric shock". Anything with Lit/Light/Neon/Trap/Sconce
@@ -450,11 +482,16 @@ def compose_full_texture(image_path: Path, size: int = ABSTRACT_SIZE) -> Image.I
 
 def _resolve_atlas_path(filename: str) -> Path:
     """Find an atlas under either kit naming (atlases/<name>.png) or repo
-    naming (public/vanilla/_<name>_atlas.png). Returns whichever exists."""
+    naming (public/vanilla/_<name>_atlas.png / .webp). Returns whichever
+    exists (Pillow reads both formats)."""
     kit_path = ATLAS_DIR / filename
     if kit_path.exists():
         return kit_path
     base = filename[:-4] if filename.endswith(".png") else filename
+    for ext in ("png", "webp"):
+        candidate = ATLAS_DIR / f"_{base}_atlas.{ext}"
+        if candidate.exists():
+            return candidate
     return ATLAS_DIR / f"_{base}_atlas.png"
 
 
@@ -500,6 +537,38 @@ def compose_atlas(
         atlas.paste(fitted, (left, top))
 
     return atlas
+
+
+def compose_billboard(image_path: Path, material_name: str, face_rect: tuple[int, int, int, int]) -> Image.Image:
+    """Billboard composer: vanilla base texture (non-square ~ e.g. the
+    2048×1024 sign_wood_2x5 plank texture) with the user's image painted
+    into the mesh front-face rect, extended by BILLBOARD_BLEED_PX.
+
+    The paint is a STRETCH fit, not a cover fit: the face rect is stored at
+    a different pixel aspect (~4.8:1) than the physical 5:2 face the mesh
+    stretches it onto, so crop your source at 5:2 and let the mesh undo the
+    squeeze. Cover-fitting here would crop the image twice."""
+    if material_name not in BILLBOARD_BASES:
+        raise ValueError(f"No billboard base registered for material '{material_name}'")
+    filename, (base_w, base_h) = BILLBOARD_BASES[material_name]
+    base_path = _resolve_atlas_path(filename)
+    if not base_path.exists():
+        raise FileNotFoundError(
+            f"Missing billboard base texture for {material_name} (looked in {base_path}). "
+            f"The DIY kit zip should ship it under atlases/."
+        )
+    base = Image.open(base_path).convert("RGBA")
+    if base.size != (base_w, base_h):
+        base = base.resize((base_w, base_h), Image.LANCZOS)
+
+    left, top, right, bottom = face_rect
+    bx = max(0, left - BILLBOARD_BLEED_PX)
+    by = max(0, top - BILLBOARD_BLEED_PX)
+    br = min(base_w, right + BILLBOARD_BLEED_PX)
+    bb = min(base_h, bottom + BILLBOARD_BLEED_PX)
+    user_img = Image.open(image_path).convert("RGBA")
+    base.paste(user_img.resize((br - bx, bb - by), Image.LANCZOS), (bx, by))
+    return base
 
 
 def compose_icon(image_path: Path) -> Image.Image:
@@ -618,6 +687,12 @@ def render_recipe_entry(block_name: str, kind: str) -> str:
             '            <ingredient name="resourceWood" count="6"/>\n'
             '            <ingredient name="resourceForgedIron" count="2"/>'
         )
+    elif kind == "billboard":
+        # 5×2 plank board + big print ~ mirrors the web tool's billboard cost.
+        ingredients = (
+            '            <ingredient name="resourcePaper" count="20"/>\n'
+            '            <ingredient name="resourceWood" count="12"/>'
+        )
     else:  # moviePoster / decor / canvasTile catch-all small print
         ingredients = (
             '            <ingredient name="resourcePaper" count="6"/>\n'
@@ -636,7 +711,7 @@ def render_pickup_append_rows(extended_decor: bool = False) -> str:
     applies them.
 
     When extended_decor=True, also includes EXTENDED_DECOR_PICKUP_BLOCKS
-    (~224 vanilla flags / road signs / shop signs / clocks / mirrors / etc.)
+    (~227 vanilla flags / road signs / shop signs / clocks / mirrors / etc.)
     controlled by config["enableExtendedDecorPickup"]."""
     names = list(PICKUP_BLOCKS)
     if extended_decor:
@@ -696,7 +771,7 @@ def build_pack(pack_dir: Path) -> Path:
     print(f"Building '{pack_name}' -> {out_dir}/")
     if enable_pickup:
         if enable_extended_decor:
-            print("  pickup patch: ON  (picture core + extended decor ~ ~307 blocks)")
+            print("  pickup patch: ON  (picture core + extended decor ~ ~310 blocks)")
         else:
             print("  pickup patch: ON  (picture core only ~ ~83 blocks)")
     else:
@@ -754,6 +829,16 @@ def build_pack(pack_dir: Path) -> Path:
                 tex.save(tex_dir / tex_filename, "PNG")
                 written_textures.add(tex_filename)
             pic_map[material_name] = tex_filename
+        elif kind == "billboard":
+            assert atlas_tile is not None, f"{slot_id}: face rect required for billboard"
+            tex = compose_billboard(image_path, material_name, atlas_tile)
+            tex_filename = f"{material_name}.png"
+            if tex_filename not in written_textures:
+                tex_dir = out_dir / "Resources" / "Textures"
+                tex_dir.mkdir(parents=True, exist_ok=True)
+                tex.save(tex_dir / tex_filename, "PNG")
+                written_textures.add(tex_filename)
+            pic_map[material_name] = tex_filename
         elif kind in ("moviePoster", "canvasTile"):
             # Defer atlas write; collect entry for batched compositing.
             assert atlas_tile is not None, f"{slot_id}: atlas_tile required for {kind}"
@@ -779,6 +864,8 @@ def build_pack(pack_dir: Path) -> Path:
                 recipe_kind = "portrait"
             elif kind == "abstract":
                 recipe_kind = "abstract2x2" if vanilla_block.endswith("_2x2") else "abstract3x2"
+            elif kind == "billboard":
+                recipe_kind = "billboard"
             else:  # moviePoster, decor, canvasTile
                 recipe_kind = "moviePoster"
             recipe_rows.append(render_recipe_entry(block_name, recipe_kind))

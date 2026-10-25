@@ -12,34 +12,35 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/slots-69_across_7_categories-fb923c?style=flat" alt="69 slots" />
+  <img src="https://img.shields.io/badge/slots-70_across_8_categories-fb923c?style=flat" alt="70 slots" />
   <img src="https://img.shields.io/badge/7DTD-V2.6--V3.3-8b0000?style=flat" alt="7DTD V2.6-V3.3" />
-  <img src="https://img.shields.io/badge/tests-68_passing-22c55e?style=flat" alt="68 tests" />
+  <img src="https://img.shields.io/badge/tests-78_passing-22c55e?style=flat" alt="78 tests" />
   <img src="https://img.shields.io/badge/EAC-must_be_off-78350f?style=flat" alt="EAC off" />
 </p>
 
 # 🐱 KitsunePrints
 
-A web-based custom picture pack creator for **7 Days to Die V2.6-V3.3**. Upload your art, drop it into vanilla painting / poster / canvas / frame slots across **69 swap targets**, download a ready-to-install modlet. Every painting in every POI ~ plus snack posters, movie posters, picture frames, hidden-safe disguises ~ now wears your art. No Unity, no asset bundles, no prefab hacks. A Harmony runtime swap does the heavy lifting at world load.
+A web-based custom picture pack creator for **7 Days to Die V2.6-V3.3**. Upload your art, drop it into vanilla painting / poster / canvas / frame slots across **70 swap targets**, download a ready-to-install modlet. Every painting in every POI ~ plus snack posters, movie posters, picture frames, hidden-safe disguises, and the craftable 5×2 billboard sign ~ now wears your art. No Unity, no asset bundles, no prefab hacks. A Harmony runtime swap does the heavy lifting at world load.
 
 ## What it does
 
 1. **Pick a category** ~ tabbed builder with a live `X/Y filled` badge per category and a sticky download bar always within reach.
 2. **Upload an image per slot** you want to override. Skipped slots stay vanilla.
-3. **Crop** ~ aspect-locked crop matched per slot kind (3:4 portraits, 1:1 abstracts, atlas-tile aspects for movie posters / canvases / picture frames).
+3. **Crop** ~ aspect-locked crop matched per slot kind (3:4 portraits, 1:1 abstracts, 5:2 billboard, atlas-tile aspects for movie posters / canvases / picture frames).
 4. **Frame style** ~ portraits + picture frames each take a wood/metal preset (dark wood, light wood, gold gilt, silver, matte black, ornate gold). Portraits paint the preset into a UV strip wrapping the 3D frame mesh; picture frames apply it as a multiply-blend tint over the wood-frame zone of the atlas.
 5. **Title each slot** ~ shows up as `Print: <your title>` in the creative menu, searchable under "print" or any keyword.
 6. **Download** ~ a complete modlet zip with the shared `KitsunePrints.dll`, composed textures (per-slot for portraits/abstracts/decor; per-shared-atlas for movie posters / canvases / picture frames), generated `blocks.xml` (with optional inline `CanPickup` patches for ~100 vanilla decor blocks) / `recipes.xml` / `Localization.txt` + `Localization.csv` (V2.x reads one, V3.x the other), ItemIcons, and a `picture_pack.json` map. Drop into `<7DTD>/Mods/`, restart, done.
 
 The full pack state (slot titles, frame choices, pack info) auto-saves to your browser's localStorage so you don't lose work on reload. Images are session-only ~ re-upload them when you come back.
 
-## Slot categories (69 total)
+## Slot categories (70 total)
 
 | Category | Slots | What they cover |
 |---|---|---|
 | **Portraits** | 6 | 1×1 backer paintings (Ben, Lorien, Derek, Noah, Duke, Ken) ~ 3:4 portrait + wood frame strip |
 | **Abstracts** | 4 | Each drives both 2×2 and 3×2 painting blocks per design (8 vanilla blocks total) |
 | **Movie Posters** | 4 | Tiles of the shared `posterMovie` 1024×1024 atlas. Theater variants ride along ~ replacing one re-skins both blocks. |
+| **Billboard** | 1 | The craftable 5m×2m player wooden sign (`playerSignWood2x5`) ~ the biggest flat art surface in the game, frameless, placeable on any outside wall. Crops at 5:2; the craftable 1×1 / 1×3 wood signs share the material and show the same art squished; art shows on the front face only. |
 | **Misc Decor** | 5 | Calendar, Pistol/Rifle Blueprints, Target Posters 1+2 |
 | **Snack Posters** | 17 | The full `snackPosters_d` atlas wall ~ Thick Nick's, Goblin-O's, Bretzels, Eye Candy, Skull Crushers, Nachios Beef + Ranch, Health Bar (wide), Hackers, Prime, Atom, Nerd Tats, Ramen, Jail Breakers, Fort Bites, Oops + Oops Classic |
 | **Picture Frames** | 23 | Per-letter slots across 8 shared atlases (`pictureFramed`, `pictureFramed2..8`). Hidden-safe variants re-skin automatically since they extend their non-safe twin. |
@@ -50,7 +51,7 @@ The full pack state (slot titles, frame choices, pack info) auto-saves to your b
 Every pack ships with `<property name="CanPickup" value="true"/>` patches that turn vanilla decor blocks into press-E-pickup items. No tool, no recipe ~ walk up, press E, place from inventory. Two opt-in tiers (separate checkboxes on the Pack Info tab):
 
 - **Picture core** (~83 blocks, default on) ~ all 7 slot categories: paintings, snack posters, movie posters + theaters, canvases, picture frames.
-- **Extended decor** (~224 blocks, default on) ~ flags, road signs, OPEN/CLOSED, gun store + shop signs (unlit variants), bathroom signs, wall clocks, mirrors, bulletin boards, planters, ad signs, gas signs.
+- **Extended decor** (~227 blocks, default on) ~ flags, road signs, OPEN/CLOSED, gun store + shop signs (unlit variants), bathroom signs, wall clocks (including the working one), mirrors, bulletin boards, planters, ad signs, gas signs, plus statement decor: the wooden bear and bear rug.
 
 Trader signage and lit/electrical signs are deliberately excluded from the extended set ~ traders stay nice, and lit signs would risk the same electrical-init NREs that hidden safes triggered. Hidden-safe disguises are also excluded (they're loot-container TileEntities; CanPickup conflicts with their init).
 
@@ -109,7 +110,7 @@ src/
     buildModlet.ts       # zip orchestration, XML rendering, pickup patch inlining (35 unit tests cover the helpers)
     buildModlet.test.ts
     composer.ts          # composePortrait / composeAbstract / composeAtlas / composeIcon
-    pickupBlocks.ts      # PICKUP_BLOCKS (~83 picture core) + EXTENDED_DECOR_PICKUP_BLOCKS (~224)
+    pickupBlocks.ts      # PICKUP_BLOCKS (~83 picture core) + EXTENDED_DECOR_PICKUP_BLOCKS (~227)
     persistence.ts       # localStorage save/load for slot config + pack meta
   types/
     slots.ts             # SLOTS list + ATLAS_SOURCES + FRAME_PRESETS + isDefaultPackMeta
@@ -173,6 +174,7 @@ Your images **never leave your browser.** Composition, icon generation, zip pack
 Architecture is now ready for almost any vanilla wall-art expansion ~ adding a new category to the web tool is mostly: identify the vanilla material(s), add an entry to `SLOTS` in [`src/types/slots.ts`](src/types/slots.ts), and run `extract_vanilla_refs.py` for reference thumbs. Categories under consideration:
 
 - 🪧 **Trader signage** ~ traderBobSign, traderJoelSign, etc., plus the storeSigns01/02_d atlases (Shotgun Messiah, Crackabook, Mo Power, etc.)
+- 🪣 **Giant canvas/decal signs** ~ V3.3+ ships a dev-only `signCanvasWood` / `signCanvasCorrugatedMetal` / `signDecal*` family (TEFeatureCanvas CompositeTileEntities) in sizes up to 13×2, 11×6, and 6×11 meters, hidden behind `CreativeMode Dev` variant helpers. Unlocking + re-skinning those would dwarf even the 5×2 billboard ~ unfinished TFP tech, needs careful in-game testing before shipping.
 - 🪪 **Street + yard signs** ~ where they make sense (most are functional, less interesting to re-skin)
 - 🎨 **Cat / dog / sparky standalone posters** ~ slot scaffolding identified, materials need a deeper prefab walk
 - 🪟 **Wallpaper / floor tiles** ~ bigger lift; same Harmony pattern works in principle

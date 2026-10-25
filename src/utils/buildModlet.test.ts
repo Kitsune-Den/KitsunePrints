@@ -65,6 +65,21 @@ const CANVAS_TILE_SLOT: SlotDef = {
   atlasTile: { x: 1288, y: 1138, w: 735, h: 898 },
 }
 
+const BILLBOARD_SLOT: SlotDef = {
+  slotId: 'playerSignWood2x5',
+  materialName: 'sign_wood_2x5',
+  label: 'Billboard ~ Wood Sign 5×2',
+  vanillaBlocks: ['playerSignWood2x5'],
+  kind: 'billboard',
+  billboardBase: {
+    vanillaPath: '/vanilla/_sign_wood_2x5_atlas.webp',
+    w: 2048,
+    h: 1024,
+    faceRect: { x: 10, y: 98, w: 2028, h: 425 },
+    displayAspect: 5 / 2,
+  },
+}
+
 // ---- sanitizeIdentifier --------------------------------------------------
 
 describe('sanitizeIdentifier', () => {
@@ -135,6 +150,10 @@ describe('pickRecipeKind', () => {
     expect(pickRecipeKind(ABSTRACT_SLOT, 'paintingAbstract01_2x2')).toBe('abstract2x2')
     expect(pickRecipeKind(ABSTRACT_SLOT, 'paintingAbstract01_3x2')).toBe('abstract3x2')
   })
+
+  it('returns billboard for the 5×2 wood sign slot', () => {
+    expect(pickRecipeKind(BILLBOARD_SLOT, 'playerSignWood2x5')).toBe('billboard')
+  })
 })
 
 // ---- renderBlockEntry ----------------------------------------------------
@@ -167,6 +186,7 @@ describe('renderRecipeEntry', () => {
     ['abstract2x2', 'resourcePaper" count="8"'],
     ['abstract3x2', 'resourcePaper" count="12"'],
     ['moviePoster', 'resourcePaper" count="6"'],
+    ['billboard',   'resourcePaper" count="20"'],
   ])('%s recipe contains expected paper cost', (kind, expectedCost) => {
     const xml = renderRecipeEntry('kp_pack_x', kind)
     expect(xml).toContain(expectedCost)
@@ -183,6 +203,7 @@ describe('renderRecipeEntry', () => {
     expect(renderRecipeEntry('a', 'abstract2x2')).toContain('resourceForgedIron')
     expect(renderRecipeEntry('a', 'abstract3x2')).toContain('resourceForgedIron')
     expect(renderRecipeEntry('a', 'moviePoster')).not.toContain('resourceForgedIron')
+    expect(renderRecipeEntry('a', 'billboard')).not.toContain('resourceForgedIron')
   })
 })
 
@@ -235,6 +256,14 @@ describe('renderPickupAppendRows', () => {
     expect(extendedRows).toContain("@name='wallMirror'")
     expect(extendedRows).toContain("@name='signBulletinBoard01'")
     expect(extendedRows).toContain("@name='signBathroomSignUnisexWallMount'")
+  })
+
+  it('extended mode includes the v1.2 statement decor (bears + working clock)', () => {
+    expect(extendedRows).toContain("@name='woodenBear'")
+    expect(extendedRows).toContain("@name='rugBear'")
+    expect(extendedRows).toContain("@name='wallClockWorking'")
+    // Core mode stays picture-only ~ no bears there.
+    expect(rows).not.toContain("@name='woodenBear'")
   })
 
   it('extended mode keeps the picture core intact', () => {

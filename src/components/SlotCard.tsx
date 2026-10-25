@@ -42,6 +42,13 @@ interface Props {
 const UV_BBOX_OUTPUT_SIZE = 2048
 
 function getVisibleDims(slot: SlotDef): { w: number; h: number } | null {
+  if (slot.kind === 'billboard' && slot.billboardBase) {
+    // The mesh stretches the face rect onto the physical face, so the
+    // visible aspect is displayAspect (5:2), not the rect's pixel aspect.
+    // Working width = the rect's pixel width (what the art is stored at).
+    const { faceRect, displayAspect } = slot.billboardBase
+    return { w: faceRect.w, h: Math.round(faceRect.w / displayAspect) }
+  }
   if (slot.meshUvBbox) {
     const { l, t, r, b } = slot.meshUvBbox
     const w = Math.round((r - l) * UV_BBOX_OUTPUT_SIZE)
@@ -73,6 +80,7 @@ function getOrientedDims(slot: SlotDef, state: SlotState): { w: number; h: numbe
 
 function pickThumbClass(slot: SlotDef): string {
   if (slot.kind === 'portrait' || slot.kind === 'moviePoster') return 'w-9 h-12'
+  if (slot.kind === 'billboard') return 'w-20 h-8'
   if (slot.kind === 'decor') return 'w-10 h-12 object-contain'
   if (slot.kind === 'canvasTile' && slot.atlasTile) {
     const ratio = slot.atlasTile.w / slot.atlasTile.h
@@ -121,6 +129,9 @@ function describeSlotDimensions(slot: SlotDef): string {
     // Portrait kind uses ratio-only dims (3:4) ~ format with the canonical
     // 1024×1024 source size since that's what the composer outputs for portraits.
     if (slot.kind === 'portrait') return '3:4 portrait · 1024×1024'
+    // Billboard aspect comes from the physical face (5:2), not the stored
+    // face-rect pixels ~ say so directly instead of the generic rounding.
+    if (slot.kind === 'billboard') return `5:2 billboard · ${dims.w}×${dims.h}`
     return `${aspectName(dims.w, dims.h)} · ${dims.w}×${dims.h}`
   }
   if (slot.kind === 'abstract') return '1:1 square · 1024×1024'
@@ -286,6 +297,12 @@ export function SlotCard({ slot, state, onChange }: Props) {
             className="w-full bg-zinc-950 border border-zinc-800 rounded px-2 py-1 text-sm text-zinc-100 focus:border-zinc-600 outline-none"
           />
         </div>
+
+        {slot.note && (
+          <p className="mb-2 text-[11px] text-amber-200/60 leading-tight">
+            {slot.note}
+          </p>
+        )}
 
         {slotSupportsOrientationFlip(slot) && (
           <OrientationToggle

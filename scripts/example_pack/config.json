@@ -11,7 +11,7 @@
   "_comment_pickup": "true (default) inlines blocks.xml patches that add CanPickup=true to ~83 vanilla picture/poster/canvas/frame blocks. Press E in-game to pick up. Set false to skip.",
 
   "enableExtendedDecorPickup": true,
-  "_comment_extended_decor": "true (default) extends press-E pickup to ~224 more wall decor blocks: flags, road signs, OPEN/CLOSED, gun store + shop signs (unlit), bathroom signs, wall clocks, mirrors, bulletin boards, planters, ad signs, gas signs. Trader signage and lit/electrical signs are deliberately excluded.",
+  "_comment_extended_decor": "true (default) extends press-E pickup to ~227 more wall decor blocks: flags, road signs, OPEN/CLOSED, gun store + shop signs (unlit), bathroom signs, wall clocks (working one too), mirrors, bulletin boards, planters, ad signs, gas signs, the wooden bear + bear rug. Trader signage and lit/electrical signs are deliberately excluded.",
 
   "_comment_slots": [
     "Each slot key is a stable identifier (see SLOTS list in make_pack.py).",
@@ -28,7 +28,10 @@
     "  moviePoster  Tile of shared posterMovie atlas (theater variants ride along)",
     "  canvasTile   Tile of a shared canvas/picture-frame atlas. Picture frames",
     "               use the `frame` field as a wood-tint that's shared across",
-    "               sibling letters in the same atlas (first filled wins)."
+    "               sibling letters in the same atlas (first filled wins).",
+    "  billboard    The craftable 5m x 2m player wooden sign ~ crop your image",
+    "               at 5:2. The 1x1 and 1x3 wood signs share the material and",
+    "               show the same art squished; art shows on the front face only."
   ],
 
   "slots": {
@@ -53,6 +56,8 @@
 
     "pictureFrame_01a":  { "image": "frame-kit.png", "title": "Kitsune", "frame": "gold_gilt" },
     "pictureFrame_01b":  { "image": "frame-fox.png", "title": "Fox" },
-    "pictureFrame_01c":  { "image": "frame-cub.png", "title": "Cub" }
+    "pictureFrame_01c":  { "image": "frame-cub.png", "title": "Cub" },
+
+    "playerSignWood2x5": { "image": "mural.png", "title": "Wall Mural" }
   }
 }

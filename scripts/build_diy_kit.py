@@ -60,6 +60,9 @@ ATLAS_INCLUDES = [
     ("_pictureFramed6_atlas", "atlases/pictureFramed6.png"),
     ("_pictureFramed7_atlas", "atlases/pictureFramed7.png"),
     ("_pictureFramed8_atlas", "atlases/pictureFramed8.png"),
+    # Billboard base ~ NON-SQUARE (2048×1024) dedicated texture for the
+    # craftable 5×2 player wooden sign (sign_wood_2x5 material).
+    ("_sign_wood_2x5_atlas",  "atlases/sign_wood_2x5.png"),
 ]
 
 VANILLA_DIR = ROOT / "public" / "vanilla"
