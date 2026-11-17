@@ -2,7 +2,7 @@
 """
 KitsunePrints DIY Pack Builder
 ==============================
-Run this script to turn a folder of images into a 7 Days to Die V2.6–V3.3
+Run this script to turn a folder of images into a 7 Days to Die V2.6–V3.4
 picture pack modlet. No web tool needed.
 
 Usage:
@@ -59,10 +59,11 @@ that add CanPickup="true" to ~83 vanilla picture / poster / canvas / frame
 blocks ~ press E to pick up, no tool, no recipe.
 
 `enableExtendedDecorPickup` (default true) extends the same press-E treatment
-to ~227 more wall decor blocks: flags, road signs, OPEN/CLOSED, gun store +
+to ~428 more wall decor blocks: flags, road signs, OPEN/CLOSED, gun store +
 shop signs (unlit only), bathroom signs, wall clocks, mirrors, bulletin
-boards, planters, ad signs, gas signs, the wooden bear + bear rug +
-working wall clock. Trader signage and lit/electrical
+boards, planters, ad signs, gas signs, curtains + drapes (every color, clean
+and dirty), the wooden bear + bear rug + working wall clock + brass trophy.
+Trader signage and lit/electrical
 signs are deliberately excluded. Requires enablePickup. Set either to false
 to opt out.
 
@@ -396,9 +397,113 @@ EXTENDED_DECOR_PICKUP_BLOCKS = [
     "signBulletinBoard01", "signBulletinBoard02",
     # Planters (2)
     "birdBathPlanter", "planter",
-    # Statement decor (3) ~ plain ModelEntity / Info-class blocks, verified
+    # Curtains & drapes (199) ~ V3.4.0 b10 audit (2026-11). Plain ModelEntity
+    # blocks, no TileEntity / loot / MultiBlockDim lineage. The FullTop family
+    # downgrades to curtainDrapesRod1m (a plain block, not a loot helper).
+    # screenCurtainDivider* excluded (MultiBlockDim multiblocks).
+    "curtainDrapesRod1m", "curtainDrapesFullTopWhite",
+    "curtainDrapesFullTopBlack", "curtainDrapesFullTopBlue",
+    "curtainDrapesFullTopBrown", "curtainDrapesFullTopGreen",
+    "curtainDrapesFullTopGrey", "curtainDrapesFullTopOrange",
+    "curtainDrapesFullTopPink", "curtainDrapesFullTopPurple",
+    "curtainDrapesFullTopRed", "curtainDrapesFullTopYellow",
+    "curtainDrapesFullTopDirtyWhite", "curtainDrapesFullTopDirtyBlack",
+    "curtainDrapesFullTopDirtyBlue", "curtainDrapesFullTopDirtyBrown",
+    "curtainDrapesFullTopDirtyGreen", "curtainDrapesFullTopDirtyGrey",
+    "curtainDrapesFullTopDirtyOrange", "curtainDrapesFullTopDirtyPink",
+    "curtainDrapesFullTopDirtyPurple", "curtainDrapesFullTopDirtyRed",
+    "curtainDrapesFullTopDirtyYellow", "curtainDrapesFullBottomWhite",
+    "curtainDrapesFullBottomBlack", "curtainDrapesFullBottomBlue",
+    "curtainDrapesFullBottomBrown", "curtainDrapesFullBottomGreen",
+    "curtainDrapesFullBottomGrey", "curtainDrapesFullBottomOrange",
+    "curtainDrapesFullBottomPink", "curtainDrapesFullBottomPurple",
+    "curtainDrapesFullBottomRed", "curtainDrapesFullBottomYellow",
+    "curtainDrapesFullBottomDirtyWhite", "curtainDrapesFullBottomDirtyBlack",
+    "curtainDrapesFullBottomDirtyBlue", "curtainDrapesFullBottomDirtyBrown",
+    "curtainDrapesFullBottomDirtyGreen", "curtainDrapesFullBottomDirtyGrey",
+    "curtainDrapesFullBottomDirtyOrange", "curtainDrapesFullBottomDirtyPink",
+    "curtainDrapesFullBottomDirtyPurple", "curtainDrapesFullBottomDirtyRed",
+    "curtainDrapesFullBottomDirtyYellow", "curtainDrapesFullTileWhite",
+    "curtainDrapesFullTileBlack", "curtainDrapesFullTileBlue",
+    "curtainDrapesFullTileBrown", "curtainDrapesFullTileGreen",
+    "curtainDrapesFullTileGrey", "curtainDrapesFullTileOrange",
+    "curtainDrapesFullTilePink", "curtainDrapesFullTilePurple",
+    "curtainDrapesFullTileRed", "curtainDrapesFullTileYellow",
+    "curtainDrapesFullTileDirtyWhite", "curtainDrapesFullTileDirtyBlack",
+    "curtainDrapesFullTileDirtyBlue", "curtainDrapesFullTileDirtyBrown",
+    "curtainDrapesFullTileDirtyGreen", "curtainDrapesFullTileDirtyGrey",
+    "curtainDrapesFullTileDirtyOrange", "curtainDrapesFullTileDirtyPink",
+    "curtainDrapesFullTileDirtyPurple", "curtainDrapesFullTileDirtyRed",
+    "curtainDrapesFullTileDirtyYellow", "curtainDrapesLeftHalfTopWhite",
+    "curtainDrapesLeftHalfTopBlack", "curtainDrapesLeftHalfTopBlue",
+    "curtainDrapesLeftHalfTopBrown", "curtainDrapesLeftHalfTopGreen",
+    "curtainDrapesLeftHalfTopGrey", "curtainDrapesLeftHalfTopOrange",
+    "curtainDrapesLeftHalfTopPink", "curtainDrapesLeftHalfTopPurple",
+    "curtainDrapesLeftHalfTopRed", "curtainDrapesLeftHalfTopYellow",
+    "curtainDrapesLeftHalfTopDirtyWhite", "curtainDrapesLeftHalfTopDirtyBlack",
+    "curtainDrapesLeftHalfTopDirtyBlue", "curtainDrapesLeftHalfTopDirtyBrown",
+    "curtainDrapesLeftHalfTopDirtyGreen", "curtainDrapesLeftHalfTopDirtyGrey",
+    "curtainDrapesLeftHalfTopDirtyOrange", "curtainDrapesLeftHalfTopDirtyPink",
+    "curtainDrapesLeftHalfTopDirtyPurple", "curtainDrapesLeftHalfTopDirtyRed",
+    "curtainDrapesLeftHalfTopDirtyYellow", "curtainDrapesLeftHalfBottomWhite",
+    "curtainDrapesLeftHalfBottomBlack", "curtainDrapesLeftHalfBottomBlue",
+    "curtainDrapesLeftHalfBottomBrown", "curtainDrapesLeftHalfBottomGreen",
+    "curtainDrapesLeftHalfBottomGrey", "curtainDrapesLeftHalfBottomOrange",
+    "curtainDrapesLeftHalfBottomPink", "curtainDrapesLeftHalfBottomPurple",
+    "curtainDrapesLeftHalfBottomRed", "curtainDrapesLeftHalfBottomYellow",
+    "curtainDrapesLeftHalfBottomDirtyWhite", "curtainDrapesLeftHalfBottomDirtyBlack",
+    "curtainDrapesLeftHalfBottomDirtyBlue", "curtainDrapesLeftHalfBottomDirtyBrown",
+    "curtainDrapesLeftHalfBottomDirtyGreen", "curtainDrapesLeftHalfBottomDirtyGrey",
+    "curtainDrapesLeftHalfBottomDirtyOrange", "curtainDrapesLeftHalfBottomDirtyPink",
+    "curtainDrapesLeftHalfBottomDirtyPurple", "curtainDrapesLeftHalfBottomDirtyRed",
+    "curtainDrapesLeftHalfBottomDirtyYellow", "curtainDrapesLeftHalfTileWhite",
+    "curtainDrapesLeftHalfTileBlack", "curtainDrapesLeftHalfTileBlue",
+    "curtainDrapesLeftHalfTileBrown", "curtainDrapesLeftHalfTileGreen",
+    "curtainDrapesLeftHalfTileGrey", "curtainDrapesLeftHalfTileOrange",
+    "curtainDrapesLeftHalfTilePink", "curtainDrapesLeftHalfTilePurple",
+    "curtainDrapesLeftHalfTileRed", "curtainDrapesLeftHalfTileYellow",
+    "curtainDrapesLeftHalfTileDirtyWhite", "curtainDrapesLeftHalfTileDirtyBlack",
+    "curtainDrapesLeftHalfTileDirtyBlue", "curtainDrapesLeftHalfTileDirtyBrown",
+    "curtainDrapesLeftHalfTileDirtyGreen", "curtainDrapesLeftHalfTileDirtyGrey",
+    "curtainDrapesLeftHalfTileDirtyOrange", "curtainDrapesLeftHalfTileDirtyPink",
+    "curtainDrapesLeftHalfTileDirtyPurple", "curtainDrapesLeftHalfTileDirtyRed",
+    "curtainDrapesLeftHalfTileDirtyYellow", "curtainDrapesRightHalfTopWhite",
+    "curtainDrapesRightHalfTopBlack", "curtainDrapesRightHalfTopBlue",
+    "curtainDrapesRightHalfTopBrown", "curtainDrapesRightHalfTopGreen",
+    "curtainDrapesRightHalfTopGrey", "curtainDrapesRightHalfTopOrange",
+    "curtainDrapesRightHalfTopPink", "curtainDrapesRightHalfTopPurple",
+    "curtainDrapesRightHalfTopRed", "curtainDrapesRightHalfTopYellow",
+    "curtainDrapesRightHalfTopDirtyWhite", "curtainDrapesRightHalfTopDirtyBlack",
+    "curtainDrapesRightHalfTopDirtyBlue", "curtainDrapesRightHalfTopDirtyBrown",
+    "curtainDrapesRightHalfTopDirtyGreen", "curtainDrapesRightHalfTopDirtyGrey",
+    "curtainDrapesRightHalfTopDirtyOrange", "curtainDrapesRightHalfTopDirtyPink",
+    "curtainDrapesRightHalfTopDirtyPurple", "curtainDrapesRightHalfTopDirtyRed",
+    "curtainDrapesRightHalfTopDirtyYellow", "curtainDrapesRightHalfBottomWhite",
+    "curtainDrapesRightHalfBottomBlack", "curtainDrapesRightHalfBottomBlue",
+    "curtainDrapesRightHalfBottomBrown", "curtainDrapesRightHalfBottomGreen",
+    "curtainDrapesRightHalfBottomGrey", "curtainDrapesRightHalfBottomOrange",
+    "curtainDrapesRightHalfBottomPink", "curtainDrapesRightHalfBottomPurple",
+    "curtainDrapesRightHalfBottomRed", "curtainDrapesRightHalfBottomYellow",
+    "curtainDrapesRightHalfBottomDirtyWhite", "curtainDrapesRightHalfBottomDirtyBlack",
+    "curtainDrapesRightHalfBottomDirtyBlue", "curtainDrapesRightHalfBottomDirtyBrown",
+    "curtainDrapesRightHalfBottomDirtyGreen", "curtainDrapesRightHalfBottomDirtyGrey",
+    "curtainDrapesRightHalfBottomDirtyOrange", "curtainDrapesRightHalfBottomDirtyPink",
+    "curtainDrapesRightHalfBottomDirtyPurple", "curtainDrapesRightHalfBottomDirtyRed",
+    "curtainDrapesRightHalfBottomDirtyYellow", "curtainDrapesRightHalfTileWhite",
+    "curtainDrapesRightHalfTileBlack", "curtainDrapesRightHalfTileBlue",
+    "curtainDrapesRightHalfTileBrown", "curtainDrapesRightHalfTileGreen",
+    "curtainDrapesRightHalfTileGrey", "curtainDrapesRightHalfTileOrange",
+    "curtainDrapesRightHalfTilePink", "curtainDrapesRightHalfTilePurple",
+    "curtainDrapesRightHalfTileRed", "curtainDrapesRightHalfTileYellow",
+    "curtainDrapesRightHalfTileDirtyWhite", "curtainDrapesRightHalfTileDirtyBlack",
+    "curtainDrapesRightHalfTileDirtyBlue", "curtainDrapesRightHalfTileDirtyBrown",
+    "curtainDrapesRightHalfTileDirtyGreen", "curtainDrapesRightHalfTileDirtyGrey",
+    "curtainDrapesRightHalfTileDirtyOrange", "curtainDrapesRightHalfTileDirtyPink",
+    "curtainDrapesRightHalfTileDirtyPurple", "curtainDrapesRightHalfTileDirtyRed",
+    "curtainDrapesRightHalfTileDirtyYellow",
+    # Statement decor (5) ~ plain ModelEntity / Info-class blocks, verified
     # clean lineage in V3.4 blocks.xml (no TileEntity / loot / electrical).
-    "woodenBear", "rugBear", "wallClockWorking",
+    "woodenBear", "rugBear", "wallClockWorking", "trophy", "trophyOffset",
     # EXCLUDED: trader signage (15) ~ "we won't steal from traders"
     # EXCLUDED: lit / electrical signs (52) ~ "we won't take the lit signs due
     #   to risk to electric shock". Anything with Lit/Light/Neon/Trap/Sconce
@@ -711,7 +816,8 @@ def render_pickup_append_rows(extended_decor: bool = False) -> str:
     applies them.
 
     When extended_decor=True, also includes EXTENDED_DECOR_PICKUP_BLOCKS
-    (~227 vanilla flags / road signs / shop signs / clocks / mirrors / etc.)
+    (~428 vanilla flags / road signs / shop signs / clocks / mirrors /
+    curtains / etc.)
     controlled by config["enableExtendedDecorPickup"]."""
     names = list(PICKUP_BLOCKS)
     if extended_decor:

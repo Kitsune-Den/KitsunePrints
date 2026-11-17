@@ -144,10 +144,10 @@ export default function IntroPage() {
           {/* Compatibility pill ~ bump the text when a new game version is verified. */}
           <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-orange-500/40 bg-orange-500/10 text-[11px] tracking-widest uppercase text-orange-300 font-medium">
             <span className="w-1.5 h-1.5 rounded-full bg-orange-400 animate-pulse" aria-hidden="true" />
-            Updated for 7DTD V3.3 experimental
+            Updated for 7DTD V3.4
           </span>
           <span className="text-xs tracking-[0.3em] uppercase text-orange-400 font-medium">
-            7 Days to Die V2.6–V3.3 · Custom Picture Pack Tool
+            7 Days to Die V2.6–V3.4 · Custom Picture Pack Tool
           </span>
         </div>
 
@@ -186,7 +186,7 @@ export default function IntroPage() {
         </div>
 
         <p className={`mt-6 text-xs text-zinc-600 transition-all duration-1000 delay-700 ${mounted ? 'opacity-100' : 'opacity-0'}`}>
-          7DTD V2.6–V3.3 · EAC must be off · ships with the Harmony patch baked in
+          7DTD V2.6–V3.4 · EAC must be off · ships with the Harmony patch baked in
         </p>
       </main>
 
@@ -352,7 +352,7 @@ export default function IntroPage() {
               },
               {
                 q: 'What 7DTD version does this need?',
-                a: 'V2.6 through V3.2, plus the V3.3 experimental branch. The vanilla painting material names, textures and mesh-UV layout we patch are unchanged across all of those releases, so the same packs and DLL work on every one of them. Earlier versions had different conventions, and future versions may shift again.',
+                a: 'V2.6 through V3.4. The vanilla painting material names, textures and mesh-UV layout we patch are unchanged across all of those releases, so the same packs and DLL work on every one of them. Earlier versions had different conventions, and future versions may shift again.',
               },
               {
                 q: 'Does this make every painting in the game pickup-able?',

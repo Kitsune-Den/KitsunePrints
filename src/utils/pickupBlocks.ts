@@ -6,8 +6,9 @@
 //                                Toggled by PackMeta.enablePickup (default ON).
 //   EXTENDED_DECOR_PICKUP_BLOCKS ~ flags, road signs, shop signs, mirrors,
 //                                clocks, bulletin boards, planters, bathroom
-//                                signs, statement decor (wooden bear, bear
-//                                rug), etc. (~227 blocks).
+//                                signs, curtains & drapes, statement decor
+//                                (wooden bear, bear rug, trophy), etc.
+//                                (~428 blocks).
 //                                Toggled by PackMeta.enableExtendedDecorPickup
 //                                (default ON, separate checkbox).
 //
@@ -116,7 +117,9 @@ export const PICKUP_BLOCKS: string[] = [
 //
 // Surfaced via scripts/audit_pickup_candidates.py against vanilla blocks.xml.
 // Audit found 290 cosmetic wall/decor blocks not currently pickup-able. 238
-// had clean (non-electrical, non-TileEntity) lineage. We ship 224 here.
+// had clean (non-electrical, non-TileEntity) lineage. We shipped 224 of those,
+// then a V3.4.0 b10 re-audit (2026-11) added the curtain/drape family and the
+// brass trophy ~ 428 total now.
 //
 // Deliberately EXCLUDED:
 // - Trader signage (15) ~ user call: don't steal from traders. Includes
@@ -126,6 +129,10 @@ export const PICKUP_BLOCKS: string[] = [
 //   the name or extending lightPorchWhite ~ auto-flagged by the audit script.
 //   These are functional electrical blocks and adding CanPickup risks the
 //   same init NREs that hidden safes triggered.
+// - signCanvasWood* / signDecalWood* / signCanvasCorrugatedMetal* /
+//   signDecalCorrugatedMetal* (172, V3.3+) and flagWallHungSign /
+//   flagPoleSign ~ Class="CompositeTileEntity", CreativeMode="Dev":
+//   unfinished TFP tech, same TileEntity init-NRE class as the hidden safes.
 // ===========================================================================
 
 export const EXTENDED_DECOR_PICKUP_BLOCKS: string[] = [
@@ -363,15 +370,138 @@ export const EXTENDED_DECOR_PICKUP_BLOCKS: string[] = [
   'birdBathPlanter',
   'planter',
 
-  // --- Statement decor (3) ~ user request (gaveitatry + Ada, Oct 2026).
+  // --- Curtains & drapes (199) ~ V3.4 audit (2026-11). Every block below is
+  //     a plain ModelEntity (Mcloth / MclothStable / Mmetal_weak) with no
+  //     TileEntity class, no loot lineage, no MultiBlockDim, verified against
+  //     V3.4.0 b10 blocks.xml. The audit script's LightOpacity flag is a
+  //     false positive here ~ curtains block light, they aren't electrical.
+  //     The FullTop family's DowngradeBlock points at curtainDrapesRod1m (a
+  //     plain block, not a loot helper), so it stays outside the hidden-safe
+  //     NRE class. screenCurtainDivider* excluded: MultiBlockDim multiblocks.
+  //     curtainVariantHelper excluded: placeholder helper. ---
+  'curtainDrapesRod1m',
+  // Full-width, top half
+  'curtainDrapesFullTopWhite', 'curtainDrapesFullTopBlack',
+  'curtainDrapesFullTopBlue', 'curtainDrapesFullTopBrown',
+  'curtainDrapesFullTopGreen', 'curtainDrapesFullTopGrey',
+  'curtainDrapesFullTopOrange', 'curtainDrapesFullTopPink',
+  'curtainDrapesFullTopPurple', 'curtainDrapesFullTopRed',
+  'curtainDrapesFullTopYellow', 'curtainDrapesFullTopDirtyWhite',
+  'curtainDrapesFullTopDirtyBlack', 'curtainDrapesFullTopDirtyBlue',
+  'curtainDrapesFullTopDirtyBrown', 'curtainDrapesFullTopDirtyGreen',
+  'curtainDrapesFullTopDirtyGrey', 'curtainDrapesFullTopDirtyOrange',
+  'curtainDrapesFullTopDirtyPink', 'curtainDrapesFullTopDirtyPurple',
+  'curtainDrapesFullTopDirtyRed', 'curtainDrapesFullTopDirtyYellow',
+  // Full-width, bottom half
+  'curtainDrapesFullBottomWhite', 'curtainDrapesFullBottomBlack',
+  'curtainDrapesFullBottomBlue', 'curtainDrapesFullBottomBrown',
+  'curtainDrapesFullBottomGreen', 'curtainDrapesFullBottomGrey',
+  'curtainDrapesFullBottomOrange', 'curtainDrapesFullBottomPink',
+  'curtainDrapesFullBottomPurple', 'curtainDrapesFullBottomRed',
+  'curtainDrapesFullBottomYellow', 'curtainDrapesFullBottomDirtyWhite',
+  'curtainDrapesFullBottomDirtyBlack', 'curtainDrapesFullBottomDirtyBlue',
+  'curtainDrapesFullBottomDirtyBrown', 'curtainDrapesFullBottomDirtyGreen',
+  'curtainDrapesFullBottomDirtyGrey', 'curtainDrapesFullBottomDirtyOrange',
+  'curtainDrapesFullBottomDirtyPink', 'curtainDrapesFullBottomDirtyPurple',
+  'curtainDrapesFullBottomDirtyRed', 'curtainDrapesFullBottomDirtyYellow',
+  // Full-width, mid tile
+  'curtainDrapesFullTileWhite', 'curtainDrapesFullTileBlack',
+  'curtainDrapesFullTileBlue', 'curtainDrapesFullTileBrown',
+  'curtainDrapesFullTileGreen', 'curtainDrapesFullTileGrey',
+  'curtainDrapesFullTileOrange', 'curtainDrapesFullTilePink',
+  'curtainDrapesFullTilePurple', 'curtainDrapesFullTileRed',
+  'curtainDrapesFullTileYellow', 'curtainDrapesFullTileDirtyWhite',
+  'curtainDrapesFullTileDirtyBlack', 'curtainDrapesFullTileDirtyBlue',
+  'curtainDrapesFullTileDirtyBrown', 'curtainDrapesFullTileDirtyGreen',
+  'curtainDrapesFullTileDirtyGrey', 'curtainDrapesFullTileDirtyOrange',
+  'curtainDrapesFullTileDirtyPink', 'curtainDrapesFullTileDirtyPurple',
+  'curtainDrapesFullTileDirtyRed', 'curtainDrapesFullTileDirtyYellow',
+  // Left-half, top
+  'curtainDrapesLeftHalfTopWhite', 'curtainDrapesLeftHalfTopBlack',
+  'curtainDrapesLeftHalfTopBlue', 'curtainDrapesLeftHalfTopBrown',
+  'curtainDrapesLeftHalfTopGreen', 'curtainDrapesLeftHalfTopGrey',
+  'curtainDrapesLeftHalfTopOrange', 'curtainDrapesLeftHalfTopPink',
+  'curtainDrapesLeftHalfTopPurple', 'curtainDrapesLeftHalfTopRed',
+  'curtainDrapesLeftHalfTopYellow', 'curtainDrapesLeftHalfTopDirtyWhite',
+  'curtainDrapesLeftHalfTopDirtyBlack', 'curtainDrapesLeftHalfTopDirtyBlue',
+  'curtainDrapesLeftHalfTopDirtyBrown', 'curtainDrapesLeftHalfTopDirtyGreen',
+  'curtainDrapesLeftHalfTopDirtyGrey', 'curtainDrapesLeftHalfTopDirtyOrange',
+  'curtainDrapesLeftHalfTopDirtyPink', 'curtainDrapesLeftHalfTopDirtyPurple',
+  'curtainDrapesLeftHalfTopDirtyRed', 'curtainDrapesLeftHalfTopDirtyYellow',
+  // Left-half, bottom
+  'curtainDrapesLeftHalfBottomWhite', 'curtainDrapesLeftHalfBottomBlack',
+  'curtainDrapesLeftHalfBottomBlue', 'curtainDrapesLeftHalfBottomBrown',
+  'curtainDrapesLeftHalfBottomGreen', 'curtainDrapesLeftHalfBottomGrey',
+  'curtainDrapesLeftHalfBottomOrange', 'curtainDrapesLeftHalfBottomPink',
+  'curtainDrapesLeftHalfBottomPurple', 'curtainDrapesLeftHalfBottomRed',
+  'curtainDrapesLeftHalfBottomYellow', 'curtainDrapesLeftHalfBottomDirtyWhite',
+  'curtainDrapesLeftHalfBottomDirtyBlack', 'curtainDrapesLeftHalfBottomDirtyBlue',
+  'curtainDrapesLeftHalfBottomDirtyBrown', 'curtainDrapesLeftHalfBottomDirtyGreen',
+  'curtainDrapesLeftHalfBottomDirtyGrey', 'curtainDrapesLeftHalfBottomDirtyOrange',
+  'curtainDrapesLeftHalfBottomDirtyPink', 'curtainDrapesLeftHalfBottomDirtyPurple',
+  'curtainDrapesLeftHalfBottomDirtyRed', 'curtainDrapesLeftHalfBottomDirtyYellow',
+  // Left-half, mid tile
+  'curtainDrapesLeftHalfTileWhite', 'curtainDrapesLeftHalfTileBlack',
+  'curtainDrapesLeftHalfTileBlue', 'curtainDrapesLeftHalfTileBrown',
+  'curtainDrapesLeftHalfTileGreen', 'curtainDrapesLeftHalfTileGrey',
+  'curtainDrapesLeftHalfTileOrange', 'curtainDrapesLeftHalfTilePink',
+  'curtainDrapesLeftHalfTilePurple', 'curtainDrapesLeftHalfTileRed',
+  'curtainDrapesLeftHalfTileYellow', 'curtainDrapesLeftHalfTileDirtyWhite',
+  'curtainDrapesLeftHalfTileDirtyBlack', 'curtainDrapesLeftHalfTileDirtyBlue',
+  'curtainDrapesLeftHalfTileDirtyBrown', 'curtainDrapesLeftHalfTileDirtyGreen',
+  'curtainDrapesLeftHalfTileDirtyGrey', 'curtainDrapesLeftHalfTileDirtyOrange',
+  'curtainDrapesLeftHalfTileDirtyPink', 'curtainDrapesLeftHalfTileDirtyPurple',
+  'curtainDrapesLeftHalfTileDirtyRed', 'curtainDrapesLeftHalfTileDirtyYellow',
+  // Right-half, top
+  'curtainDrapesRightHalfTopWhite', 'curtainDrapesRightHalfTopBlack',
+  'curtainDrapesRightHalfTopBlue', 'curtainDrapesRightHalfTopBrown',
+  'curtainDrapesRightHalfTopGreen', 'curtainDrapesRightHalfTopGrey',
+  'curtainDrapesRightHalfTopOrange', 'curtainDrapesRightHalfTopPink',
+  'curtainDrapesRightHalfTopPurple', 'curtainDrapesRightHalfTopRed',
+  'curtainDrapesRightHalfTopYellow', 'curtainDrapesRightHalfTopDirtyWhite',
+  'curtainDrapesRightHalfTopDirtyBlack', 'curtainDrapesRightHalfTopDirtyBlue',
+  'curtainDrapesRightHalfTopDirtyBrown', 'curtainDrapesRightHalfTopDirtyGreen',
+  'curtainDrapesRightHalfTopDirtyGrey', 'curtainDrapesRightHalfTopDirtyOrange',
+  'curtainDrapesRightHalfTopDirtyPink', 'curtainDrapesRightHalfTopDirtyPurple',
+  'curtainDrapesRightHalfTopDirtyRed', 'curtainDrapesRightHalfTopDirtyYellow',
+  // Right-half, bottom
+  'curtainDrapesRightHalfBottomWhite', 'curtainDrapesRightHalfBottomBlack',
+  'curtainDrapesRightHalfBottomBlue', 'curtainDrapesRightHalfBottomBrown',
+  'curtainDrapesRightHalfBottomGreen', 'curtainDrapesRightHalfBottomGrey',
+  'curtainDrapesRightHalfBottomOrange', 'curtainDrapesRightHalfBottomPink',
+  'curtainDrapesRightHalfBottomPurple', 'curtainDrapesRightHalfBottomRed',
+  'curtainDrapesRightHalfBottomYellow', 'curtainDrapesRightHalfBottomDirtyWhite',
+  'curtainDrapesRightHalfBottomDirtyBlack', 'curtainDrapesRightHalfBottomDirtyBlue',
+  'curtainDrapesRightHalfBottomDirtyBrown', 'curtainDrapesRightHalfBottomDirtyGreen',
+  'curtainDrapesRightHalfBottomDirtyGrey', 'curtainDrapesRightHalfBottomDirtyOrange',
+  'curtainDrapesRightHalfBottomDirtyPink', 'curtainDrapesRightHalfBottomDirtyPurple',
+  'curtainDrapesRightHalfBottomDirtyRed', 'curtainDrapesRightHalfBottomDirtyYellow',
+  // Right-half, mid tile
+  'curtainDrapesRightHalfTileWhite', 'curtainDrapesRightHalfTileBlack',
+  'curtainDrapesRightHalfTileBlue', 'curtainDrapesRightHalfTileBrown',
+  'curtainDrapesRightHalfTileGreen', 'curtainDrapesRightHalfTileGrey',
+  'curtainDrapesRightHalfTileOrange', 'curtainDrapesRightHalfTilePink',
+  'curtainDrapesRightHalfTilePurple', 'curtainDrapesRightHalfTileRed',
+  'curtainDrapesRightHalfTileYellow', 'curtainDrapesRightHalfTileDirtyWhite',
+  'curtainDrapesRightHalfTileDirtyBlack', 'curtainDrapesRightHalfTileDirtyBlue',
+  'curtainDrapesRightHalfTileDirtyBrown', 'curtainDrapesRightHalfTileDirtyGreen',
+  'curtainDrapesRightHalfTileDirtyGrey', 'curtainDrapesRightHalfTileDirtyOrange',
+  'curtainDrapesRightHalfTileDirtyPink', 'curtainDrapesRightHalfTileDirtyPurple',
+  'curtainDrapesRightHalfTileDirtyRed', 'curtainDrapesRightHalfTileDirtyYellow',
+
+  // --- Statement decor (5) ~ user request (gaveitatry + Ada, Oct 2026).
   //     woodenBear / rugBear are plain ModelEntity blocks (Mwood / Mcloth, no
   //     TileEntity, no loot lineage) ~ verified clean in V3.4 blocks.xml.
   //     wallClockWorking is Class="Info" (shows game time) ~ not a Composite
   //     TileEntity, so it doesn't hit the hidden-safe init NRE class; its
-  //     broken/static siblings were already in the Wall clocks group above. ---
+  //     broken/static siblings were already in the Wall clocks group above.
+  //     trophy / trophyOffset (Mbrass ModelEntity, V3.4 audit) joined in the
+  //     same pass as the curtains. ---
   'woodenBear',
   'rugBear',
   'wallClockWorking',
+  'trophy',
+  'trophyOffset',
 ]
 
 /** XML harvest-tag the wrench/disassemble tool matches against to pick a block up. */

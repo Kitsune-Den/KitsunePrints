@@ -270,7 +270,7 @@ export function renderBlockEntry(
  *
  * Always includes PICKUP_BLOCKS (the picture/poster/canvas/frame core).
  * When `extendedDecor` is true, ALSO includes EXTENDED_DECOR_PICKUP_BLOCKS
- * (~227 vanilla flags, road signs, shop signs, mirrors, clocks, etc.)
+ * (~428 vanilla flags, road signs, shop signs, mirrors, clocks, curtains, etc.)
  * controlled by the separate "Extended decor pickup" checkbox on the pack.
  */
 export function renderPickupAppendRows(opts?: { extendedDecor?: boolean }): string {
