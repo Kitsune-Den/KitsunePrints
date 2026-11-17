@@ -13,14 +13,14 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/slots-70_across_8_categories-fb923c?style=flat" alt="70 slots" />
-  <img src="https://img.shields.io/badge/7DTD-V2.6--V3.3-8b0000?style=flat" alt="7DTD V2.6-V3.3" />
+  <img src="https://img.shields.io/badge/7DTD-V2.6--V3.4-8b0000?style=flat" alt="7DTD V2.6-V3.4" />
   <img src="https://img.shields.io/badge/tests-78_passing-22c55e?style=flat" alt="78 tests" />
   <img src="https://img.shields.io/badge/EAC-must_be_off-78350f?style=flat" alt="EAC off" />
 </p>
 
 # 🐱 KitsunePrints
 
-A web-based custom picture pack creator for **7 Days to Die V2.6-V3.3**. Upload your art, drop it into vanilla painting / poster / canvas / frame slots across **70 swap targets**, download a ready-to-install modlet. Every painting in every POI ~ plus snack posters, movie posters, picture frames, hidden-safe disguises, and the craftable 5×2 billboard sign ~ now wears your art. No Unity, no asset bundles, no prefab hacks. A Harmony runtime swap does the heavy lifting at world load.
+A web-based custom picture pack creator for **7 Days to Die V2.6-V3.4**. Upload your art, drop it into vanilla painting / poster / canvas / frame slots across **70 swap targets**, download a ready-to-install modlet. Every painting in every POI ~ plus snack posters, movie posters, picture frames, hidden-safe disguises, and the craftable 5×2 billboard sign ~ now wears your art. No Unity, no asset bundles, no prefab hacks. A Harmony runtime swap does the heavy lifting at world load.
 
 ## What it does
 
@@ -51,7 +51,7 @@ The full pack state (slot titles, frame choices, pack info) auto-saves to your b
 Every pack ships with `<property name="CanPickup" value="true"/>` patches that turn vanilla decor blocks into press-E-pickup items. No tool, no recipe ~ walk up, press E, place from inventory. Two opt-in tiers (separate checkboxes on the Pack Info tab):
 
 - **Picture core** (~83 blocks, default on) ~ all 7 slot categories: paintings, snack posters, movie posters + theaters, canvases, picture frames.
-- **Extended decor** (~227 blocks, default on) ~ flags, road signs, OPEN/CLOSED, gun store + shop signs (unlit variants), bathroom signs, wall clocks (including the working one), mirrors, bulletin boards, planters, ad signs, gas signs, plus statement decor: the wooden bear and bear rug.
+- **Extended decor** (~428 blocks, default on) ~ flags, road signs, OPEN/CLOSED, gun store + shop signs (unlit variants), bathroom signs, wall clocks (including the working one), mirrors, bulletin boards, planters, ad signs, gas signs, curtains + drapes (every color, clean and dirty, plus the bare rod), plus statement decor: the wooden bear, bear rug and brass trophy.
 
 Trader signage and lit/electrical signs are deliberately excluded from the extended set ~ traders stay nice, and lit signs would risk the same electrical-init NREs that hidden safes triggered. Hidden-safe disguises are also excluded (they're loot-container TileEntities; CanPickup conflicts with their init).
 
@@ -85,7 +85,7 @@ If you'd rather skip the web tool, grab [`KitsunePrints-DIY-Kit.zip`](https://gi
 
 ## Dependencies
 
-- 7 Days to Die V2.6-V3.2, plus the V3.3 experimental branch (verified: vanilla material naming, decor block names, atlas layout, and prefab mesh UVs are identical across V2.6, V3.0, V3.2 and V3.3 b17, and the bundled DLL's game references resolve on all four, so the same pack + DLL work on every one; see [migration plan](docs/migration-plan.md) for the V3.0 verification result and v4.x outlook)
+- 7 Days to Die V2.6-V3.4 (verified: vanilla material naming, decor block names, atlas layout, and prefab mesh UVs are identical across V2.6, V3.0, V3.2 and V3.3 b17, and every pickup-patched decor block name resolves in V3.4.0 b10 `blocks.xml`, so the same pack + DLL work on every one; see [migration plan](docs/migration-plan.md) for the V3.0 verification result and v4.x outlook)
 - EAC must be disabled (any DLL-shipping mod requires this)
 - No third-party mod dependencies ~ the Harmony patch is self-contained
 
@@ -110,7 +110,7 @@ src/
     buildModlet.ts       # zip orchestration, XML rendering, pickup patch inlining (35 unit tests cover the helpers)
     buildModlet.test.ts
     composer.ts          # composePortrait / composeAbstract / composeAtlas / composeIcon
-    pickupBlocks.ts      # PICKUP_BLOCKS (~83 picture core) + EXTENDED_DECOR_PICKUP_BLOCKS (~227)
+    pickupBlocks.ts      # PICKUP_BLOCKS (~83 picture core) + EXTENDED_DECOR_PICKUP_BLOCKS (~428)
     persistence.ts       # localStorage save/load for slot config + pack meta
   types/
     slots.ts             # SLOTS list + ATLAS_SOURCES + FRAME_PRESETS + isDefaultPackMeta

@@ -266,6 +266,31 @@ describe('renderPickupAppendRows', () => {
     expect(rows).not.toContain("@name='woodenBear'")
   })
 
+  it('extended mode includes the V3.4 curtain/drape family + trophies', () => {
+    expect(extendedRows).toContain("@name='curtainDrapesRod1m'")
+    expect(extendedRows).toContain("@name='curtainDrapesFullTopWhite'")
+    expect(extendedRows).toContain("@name='curtainDrapesFullBottomDirtyRed'")
+    expect(extendedRows).toContain("@name='curtainDrapesLeftHalfTileGreen'")
+    expect(extendedRows).toContain("@name='curtainDrapesRightHalfTopDirtyYellow'")
+    expect(extendedRows).toContain("@name='trophy'")
+    expect(extendedRows).toContain("@name='trophyOffset'")
+    // Core mode stays picture-only.
+    expect(rows).not.toContain("@name='curtainDrapes")
+  })
+
+  it('extended mode never includes multiblock or dev-only composites', () => {
+    // screenCurtainDivider* are MultiBlockDim multiblocks; the canvas/decal
+    // sign family and flag signs are dev-only CompositeTileEntities.
+    expect(extendedRows).not.toContain("@name='screenCurtainDivider")
+    expect(extendedRows).not.toContain("@name='curtainVariantHelper")
+    expect(extendedRows).not.toContain("@name='signCanvasWood")
+    expect(extendedRows).not.toContain("@name='signDecalWood")
+    expect(extendedRows).not.toContain("@name='signCanvasCorrugatedMetal")
+    expect(extendedRows).not.toContain("@name='signDecalCorrugatedMetal")
+    expect(extendedRows).not.toContain("@name='flagWallHungSign'")
+    expect(extendedRows).not.toContain("@name='flagPoleSign'")
+  })
+
   it('extended mode keeps the picture core intact', () => {
     expect(extendedRows).toContain("@name='paintingBen'")
     expect(extendedRows).toContain("@name='pictureFrame_01a'")
@@ -287,10 +312,11 @@ describe('renderPickupAppendRows', () => {
     expect(extendedRows).not.toContain("@name='dartTrap")
   })
 
-  it('extended mode produces ~300+ append patches total', () => {
+  it('extended mode produces ~500+ append patches total', () => {
+    // ~83 picture core + ~428 extended decor (curtains joined in v1.3).
     const patchCount = (extendedRows.match(/<append /g) || []).length
-    expect(patchCount).toBeGreaterThanOrEqual(290)
-    expect(patchCount).toBeLessThanOrEqual(330)
+    expect(patchCount).toBeGreaterThanOrEqual(490)
+    expect(patchCount).toBeLessThanOrEqual(540)
   })
 
   it('extended mode is strictly a superset of core mode', () => {

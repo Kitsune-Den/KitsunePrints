@@ -527,10 +527,11 @@ export interface PackMeta {
    */
   enablePickup: boolean
   /**
-   * When true, ALSO adds CanPickup to ~227 additional vanilla wall decor
+   * When true, ALSO adds CanPickup to ~428 additional vanilla wall decor
    * blocks: flags, road signs, OPEN/CLOSED, gun store signs, shop signs (unlit
    * variants only), bathroom signs, wall clocks, mirrors, bulletin boards,
-   * planters, statement decor (wooden bear, bear rug, working wall clock),
+   * planters, curtains + drapes (every color, clean and dirty), statement
+   * decor (wooden bear, bear rug, working wall clock, brass trophy),
    * and assorted ad/diner/safety signs. Trader signage and
    * lit/electrical signs are deliberately excluded ~ traders stay nice and
    * lit signs risk electrical-init NREs. See src/utils/pickupBlocks.ts.

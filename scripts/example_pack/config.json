@@ -11,7 +11,7 @@
   "_comment_pickup": "true (default) inlines blocks.xml patches that add CanPickup=true to ~83 vanilla picture/poster/canvas/frame blocks. Press E in-game to pick up. Set false to skip.",
 
   "enableExtendedDecorPickup": true,
-  "_comment_extended_decor": "true (default) extends press-E pickup to ~227 more wall decor blocks: flags, road signs, OPEN/CLOSED, gun store + shop signs (unlit), bathroom signs, wall clocks (working one too), mirrors, bulletin boards, planters, ad signs, gas signs, the wooden bear + bear rug. Trader signage and lit/electrical signs are deliberately excluded.",
+  "_comment_extended_decor": "true (default) extends press-E pickup to ~428 more wall decor blocks: flags, road signs, OPEN/CLOSED, gun store + shop signs (unlit), bathroom signs, wall clocks (working one too), mirrors, bulletin boards, planters, ad signs, gas signs, curtains + drapes (every color, clean and dirty), the wooden bear + bear rug + brass trophy. Trader signage and lit/electrical signs are deliberately excluded.",
 
   "_comment_slots": [
     "Each slot key is a stable identifier (see SLOTS list in make_pack.py).",
