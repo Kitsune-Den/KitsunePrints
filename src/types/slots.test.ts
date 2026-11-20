@@ -211,13 +211,13 @@ describe('orientation helpers', () => {
   })
 
   describe('vanillaContentRotation classification (smoke check)', () => {
-    it('marks all 10 known-rotated picture frames as CW', () => {
-      // Every rotated frame mesh maps picture-up to the tile's +U (right)
-      // edge, and the vanilla art's top points right in each atlas tile, so
-      // the composer must send the upload's top to the right ~ 'cw'. The
-      // 'ccw' shipped in v1.0.6–1.3.0 rendered user art upside down
-      // (reported in-game on Picture G).
-      const rotated = ['d', 'e', 'f', 'g', 'h', 'i', 'j', 'n', 'q', 'r']
+    it('marks the 11 picture frames whose art top points right as CW', () => {
+      // These frame meshes map picture-up to the tile's +U (right) edge, and
+      // the vanilla art's top points right in each atlas tile, so the
+      // composer must send the upload's top to the right ~ 'cw'. The 'ccw'
+      // shipped in v1.0.6–1.3.0 rendered user art upside down (reported
+      // in-game on Picture G). K was missing its marker entirely.
+      const rotated = ['d', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'n', 'q', 'r']
       for (const letter of rotated) {
         const slotId = `pictureFrame_01${letter}`
         expect(slotById(slotId).vanillaContentRotation,
@@ -225,8 +225,12 @@ describe('orientation helpers', () => {
       }
     })
 
-    it('leaves the 13 upright picture frames without a rotation marker', () => {
-      const upright = ['a', 'b', 'c', 'k', 'l', 'm', 'o', 'p', 's', 't', 'u', 'v', 'w']
+    it('marks Frame V (diploma) as CCW ~ its mesh maps picture-up to the tile LEFT edge', () => {
+      expect(slotById('pictureFrame_01v').vanillaContentRotation).toBe('ccw')
+    })
+
+    it('leaves the 11 upright picture frames without a rotation marker', () => {
+      const upright = ['a', 'b', 'c', 'l', 'm', 'o', 'p', 's', 't', 'u', 'w']
       for (const letter of upright) {
         const slotId = `pictureFrame_01${letter}`
         expect(slotById(slotId).vanillaContentRotation,

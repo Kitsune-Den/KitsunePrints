@@ -123,11 +123,12 @@ export interface SlotDef {
    * Value is the composer's rotate90 direction (canvas y-down: 'cw' sends
    * the upload's top edge to the tile's RIGHT edge).
    *
-   * Source of truth: the LOD0 mesh UVs. Every pictureFrame_01* mesh maps
-   * picture-up to the same block axis, and in every rotated tile that axis
-   * is +U (the tile's right edge) ~ the vanilla art's top points right in
-   * the atlas. So all rotated frames need 'cw'. v1.0.6–1.3.0 shipped 'ccw',
-   * which rendered user art upside down (Picture G report, 1.3.1 fix).
+   * Source of truth: the LOD0 mesh UVs ~ which tile edge the mesh maps to
+   * picture-up (the vanilla art's top agrees in every case). Right edge
+   * (D/E/F/G/H/I/J/K/N/Q/R) → 'cw'; left edge (V, the diploma) → 'ccw'.
+   * v1.0.6–1.3.0 shipped 'ccw' for the right-edge group, which rendered
+   * user art upside down (Picture G report); K and V had no marker and
+   * rendered sideways. Fixed in 1.3.1.
    *
    * NOT the same direction as scripts/fix_rotated_frame_thumbs.py's
    * ROTATIONS dict ~ that one un-rotates the reference thumbs for display.
@@ -368,7 +369,7 @@ export const SLOTS: SlotDef[] = [
   { slotId: 'pictureFrame_01h', materialName: 'pictureFramed3', label: 'Frame H', vanillaBlocks: ['pictureFrame_01h'], kind: 'canvasTile', atlasTile: { x: 373,  y: 1533, w: 350, h: 502 }, vanillaContentRotation: 'cw' },
   { slotId: 'pictureFrame_01i', materialName: 'pictureFramed3', label: 'Frame I', vanillaBlocks: ['pictureFrame_01i'], kind: 'canvasTile', atlasTile: { x: 1288, y: 1138, w: 735, h: 898 }, vanillaContentRotation: 'cw' },
   { slotId: 'pictureFrame_01j', materialName: 'pictureFramed4', label: 'Frame J', vanillaBlocks: ['pictureFrame_01j'], kind: 'canvasTile', atlasTile: { x: 741,  y: 1361, w: 532, h: 674 }, vanillaContentRotation: 'cw' },
-  { slotId: 'pictureFrame_01k', materialName: 'pictureFramed4', label: 'Frame K', vanillaBlocks: ['pictureFrame_01k'], kind: 'canvasTile', atlasTile: { x: 373,  y: 1533, w: 350, h: 502 } },
+  { slotId: 'pictureFrame_01k', materialName: 'pictureFramed4', label: 'Frame K', vanillaBlocks: ['pictureFrame_01k'], kind: 'canvasTile', atlasTile: { x: 373,  y: 1533, w: 350, h: 502 }, vanillaContentRotation: 'cw' },
   { slotId: 'pictureFrame_01l', materialName: 'pictureFramed4', label: 'Frame L', vanillaBlocks: ['pictureFrame_01l'], kind: 'canvasTile', atlasTile: { x: 1288, y: 1138, w: 735, h: 898 } },
   { slotId: 'pictureFrame_01m', materialName: 'pictureFramed5', label: 'Frame M', vanillaBlocks: ['pictureFrame_01m'], kind: 'canvasTile', atlasTile: { x: 1288, y: 1138, w: 735, h: 898 } },
   { slotId: 'pictureFrame_01n', materialName: 'pictureFramed5', label: 'Frame N', vanillaBlocks: ['pictureFrame_01n'], kind: 'canvasTile', atlasTile: { x: 373,  y: 1533, w: 350, h: 502 }, vanillaContentRotation: 'cw' },
@@ -379,7 +380,7 @@ export const SLOTS: SlotDef[] = [
   { slotId: 'pictureFrame_01s', materialName: 'pictureFramed7', label: 'Frame S', vanillaBlocks: ['pictureFrame_01s'], kind: 'canvasTile', atlasTile: { x: 1288, y: 1138, w: 735, h: 898 } },
   { slotId: 'pictureFrame_01t', materialName: 'pictureFramed7', label: 'Frame T', vanillaBlocks: ['pictureFrame_01t'], kind: 'canvasTile', atlasTile: { x: 373,  y: 1533, w: 350, h: 502 } },
   { slotId: 'pictureFrame_01u', materialName: 'pictureFramed7', label: 'Frame U', vanillaBlocks: ['pictureFrame_01u'], kind: 'canvasTile', atlasTile: { x: 741,  y: 1361, w: 532, h: 674 } },
-  { slotId: 'pictureFrame_01v', materialName: 'pictureFramed8', label: 'Frame V', vanillaBlocks: ['pictureFrame_01v'], kind: 'canvasTile', atlasTile: { x: 741,  y: 1361, w: 532, h: 674 } },
+  { slotId: 'pictureFrame_01v', materialName: 'pictureFramed8', label: 'Frame V', vanillaBlocks: ['pictureFrame_01v'], kind: 'canvasTile', atlasTile: { x: 741,  y: 1361, w: 532, h: 674 }, vanillaContentRotation: 'ccw' },
   { slotId: 'pictureFrame_01w', materialName: 'pictureFramed8', label: 'Frame W', vanillaBlocks: ['pictureFrame_01w'], kind: 'canvasTile', atlasTile: { x: 373,  y: 1533, w: 350, h: 502 } },
   // Picture canvases ~ each pictureCanvas_01<letter> samples its own tile of
   // the shared 2048×2048 canvas atlas (pictureCanvas_d / pictureCanvas2_d).
