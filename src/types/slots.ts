@@ -120,9 +120,17 @@ export interface SlotDef {
    * Undefined means the vanilla content reads correctly oriented
    * relative to the atlasTile aspect ~ no rotation involved.
    *
-   * Source of truth: scripts/fix_rotated_frame_thumbs.py (the ROTATIONS
-   * dict). When that script grows new entries, mirror them here so the
-   * runtime behavior stays in sync with the visual thumb fix.
+   * Value is the composer's rotate90 direction (canvas y-down: 'cw' sends
+   * the upload's top edge to the tile's RIGHT edge).
+   *
+   * Source of truth: the LOD0 mesh UVs. Every pictureFrame_01* mesh maps
+   * picture-up to the same block axis, and in every rotated tile that axis
+   * is +U (the tile's right edge) ~ the vanilla art's top points right in
+   * the atlas. So all rotated frames need 'cw'. v1.0.6–1.3.0 shipped 'ccw',
+   * which rendered user art upside down (Picture G report, 1.3.1 fix).
+   *
+   * NOT the same direction as scripts/fix_rotated_frame_thumbs.py's
+   * ROTATIONS dict ~ that one un-rotates the reference thumbs for display.
    */
   vanillaContentRotation?: 'cw' | 'ccw'
   /**
@@ -353,21 +361,21 @@ export const SLOTS: SlotDef[] = [
   { slotId: 'pictureFrame_01a', materialName: 'pictureFramed',  label: 'Frame A', vanillaBlocks: ['pictureFrame_01a'], kind: 'canvasTile', atlasTile: { x: 1288, y: 1138, w: 735, h: 898 } },
   { slotId: 'pictureFrame_01b', materialName: 'pictureFramed',  label: 'Frame B', vanillaBlocks: ['pictureFrame_01b'], kind: 'canvasTile', atlasTile: { x: 373,  y: 1533, w: 350, h: 502 } },
   { slotId: 'pictureFrame_01c', materialName: 'pictureFramed',  label: 'Frame C', vanillaBlocks: ['pictureFrame_01c'], kind: 'canvasTile', atlasTile: { x: 741,  y: 1361, w: 532, h: 674 } },
-  { slotId: 'pictureFrame_01d', materialName: 'pictureFramed2', label: 'Frame D', vanillaBlocks: ['pictureFrame_01d'], kind: 'canvasTile', atlasTile: { x: 1288, y: 1138, w: 735, h: 898 }, vanillaContentRotation: 'ccw' },
-  { slotId: 'pictureFrame_01e', materialName: 'pictureFramed2', label: 'Frame E', vanillaBlocks: ['pictureFrame_01e'], kind: 'canvasTile', atlasTile: { x: 373,  y: 1533, w: 350, h: 502 }, vanillaContentRotation: 'ccw' },
-  { slotId: 'pictureFrame_01f', materialName: 'pictureFramed2', label: 'Frame F', vanillaBlocks: ['pictureFrame_01f'], kind: 'canvasTile', atlasTile: { x: 741,  y: 1361, w: 532, h: 674 }, vanillaContentRotation: 'ccw' },
-  { slotId: 'pictureFrame_01g', materialName: 'pictureFramed3', label: 'Frame G', vanillaBlocks: ['pictureFrame_01g'], kind: 'canvasTile', atlasTile: { x: 741,  y: 1361, w: 532, h: 674 }, vanillaContentRotation: 'ccw' },
-  { slotId: 'pictureFrame_01h', materialName: 'pictureFramed3', label: 'Frame H', vanillaBlocks: ['pictureFrame_01h'], kind: 'canvasTile', atlasTile: { x: 373,  y: 1533, w: 350, h: 502 }, vanillaContentRotation: 'ccw' },
-  { slotId: 'pictureFrame_01i', materialName: 'pictureFramed3', label: 'Frame I', vanillaBlocks: ['pictureFrame_01i'], kind: 'canvasTile', atlasTile: { x: 1288, y: 1138, w: 735, h: 898 }, vanillaContentRotation: 'ccw' },
-  { slotId: 'pictureFrame_01j', materialName: 'pictureFramed4', label: 'Frame J', vanillaBlocks: ['pictureFrame_01j'], kind: 'canvasTile', atlasTile: { x: 741,  y: 1361, w: 532, h: 674 }, vanillaContentRotation: 'ccw' },
+  { slotId: 'pictureFrame_01d', materialName: 'pictureFramed2', label: 'Frame D', vanillaBlocks: ['pictureFrame_01d'], kind: 'canvasTile', atlasTile: { x: 1288, y: 1138, w: 735, h: 898 }, vanillaContentRotation: 'cw' },
+  { slotId: 'pictureFrame_01e', materialName: 'pictureFramed2', label: 'Frame E', vanillaBlocks: ['pictureFrame_01e'], kind: 'canvasTile', atlasTile: { x: 373,  y: 1533, w: 350, h: 502 }, vanillaContentRotation: 'cw' },
+  { slotId: 'pictureFrame_01f', materialName: 'pictureFramed2', label: 'Frame F', vanillaBlocks: ['pictureFrame_01f'], kind: 'canvasTile', atlasTile: { x: 741,  y: 1361, w: 532, h: 674 }, vanillaContentRotation: 'cw' },
+  { slotId: 'pictureFrame_01g', materialName: 'pictureFramed3', label: 'Frame G', vanillaBlocks: ['pictureFrame_01g'], kind: 'canvasTile', atlasTile: { x: 741,  y: 1361, w: 532, h: 674 }, vanillaContentRotation: 'cw' },
+  { slotId: 'pictureFrame_01h', materialName: 'pictureFramed3', label: 'Frame H', vanillaBlocks: ['pictureFrame_01h'], kind: 'canvasTile', atlasTile: { x: 373,  y: 1533, w: 350, h: 502 }, vanillaContentRotation: 'cw' },
+  { slotId: 'pictureFrame_01i', materialName: 'pictureFramed3', label: 'Frame I', vanillaBlocks: ['pictureFrame_01i'], kind: 'canvasTile', atlasTile: { x: 1288, y: 1138, w: 735, h: 898 }, vanillaContentRotation: 'cw' },
+  { slotId: 'pictureFrame_01j', materialName: 'pictureFramed4', label: 'Frame J', vanillaBlocks: ['pictureFrame_01j'], kind: 'canvasTile', atlasTile: { x: 741,  y: 1361, w: 532, h: 674 }, vanillaContentRotation: 'cw' },
   { slotId: 'pictureFrame_01k', materialName: 'pictureFramed4', label: 'Frame K', vanillaBlocks: ['pictureFrame_01k'], kind: 'canvasTile', atlasTile: { x: 373,  y: 1533, w: 350, h: 502 } },
   { slotId: 'pictureFrame_01l', materialName: 'pictureFramed4', label: 'Frame L', vanillaBlocks: ['pictureFrame_01l'], kind: 'canvasTile', atlasTile: { x: 1288, y: 1138, w: 735, h: 898 } },
   { slotId: 'pictureFrame_01m', materialName: 'pictureFramed5', label: 'Frame M', vanillaBlocks: ['pictureFrame_01m'], kind: 'canvasTile', atlasTile: { x: 1288, y: 1138, w: 735, h: 898 } },
-  { slotId: 'pictureFrame_01n', materialName: 'pictureFramed5', label: 'Frame N', vanillaBlocks: ['pictureFrame_01n'], kind: 'canvasTile', atlasTile: { x: 373,  y: 1533, w: 350, h: 502 }, vanillaContentRotation: 'ccw' },
+  { slotId: 'pictureFrame_01n', materialName: 'pictureFramed5', label: 'Frame N', vanillaBlocks: ['pictureFrame_01n'], kind: 'canvasTile', atlasTile: { x: 373,  y: 1533, w: 350, h: 502 }, vanillaContentRotation: 'cw' },
   { slotId: 'pictureFrame_01o', materialName: 'pictureFramed5', label: 'Frame O', vanillaBlocks: ['pictureFrame_01o'], kind: 'canvasTile', atlasTile: { x: 741,  y: 1361, w: 532, h: 674 } },
   { slotId: 'pictureFrame_01p', materialName: 'pictureFramed6', label: 'Frame P', vanillaBlocks: ['pictureFrame_01p'], kind: 'canvasTile', atlasTile: { x: 1288, y: 1138, w: 735, h: 898 } },
-  { slotId: 'pictureFrame_01q', materialName: 'pictureFramed6', label: 'Frame Q', vanillaBlocks: ['pictureFrame_01q'], kind: 'canvasTile', atlasTile: { x: 373,  y: 1533, w: 350, h: 502 }, vanillaContentRotation: 'ccw' },
-  { slotId: 'pictureFrame_01r', materialName: 'pictureFramed6', label: 'Frame R', vanillaBlocks: ['pictureFrame_01r'], kind: 'canvasTile', atlasTile: { x: 741,  y: 1361, w: 532, h: 674 }, vanillaContentRotation: 'ccw' },
+  { slotId: 'pictureFrame_01q', materialName: 'pictureFramed6', label: 'Frame Q', vanillaBlocks: ['pictureFrame_01q'], kind: 'canvasTile', atlasTile: { x: 373,  y: 1533, w: 350, h: 502 }, vanillaContentRotation: 'cw' },
+  { slotId: 'pictureFrame_01r', materialName: 'pictureFramed6', label: 'Frame R', vanillaBlocks: ['pictureFrame_01r'], kind: 'canvasTile', atlasTile: { x: 741,  y: 1361, w: 532, h: 674 }, vanillaContentRotation: 'cw' },
   { slotId: 'pictureFrame_01s', materialName: 'pictureFramed7', label: 'Frame S', vanillaBlocks: ['pictureFrame_01s'], kind: 'canvasTile', atlasTile: { x: 1288, y: 1138, w: 735, h: 898 } },
   { slotId: 'pictureFrame_01t', materialName: 'pictureFramed7', label: 'Frame T', vanillaBlocks: ['pictureFrame_01t'], kind: 'canvasTile', atlasTile: { x: 373,  y: 1533, w: 350, h: 502 } },
   { slotId: 'pictureFrame_01u', materialName: 'pictureFramed7', label: 'Frame U', vanillaBlocks: ['pictureFrame_01u'], kind: 'canvasTile', atlasTile: { x: 741,  y: 1361, w: 532, h: 674 } },

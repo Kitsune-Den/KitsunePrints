@@ -76,19 +76,15 @@ describe('orientation helpers', () => {
       expect(getSlotDefaultOrientation(slotById('pictureFrame_01a'))).toBe('portrait')
     })
 
-    it('returns landscape for a rotated picture frame (atlasTile portrait, CCW vanilla)', () => {
-      // pictureFrame_01e was rotated CCW to fit a portrait frame; vanilla art
+    it('returns landscape for a rotated picture frame (atlasTile portrait, sideways vanilla)', () => {
+      // pictureFrame_01e's landscape art is stored sideways in a portrait tile; vanilla art
       // is landscape, so user default is landscape.
       expect(getSlotDefaultOrientation(slotById('pictureFrame_01e'))).toBe('landscape')
     })
 
     it('returns landscape for the bear frame (pictureFrame_01d)', () => {
-      // v1.0.3 originally classified 01d as the CW outlier; v1.0.6 corrected
-      // that to CCW after a user-reported upside-down render in-game (Frame
-      // D was the only one visibly affected, confirming D's vanilla rotation
-      // matches the other rotated slots, not the opposite). The default
-      // orientation is still landscape ~ direction never affected which
-      // orientation the user starts from, only the eventual composite rotation.
+      // Rotation direction never affects which orientation the user starts
+      // from, only the eventual composite rotation.
       expect(getSlotDefaultOrientation(slotById('pictureFrame_01d'))).toBe('landscape')
     })
 
@@ -135,17 +131,17 @@ describe('orientation helpers', () => {
       expect(getCompositeRotation(s, {})).toBeUndefined()
     })
 
-    it('returns the slot vanillaContentRotation when user picks the opposite-of-tile orientation (CCW case)', () => {
+    it('returns the slot vanillaContentRotation when user picks the opposite-of-tile orientation', () => {
       // pictureFrame_01e: tile portrait, default landscape. User on default
-      // means we paint a landscape upload into a portrait tile ~ rotate CCW
-      // to match the vanilla style.
+      // means we paint a landscape upload into a portrait tile ~ rotate CW
+      // so the upload's top lands on the tile's right edge, like vanilla.
       const s = slotById('pictureFrame_01e')
-      expect(getCompositeRotation(s, {})).toBe('ccw')
+      expect(getCompositeRotation(s, {})).toBe('cw')
     })
 
-    it('returns CCW for the bear frame (pictureFrame_01d) ~ same as the other 9 rotated slots post-v1.0.6', () => {
-      const s = slotById('pictureFrame_01d')
-      expect(getCompositeRotation(s, {})).toBe('ccw')
+    it('returns CW for Picture G (pictureFrame_01g) ~ CCW rendered upside down in-game', () => {
+      const s = slotById('pictureFrame_01g')
+      expect(getCompositeRotation(s, {})).toBe('cw')
     })
 
     it('returns undefined when user toggles back to portrait on a rotated-default slot', () => {
@@ -215,16 +211,17 @@ describe('orientation helpers', () => {
   })
 
   describe('vanillaContentRotation classification (smoke check)', () => {
-    it('marks all 10 known-rotated picture frames as CCW', () => {
-      // v1.0.3 originally split D off as a CW outlier based on a thumb-fix
-      // direction that turned out to mean something different than the
-      // composite rotation direction. v1.0.6 brought D in line with the
-      // other 9 after user-confirmed in-game upside-down render on D only.
+    it('marks all 10 known-rotated picture frames as CW', () => {
+      // Every rotated frame mesh maps picture-up to the tile's +U (right)
+      // edge, and the vanilla art's top points right in each atlas tile, so
+      // the composer must send the upload's top to the right ~ 'cw'. The
+      // 'ccw' shipped in v1.0.6–1.3.0 rendered user art upside down
+      // (reported in-game on Picture G).
       const rotated = ['d', 'e', 'f', 'g', 'h', 'i', 'j', 'n', 'q', 'r']
       for (const letter of rotated) {
         const slotId = `pictureFrame_01${letter}`
         expect(slotById(slotId).vanillaContentRotation,
-          `expected ${slotId} to be ccw`).toBe('ccw')
+          `expected ${slotId} to be cw`).toBe('cw')
       }
     })
 
