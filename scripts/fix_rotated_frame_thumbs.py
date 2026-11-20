@@ -50,6 +50,8 @@ ROTATIONS: dict[str, str] = {
     'pictureFrame_01n': 'ccw',
     'pictureFrame_01q': 'ccw',
     'pictureFrame_01r': 'ccw',
+    'pictureFrame_01k': 'ccw',
+    'pictureFrame_01v': 'cw',
 }
 
 
